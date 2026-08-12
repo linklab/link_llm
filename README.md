@@ -17,7 +17,8 @@ link_lmm/
 │   ├── v0.0.4/         #   - 백오프(2→1단어 재시도)  (lm.py 가 백오프 추가)
 │   ├── v0.0.5/         #   - 개수→확률 + 온도        (lm.py 가 온도 추가)
 │   ├── v0.0.6/         #   - 문장부호 토크나이저      (lm.py 가 토크나이저 교체)
-│   └── v0.0.7/         #   - top-k / top-p 샘플링     (lm.py 가 choose 자르기 추가)
+│   ├── v0.0.7/         #   - top-k / top-p 샘플링     (lm.py 가 choose 자르기 추가)
+│   └── v0.0.8/         #   - 대화 형식 + 멀티턴        (lm.py 가 chat() 추가)
 ├── web_service/        # ChatGPT 스타일 웹앱 (선택한 버전의 lm.py 를 불러와 재사용)
 │   ├── server.py
 │   └── index.html
@@ -44,6 +45,8 @@ v0.0.5/2.models/lm.py  + choose()                ← 확률 + 온도
 v0.0.6/2.models/lm.py  + tokenize()/detokenize() ← 문장부호 분리
       ▲
 v0.0.7/2.models/lm.py  + choose()/generate()     ← top-k / top-p 샘플링
+      ▲
+v0.0.8/2.models/lm.py  + chat()/build_chat_context()  ← 대화 형식 + 멀티턴
 ```
 
 - **각 버전 `2.models/lm.py`** — `NGramLM`(그 버전이 새로 추가/변경한 함수) + `Model`(설정 `ORDERS`).
@@ -100,6 +103,9 @@ v0.0.7/2.models/lm.py  + choose()/generate()     ← top-k / top-p 샘플링
 - [**v0.0.7**](lmm/v0.0.7/) — **top-k / top-p 샘플링**: 뽑기 전에 확률 낮은 '꼬리 후보'를
   잘라내 안정성을 높여요. 확률 분포에만 작용해 나중에 신경망에서도 그대로 재사용됩니다.
   자세한 설명은 [lmm/v0.0.7/README.md](lmm/v0.0.7/README.md) 참고.
+- [**v0.0.8**](lmm/v0.0.8/) — **대화 형식 + 멀티턴**: 역할 토큰(`<사용자>`/`<봇>`)으로 대화를
+  학습하고, 이전 대화를 문맥으로 이어받아 답해요 (ChatGPT 골격). 웹앱이 여러 턴 대화가 됩니다.
+  자세한 설명은 [lmm/v0.0.8/README.md](lmm/v0.0.8/README.md) 참고.
 
 ## 웹앱 실행
 

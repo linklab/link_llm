@@ -160,8 +160,20 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"error": "메시지를 입력해 주세요."}, status=400)
             return
 
+        # 대화 기록: [[사용자말, 봇답], ...] (문자열 짝만 안전하게 걸러냄)
+        history = []
+        for pair in data.get("history", []):
+            if isinstance(pair, list) and len(pair) >= 2 \
+                    and isinstance(pair[0], str) and isinstance(pair[1], str):
+                history.append((pair[0], pair[1]))
+
         lm = load_lm(version)
-        reply = generate_reply(lm, message, temperature, top_k, top_p)
+        if hasattr(lm, "chat"):
+            # v0.0.8~ : 대화 형식 + 멀티턴 (기록을 문맥으로 삼아 봇의 답만 생성)
+            reply = lm.chat(message, history, temperature=temperature, top_k=top_k, top_p=top_p)
+        else:
+            # v0.0.7 이하 : 예전처럼 한 문장씩 이어 붙임
+            reply = generate_reply(lm, message, temperature, top_k, top_p)
         self._send_json({"reply": reply, "version": version})
 
     # 서버 로그를 조용하게 (터미널을 깔끔하게 유지)

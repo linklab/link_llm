@@ -197,6 +197,11 @@
   const tempVal = document.getElementById("tempVal");
   const tempTag = document.getElementById("tempTag");
 
+  // 대화 기록 (멀티턴): [[사용자말, 봇답], ...]. v0.0.8 부터 서버가 문맥으로 사용해요.
+  let history = [];
+  // 모델 버전을 바꾸면 대화 문맥을 새로 시작합니다.
+  versionSelect.addEventListener("change", () => { history = []; });
+
   // 온도 슬라이더: 값을 화면에 보여주고, 낮음/균형/높음 이름표를 붙여요.
   function updateTempLabel() {
     const t = parseFloat(tempSlider.value);
@@ -276,10 +281,13 @@
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ version, message, temperature, top_k, top_p })
+        // history: 지금까지의 대화(최근 8턴). v0.0.8 부터 멀티턴 문맥으로 쓰여요.
+        body: JSON.stringify({ version, message, temperature, top_k, top_p, history: history.slice(-8) })
       });
       const data = await res.json();
-      thinking.textContent = data.reply || data.error || "(대답을 만들지 못했어요)";
+      const reply = data.reply || data.error || "(대답을 만들지 못했어요)";
+      thinking.textContent = reply;
+      if (data.reply) history.push([message, data.reply]);   // 성공한 주고받기만 기록
     } catch (e) {
       thinking.textContent = "(서버에 연결하지 못했어요)";
     } finally {

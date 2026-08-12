@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>link_lmm 챗</title>
+<style>
+  /* ===== 기본 색/글꼴 ===== */
+  :root {
+    --bg: #f7f7f8;
+    --panel: #ffffff;
+    --border: #e5e5e8;
+    --user: #d5e8ff;
+    --bot: #f0f0f2;
+    --accent: #10a37f;   /* ChatGPT 초록색 느낌 */
+    --text: #1f2023;
+    --muted: #8a8a90;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== 상단 바 (제목 + 버전 선택) ===== */
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    font-size: 17px;
+    margin: 0;
+    font-weight: 600;
+  }
+  header .logo {
+    width: 26px; height: 26px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .spacer { flex: 1; }
+  .version-box { display: flex; align-items: center; gap: 6px; }
+  .version-box label { font-size: 13px; color: var(--muted); }
+  select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ===== 대화 영역 ===== */
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 0;
+  }
+  .msg-row {
+    display: flex;
+    padding: 8px 18px;
+  }
+  .msg-row.user { justify-content: flex-end; }
+  .bubble {
+    max-width: 680px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .user .bubble { background: var(--user); border-bottom-right-radius: 4px; }
+  .bot .bubble  { background: var(--bot);  border-bottom-left-radius: 4px; }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    margin-top: 60px;
+    line-height: 1.7;
+  }
+  .empty .big { font-size: 22px; color: var(--text); margin-bottom: 6px; font-weight: 600; }
+
+  /* ===== 입력 영역 ===== */
+  footer {
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 14px 18px;
+  }
+  .input-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  textarea {
+    flex: 1;
+    resize: none;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    max-height: 140px;
+    outline: none;
+  }
+  textarea:focus { border-color: var(--accent); }
+  button.send {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button.send:disabled { opacity: .5; cursor: default; }
+  .hint { max-width: 720px; margin: 8px auto 0; font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 온도(다양성) 조절 슬라이더 */
+  .temp-box {
+    max-width: 720px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .temp-box input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+  .temp-box .temp-val { font-weight: 700; color: var(--text); min-width: 30px; text-align: right; }
+  .temp-box .temp-tag { min-width: 64px; text-align: left; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">L</div>
+    <h1>link_lmm 챗</h1>
+    <div class="spacer"></div>
+    <div class="version-box">
+      <label for="version">모델 버전</label>
+      <select id="version"><option>불러오는 중...</option></select>
+    </div>
+  </header>
+
+  <div id="chat">
+    <div class="empty" id="empty">
+      <div class="big">무엇이든 입력해 보세요 🙂</div>
+      위에서 <b>모델 버전</b>을 고른 뒤, 아래에 문장을 적어 보내면<br />
+      그 버전이 학습한 내용을 바탕으로 대답을 만들어 줘요.
+    </div>
+  </div>
+
+  <footer>
+    <div class="temp-box">
+      <span>다양성(온도)</span>
+      <input type="range" id="temp" min="0" max="1" step="0.1" value="0.7" />
+      <span class="temp-val" id="tempVal">1.0</span>
+      <span class="temp-tag" id="tempTag">균형</span>
+    </div>
+    <div class="input-wrap">
+      <textarea id="input" rows="1" placeholder="메시지를 입력하세요... (예: 나는)"></textarea>
+      <button class="send" id="send">보내기</button>
+    </div>
+    <div class="hint">온도가 낮으면 뻔하고 안정적인 답, 높으면 다양하고 엉뚱한 답이 나와요. (v0.0.4 기능)</div>
+  </footer>
+
+<script>
+  const chat = document.getElementById("chat");
+  const empty = document.getElementById("empty");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("send");
+  const versionSelect = document.getElementById("version");
+  const tempSlider = document.getElementById("temp");
+  const tempVal = document.getElementById("tempVal");
+  const tempTag = document.getElementById("tempTag");
+
+  // 온도 슬라이더: 값을 화면에 보여주고, 낮음/균형/높음 이름표를 붙여요.
+  function updateTempLabel() {
+    const t = parseFloat(tempSlider.value);
+    tempVal.textContent = t.toFixed(1);
+    tempTag.textContent = t <= 0.3 ? "안정적" : (t >= 0.8 ? "다양함" : "균형");
+  }
+  tempSlider.addEventListener("input", updateTempLabel);
+  updateTempLabel();
+
+  // 1) 서버에서 버전 목록을 받아와 선택 상자를 채웁니다.
+  async function loadVersions() {
+    try {
+      const res = await fetch("/api/versions");
+      const data = await res.json();
+      versionSelect.innerHTML = "";
+      if (!data.versions || data.versions.length === 0) {
+        versionSelect.innerHTML = "<option>버전 없음</option>";
+        return;
+      }
+      // 최신 버전이 맨 위에 오도록 뒤집어서 넣습니다. (첫 항목이 기본 선택돼요)
+      data.versions.slice().reverse().forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v; opt.textContent = v;
+        versionSelect.appendChild(opt);
+      });
+      versionSelect.selectedIndex = 0;   // 기본값 = 가장 최신 버전
+    } catch (e) {
+      versionSelect.innerHTML = "<option>서버 오류</option>";
+    }
+  }
+
+  // 2) 화면에 말풍선 하나를 추가합니다. (who = "user" 또는 "bot")
+  function addBubble(who, text) {
+    if (empty) empty.style.display = "none";
+    const row = document.createElement("div");
+    row.className = "msg-row " + who;
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;   // 항상 맨 아래로 스크롤
+    return bubble;
+  }
+
+  // 3) 메시지 보내기: 서버에 물어보고 대답을 받아 화면에 표시합니다.
+  async function send() {
+    const message = input.value.trim();
+    const version = versionSelect.value;
+    const temperature = parseFloat(tempSlider.value);   // 온도 값
+    if (!message) return;
+
+    addBubble("user", message);
+    input.value = "";
+    input.style.height = "auto";
+    sendBtn.disabled = true;
+
+    const thinking = addBubble("bot", "…");
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version, message, temperature })
+      });
+      const data = await res.json();
+      thinking.textContent = data.reply || data.error || "(대답을 만들지 못했어요)";
+    } catch (e) {
+      thinking.textContent = "(서버에 연결하지 못했어요)";
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  // 4) 버튼 클릭 / 엔터키로 보내기 (Shift+Enter 는 줄바꿈)
+  sendBtn.addEventListener("click", send);
+  input.addEventListener("keydown", (e) => {
+    // 한글 등 IME 조합 중에 눌린 Enter 는 '글자 확정'용이므로 전송하지 않습니다.
+    // (이걸 막지 않으면 "우리는" 전송 후, 조합 중이던 "는" 이 또 전송되는 버그가 생겨요.)
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+  // 입력 높이 자동 조절
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 140) + "px";
+  });
+
+  loadVersions();
+  input.focus();
+</script>
+</body>
+</html>

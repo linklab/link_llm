@@ -8,54 +8,77 @@
 link_lmm/
 ├── lmm/                # 모델 버전들을 모아두는 곳
 │   ├── v0.0.1/         #   - 앞 단어 1개로 예측 (가장 기본)
-│   │   ├── base.py     #      NGramLM: 이 버전이 '처음 필요로 한' 함수들 (기반 클래스)
-│   │   ├── model.py    #      이 버전 설정(ORDERS)만 선언
-│   │   ├── data/       #      data.txt (학습용 문장)
-│   │   ├── train/      #      얇은 train.py
-│   │   ├── models/     #      model.json (학습 결과)
-│   │   └── test/       #      얇은 test.py
-│   ├── v0.0.2/         #   - 앞 단어 2개 (base.py 는 v0.0.1 을 상속, 새 코드 없음)
-│   ├── v0.0.3/         #   - 문장 끝(<END>) 학습    (base.py 가 <END> 추가)
-│   ├── v0.0.4/         #   - 백오프(2→1단어 재시도)  (base.py 가 백오프 추가)
-│   ├── v0.0.5/         #   - 개수→확률 + 온도        (base.py 가 온도 추가)
-│   ├── v0.0.6/         #   - 문장부호 토크나이저      (base.py 가 토크나이저 교체)
-│   └── v0.0.7/         #   - top-k / top-p 샘플링     (base.py 가 choose 자르기 추가)
-├── web_service/        # ChatGPT 스타일 웹앱 (선택한 버전의 base.py 를 불러와 재사용)
+│   │   ├── 1.data/       #      data.txt (학습용 문장)
+│   │   ├── 2.models/     #      lm.py (NGramLM + 설정) + model.json (학습 결과)
+│   │   ├── 3.train/      #      얇은 train.py
+│   │   └── 4.test/       #      얇은 test.py
+│   ├── v0.0.2/         #   - 앞 단어 2개 (lm.py 가 v0.0.1 을 상속, 새 코드 없음)
+│   ├── v0.0.3/         #   - 문장 끝(<END>) 학습    (lm.py 가 <END> 추가)
+│   ├── v0.0.4/         #   - 백오프(2→1단어 재시도)  (lm.py 가 백오프 추가)
+│   ├── v0.0.5/         #   - 개수→확률 + 온도        (lm.py 가 온도 추가)
+│   ├── v0.0.6/         #   - 문장부호 토크나이저      (lm.py 가 토크나이저 교체)
+│   └── v0.0.7/         #   - top-k / top-p 샘플링     (lm.py 가 choose 자르기 추가)
+├── web_service/        # ChatGPT 스타일 웹앱 (선택한 버전의 lm.py 를 불러와 재사용)
 │   ├── server.py
 │   └── index.html
 └── README.md
 ```
 
-## 코드 구조 (버전별 base.py + 상속 사슬)
+## 코드 구조 (버전별 2.models/lm.py + 상속 사슬)
 
 버전마다 코드가 거의 똑같이 반복되던 것을, **상속 사슬**로 정리했어요.
-각 버전의 `base.py` 는 **그 버전이 처음 추가한 함수만** 담고, 나머지는 이전 버전에서 물려받아요.
+각 버전의 `2.models/lm.py` 하나에 **NGramLM(기능) + Model(설정)** 이 함께 들어 있고,
+그 버전이 **처음 추가한 함수만** 담아 나머지는 이전 버전에서 물려받아요.
 
 ```
-v0.0.1/base.py  NGramLM (기반: 읽기·학습·저장·생성 전부)
+v0.0.1/2.models/lm.py  NGramLM (기반: 읽기·학습·저장·생성 전부) + Model
       ▲ 상속
-v0.0.2/base.py  (새 코드 없음 — ORDERS=[2] 설정만으로 앞 2단어)
+v0.0.2/2.models/lm.py  (새 코드 없음 — ORDERS=[2] 설정만으로 앞 2단어)
       ▲
-v0.0.3/base.py  + prepare()/is_end()      ← 문장 끝 <END>
+v0.0.3/2.models/lm.py  + prepare()/is_end()      ← 문장 끝 <END>
       ▲
-v0.0.4/base.py  + next_token()/can_continue()  ← 백오프
+v0.0.4/2.models/lm.py  + next_token()/can_continue()  ← 백오프
       ▲
-v0.0.5/base.py  + choose()                ← 확률 + 온도
+v0.0.5/2.models/lm.py  + choose()                ← 확률 + 온도
       ▲
-v0.0.6/base.py  + tokenize()/detokenize() ← 문장부호 분리
+v0.0.6/2.models/lm.py  + tokenize()/detokenize() ← 문장부호 분리
       ▲
-v0.0.7/base.py  + choose()/generate()     ← top-k / top-p 샘플링
+v0.0.7/2.models/lm.py  + choose()/generate()     ← top-k / top-p 샘플링
 ```
 
-- **각 버전 `base.py`** — 그 버전이 **새로 추가/변경한 함수**만. → "이 버전이 뭘 더했나"가 한눈에.
-- **각 버전 `model.py`** — 설정 `ORDERS` (문맥 표 길이)만 선언.
-- **`train/train.py`·`test/test.py`** — `model.py` 를 불러와 실행하는 **얇은 껍데기**.
-- **`web_service/server.py`** — 선택된 버전의 `base.py` 를 불러와 `generate` 만 호출.
+- **각 버전 `2.models/lm.py`** — `NGramLM`(그 버전이 새로 추가/변경한 함수) + `Model`(설정 `ORDERS`).
+  → "이 버전이 뭘 더했나"가 한눈에.
+- **`3.train/train.py`·`4.test/test.py`** — `2.models/lm.py` 를 불러와 실행하는 **얇은 껍데기**.
+- **`web_service/server.py`** — 선택된 버전의 `2.models/lm.py` 를 불러와 `generate` 만 호출.
 
-> 폴더 이름에 `.` 이 있어 일반 `import` 가 안 되므로, 이전 버전 `base.py` 는 파일 경로로
-> 불러와요(각 `base.py` 상단의 `_inherit`). "이 버전이 뭘 바꿨나"는 그 `base.py` 하나만,
-> "전체가 어떻게 도나"는 `v0.0.1/base.py` 부터 사슬을 따라 읽으면 됩니다.
+> 폴더 이름에 `.` 이 있어 일반 `import` 가 안 되므로, 이전 버전 `lm.py` 는 파일 경로로
+> 불러와요(각 `lm.py` 상단의 `_load_prev`). "이 버전이 뭘 바꿨나"는 그 `lm.py` 하나만,
+> "전체가 어떻게 도나"는 `v0.0.1/2.models/lm.py` 부터 사슬을 따라 읽으면 됩니다.
 > 모델 저장 형식은 모든 버전이 `{ "max_order", "tokenizer", "tables" }` 로 통일돼요.
+
+## 클래스 이름은 왜 `NGramLM` 인가요?
+
+`NGramLM` 은 **N-gram + LM** 을 합친, NLP(자연어처리)의 **표준 용어**예요.
+
+- **N-gram** — "연속된 n개의 토큰(단어) 묶음". 우리 모델이 하는 일이 바로
+  *"앞의 몇 개 토큰을 보고 다음 토큰을 맞히기"* 라, 토큰 묶음의 등장 횟수를 세는
+  **n-gram 언어모델** 이에요.
+- **LM** — **Language Model(언어 모델)**. 다음 토큰의 확률을 매기는 모델의 표준 약자.
+
+즉 `NGramLM` = **"N-그램 언어 모델"** (교과서에 그대로 나오는 이름).
+
+**왜 이 이름을 골랐나**
+
+1. **하는 일을 정확히 표현** — 신경망이 아니라 "n-gram을 세는" 방식임을 이름만으로 알 수 있어요.
+2. **모든 버전을 아우름** — `ORDERS` 설정만 바꾸면 앞 1단어·2단어·백오프를 다 처리하므로,
+   특정 버전에 묶인 `BigramModel` 같은 이름보다 일반적인 `NGram` 이 맞아요.
+   (참고: `ORDERS` 는 '문맥 길이'. `order=1` 은 사실 2-gram, `order=2` 는 3-gram — n = 문맥 길이 + 1)
+3. **표준 용어라 '진짜'와 연결** — 나중에 논문·교재를 볼 때 바로 이어져, 교육용으로 좋아요.
+4. **신경망 시대와 대비** — v0.1.x 에서 신경망을 도입하면 `NeuralLM`·`MiniGPT` 같은 다른 이름을 쓸
+   거예요. `NGramLM` 이라는 이름이 **"개수 세기 시대의 모델"** 임을 분명히 표시해 줍니다.
+
+> 참고: README 본문은 언어 모델을 `LMM` 으로 줄여 쓰지만, 코드 클래스명은 관례적인 표준 약자
+> `LM`(Language Model)을 따릅니다.
 
 ## 버전 목록
 
@@ -129,4 +152,4 @@ v0.0.2·v0.0.3 은 **앞 두 단어**로 다음 단어를 찾는 모델이에요
 ## 새 버전을 만들려면?
 
 `lmm/v0.0.2` 처럼 `lmm/` 아래에 새 폴더를 만들어 관리하면 이전 버전을 그대로 보존할 수 있어요.
-(새 버전은 `train/train.py`를 한 번 실행해 `models/model.json`을 만들어야 웹앱 목록에 나타납니다.)
+(새 버전은 `3.train/train.py`를 한 번 실행해 `2.models/model.json`을 만들어야 웹앱 목록에 나타납니다.)

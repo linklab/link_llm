@@ -1,6 +1,6 @@
 # link_lmm — 나만의 작은 언어 모델 (v0.0.3)
 
-중학생도 이해할 수 있는 **아주 기본적인** 언어 모델(LMM)이에요.
+누구나 쉽게 이해할 수 있는 **아주 기본적인** 언어 모델(LMM)이에요.
 어려운 수학이나 신경망(딥러닝) 없이, **"단어를 세는 것"** 만으로 문장을 만들어 봅니다.
 
 ## v0.0.2 → v0.0.3, 무엇이 바뀌었나요?
@@ -39,16 +39,15 @@
 
 ```
 v0.0.3/
-├── base.py         # v0.0.2 를 상속 + prepare()/is_end() 추가 (문장 끝 <END>)
-├── model.py        # 이 버전 설정 (ORDERS=[2])
-├── data/
+├── 1.data/
 │   └── data.txt    # 배울 문장들
-├── train/
-│   └── train.py    # 얇은 실행기 (실제 학습 코드는 base.py 사슬)
-├── models/
+├── 2.models/
+│   ├── lm.py       # v0.0.2 를 상속 + prepare()/is_end() 추가 (문장 끝 <END>), 설정 ORDERS=[2]
 │   └── model.json  # train.py 를 실행하면 자동으로 생겨요
-└── test/
-    └── test.py     # 얇은 실행기 (실제 생성 코드는 base.py 사슬)
+├── 3.train/
+│   └── train.py    # 얇은 실행기 (실제 학습 코드는 lm.py 사슬)
+└── 4.test/
+    └── test.py     # 얇은 실행기 (실제 생성 코드는 lm.py 사슬)
 ```
 
 ## 사용 방법
@@ -56,8 +55,8 @@ v0.0.3/
 준비물: **Python 3** (추가 설치 필요 없음!)
 
 ```bash
-python3 train/train.py     # 1) 학습
-python3 test/test.py       # 2) 문장 만들어 보기
+python3 3.train/train.py     # 1) 학습
+python3 4.test/test.py       # 2) 문장 만들어 보기
 ```
 
 ## 한계 (→ 다음 버전 예고)

@@ -30,7 +30,7 @@ INDEX_PATH = os.path.join(HERE, "index.html")         # 화면(HTML) 파일
 
 
 # ----------------------------------------------------------------------
-# 1) 버전 찾기: lmm 폴더 안에서 "v로 시작하고 models/model.json 이 있는" 폴더를 모읍니다.
+# 1) 버전 찾기: lmm 폴더 안에서 "v로 시작하고 2.models/model.json 이 있는" 폴더를 모읍니다.
 # ----------------------------------------------------------------------
 def find_versions():
     versions = []
@@ -38,7 +38,7 @@ def find_versions():
         return versions
     for name in os.listdir(LMM_DIR):
         folder = os.path.join(LMM_DIR, name)
-        model_file = os.path.join(folder, "models", "model.json")
+        model_file = os.path.join(folder, "2.models", "model.json")
         if name.startswith("v") and os.path.isdir(folder) and os.path.exists(model_file):
             versions.append(name)
     versions.sort()               # v0.0.1, v0.0.2 ... 순서대로 정렬
@@ -47,12 +47,12 @@ def find_versions():
 
 def load_version_class(version):
     """
-    선택한 버전 폴더의 base.py 를 불러와, 그 버전의 NGramLM 클래스를 돌려줍니다.
+    선택한 버전 폴더의 2.models/lm.py 를 불러와, 그 버전의 NGramLM 클래스를 돌려줍니다.
     (폴더 이름에 '.' 이 있어 보통의 import 가 안 되므로 파일 경로로 불러와요.
-     각 버전의 base.py 는 이전 버전 base.py 를 물려받는 사슬 구조예요.)
+     각 버전의 lm.py 는 이전 버전 lm.py 를 물려받는 사슬 구조예요.)
     """
-    base_path = os.path.join(LMM_DIR, version, "base.py")
-    spec = importlib.util.spec_from_file_location("lmmbase_" + version.replace(".", "_"), base_path)
+    model_py = os.path.join(LMM_DIR, version, "2.models", "lm.py")
+    spec = importlib.util.spec_from_file_location("lmmlm_" + version.replace(".", "_"), model_py)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.NGramLM
@@ -61,14 +61,14 @@ def load_version_class(version):
 def load_lm(version):
     """선택한 버전의 클래스로 모델(model.json)을 불러옵니다. (각 버전 test.py 와 똑같은 클래스)"""
     cls = load_version_class(version)
-    model_file = os.path.join(LMM_DIR, version, "models", "model.json")
+    model_file = os.path.join(LMM_DIR, version, "2.models", "model.json")
     return cls().load(model_file)
 
 
 # ----------------------------------------------------------------------
 # 2) 문장 생성
 # ----------------------------------------------------------------------
-# 문장 생성 코드는 각 버전 폴더의 base.py 에 있는 NGramLM 에 있어요.
+# 문장 생성 코드는 각 버전 폴더의 2.models/lm.py 에 있는 NGramLM 에 있어요.
 # 웹서버는 선택된 버전의 클래스를 불러와서(load) generate 를 부를 뿐입니다.
 def generate_reply(lm, message, temperature, top_k=0, top_p=1.0):
     """

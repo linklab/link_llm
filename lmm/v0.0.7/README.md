@@ -1,6 +1,6 @@
 # link_lmm — 나만의 작은 언어 모델 (v0.0.7)
 
-중학생도 이해할 수 있는 **아주 기본적인** 언어 모델(LMM)이에요.
+누구나 쉽게 이해할 수 있는 **아주 기본적인** 언어 모델(LMM)이에요.
 
 ## v0.0.6 → v0.0.7, 무엇이 바뀌었나요?
 
@@ -29,8 +29,8 @@ v0.0.7 은 다음 토큰을 뽑기 **전에** 후보를 걸러냅니다.
 - **top_p=0.6**: 머리쪽 몇 곳만 → 꼬리 잘림
 
 ```bash
-python3 train/train.py
-python3 test/test.py     # 무제한 vs top_k=3 vs top_p=0.6 비교
+python3 3.train/train.py
+python3 4.test/test.py     # 무제한 vs top_k=3 vs top_p=0.6 비교
 ```
 
 웹앱에도 **top-k · top-p 슬라이더**가 추가됐어요. (v0.0.7 선택 시 효과가 나타나요.)

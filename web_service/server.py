@@ -16,6 +16,7 @@ server.py  -  나만의 작은 언어 모델(LMM)을 브라우저에서 써보�
 
 import json
 import os
+import inspect
 import importlib.util
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -69,9 +70,19 @@ def load_lm(version):
 # ----------------------------------------------------------------------
 # 문장 생성 코드는 각 버전 폴더의 base.py 에 있는 NGramLM 에 있어요.
 # 웹서버는 선택된 버전의 클래스를 불러와서(load) generate 를 부를 뿐입니다.
-def generate_reply(lm, message, temperature):
-    """NGramLM 으로 대답 문장을 만듭니다. (백오프·온도·토크나이저는 버전 클래스가 알아서 처리)"""
-    return lm.generate(message, temperature)
+def generate_reply(lm, message, temperature, top_k=0, top_p=1.0):
+    """
+    NGramLM 으로 대답 문장을 만듭니다.
+    top_k / top_p 는 v0.0.7 부터 지원해요. 그 인자를 받는 버전에만 안전하게 넘깁니다.
+    (구버전 generate 는 temperature 만 받으므로, 지원 여부를 보고 전달)
+    """
+    params = inspect.signature(lm.generate).parameters
+    extra = {}
+    if "top_k" in params:
+        extra["top_k"] = top_k
+    if "top_p" in params:
+        extra["top_p"] = top_p
+    return lm.generate(message, temperature, **extra)
 
 
 # ----------------------------------------------------------------------
@@ -130,6 +141,18 @@ class Handler(BaseHTTPRequestHandler):
             temperature = 1.0
         temperature = max(0.0, min(2.0, temperature))
 
+        # top-k (0 = 끄기), top-p (1.0 = 끄기). v0.0.7 부터 효과 있음
+        try:
+            top_k = int(data.get("top_k", 0))
+        except (TypeError, ValueError):
+            top_k = 0
+        top_k = max(0, min(100, top_k))
+        try:
+            top_p = float(data.get("top_p", 1.0))
+        except (TypeError, ValueError):
+            top_p = 1.0
+        top_p = max(0.0, min(1.0, top_p))
+
         if version not in find_versions():
             self._send_json({"error": "그런 버전은 없어요."}, status=400)
             return
@@ -138,7 +161,7 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         lm = load_lm(version)
-        reply = generate_reply(lm, message, temperature)
+        reply = generate_reply(lm, message, temperature, top_k, top_p)
         self._send_json({"reply": reply, "version": version})
 
     # 서버 로그를 조용하게 (터미널을 깔끔하게 유지)

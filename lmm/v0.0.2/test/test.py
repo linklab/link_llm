@@ -5,10 +5,18 @@ test.py  -  학습한 모델로 문장을 만들어 보는 실행기 (얇아요!
 v0.0.2 는 앞 '두 단어'를 시작점으로 문장을 만듭니다. (온도 0 = 그리디)
 """
 import os
-import sys
+import importlib.util
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model import Model, MODEL_PATH
+# 같은 버전 폴더의 model.py 를 '파일 경로'로 불러옵니다. (dot 폴더라 일반 import 불가)
+_HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_spec = importlib.util.spec_from_file_location(
+    "lmmmodel_" + os.path.basename(_HERE).replace(".", "_"),
+    os.path.join(_HERE, "model.py"),
+)
+_model = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_model)
+Model = _model.Model
+MODEL_PATH = _model.MODEL_PATH
 
 
 def main():

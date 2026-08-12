@@ -6,10 +6,18 @@ v0.0.6 은 문장부호를 따로 떼어 학습했기 때문에, 문장부호가
   예) "오늘 날씨가 좋습니다!", "너는 아침에 무엇을 먹니?"
 """
 import os
-import sys
+import importlib.util
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model import Model, MODEL_PATH
+# 같은 버전 폴더의 model.py 를 '파일 경로'로 불러옵니다. (dot 폴더라 일반 import 불가)
+_HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_spec = importlib.util.spec_from_file_location(
+    "lmmmodel_" + os.path.basename(_HERE).replace(".", "_"),
+    os.path.join(_HERE, "model.py"),
+)
+_model = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_model)
+Model = _model.Model
+MODEL_PATH = _model.MODEL_PATH
 
 
 def main():

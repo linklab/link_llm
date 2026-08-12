@@ -10,14 +10,16 @@ link_lmm/
 │   ├── v0.0.1/         #   - 앞 단어 1개로 예측 (가장 기본)
 │   │   ├── base.py     #      NGramLM: 이 버전이 '처음 필요로 한' 함수들 (기반 클래스)
 │   │   ├── model.py    #      이 버전 설정(ORDERS)만 선언
-│   │   ├── train/      #      data.txt + 얇은 train.py
+│   │   ├── data/       #      data.txt (학습용 문장)
+│   │   ├── train/      #      얇은 train.py
 │   │   ├── models/     #      model.json (학습 결과)
 │   │   └── test/       #      얇은 test.py
 │   ├── v0.0.2/         #   - 앞 단어 2개 (base.py 는 v0.0.1 을 상속, 새 코드 없음)
 │   ├── v0.0.3/         #   - 문장 끝(<END>) 학습    (base.py 가 <END> 추가)
 │   ├── v0.0.4/         #   - 백오프(2→1단어 재시도)  (base.py 가 백오프 추가)
 │   ├── v0.0.5/         #   - 개수→확률 + 온도        (base.py 가 온도 추가)
-│   └── v0.0.6/         #   - 문장부호 토크나이저      (base.py 가 토크나이저 교체)
+│   ├── v0.0.6/         #   - 문장부호 토크나이저      (base.py 가 토크나이저 교체)
+│   └── v0.0.7/         #   - top-k / top-p 샘플링     (base.py 가 choose 자르기 추가)
 ├── web_service/        # ChatGPT 스타일 웹앱 (선택한 버전의 base.py 를 불러와 재사용)
 │   ├── server.py
 │   └── index.html
@@ -41,6 +43,8 @@ v0.0.4/base.py  + next_token()/can_continue()  ← 백오프
 v0.0.5/base.py  + choose()                ← 확률 + 온도
       ▲
 v0.0.6/base.py  + tokenize()/detokenize() ← 문장부호 분리
+      ▲
+v0.0.7/base.py  + choose()/generate()     ← top-k / top-p 샘플링
 ```
 
 - **각 버전 `base.py`** — 그 버전이 **새로 추가/변경한 함수**만. → "이 버전이 뭘 더했나"가 한눈에.
@@ -70,6 +74,9 @@ v0.0.6/base.py  + tokenize()/detokenize() ← 문장부호 분리
 - [**v0.0.6**](lmm/v0.0.6/) — **토크나이저 개선**: 문장부호(. , ! ?)를 따로 떼어 학습해
   `"좋아"` 와 `"좋아!"` 를 같은 단어로 다루고, 문장부호가 언제 나오는지도 배워요.
   자세한 설명은 [lmm/v0.0.6/README.md](lmm/v0.0.6/README.md) 참고.
+- [**v0.0.7**](lmm/v0.0.7/) — **top-k / top-p 샘플링**: 뽑기 전에 확률 낮은 '꼬리 후보'를
+  잘라내 안정성을 높여요. 확률 분포에만 작용해 나중에 신경망에서도 그대로 재사용됩니다.
+  자세한 설명은 [lmm/v0.0.7/README.md](lmm/v0.0.7/README.md) 참고.
 
 ## 웹앱 실행
 

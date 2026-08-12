@@ -5,10 +5,18 @@ test.py  -  학습한 모델로 문장을 만들어 보는 실행기 (얇아요!
 v0.0.3 은 <END> 를 만나면 문장을 자연스럽게 끝냅니다. (온도 0 = 그리디)
 """
 import os
-import sys
+import importlib.util
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model import Model, MODEL_PATH
+# 같은 버전 폴더의 model.py 를 '파일 경로'로 불러옵니다. (dot 폴더라 일반 import 불가)
+_HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_spec = importlib.util.spec_from_file_location(
+    "lmmmodel_" + os.path.basename(_HERE).replace(".", "_"),
+    os.path.join(_HERE, "model.py"),
+)
+_model = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_model)
+Model = _model.Model
+MODEL_PATH = _model.MODEL_PATH
 
 
 def main():

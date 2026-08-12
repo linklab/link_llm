@@ -41,8 +41,9 @@
 v0.0.3/
 ├── base.py         # v0.0.2 를 상속 + prepare()/is_end() 추가 (문장 끝 <END>)
 ├── model.py        # 이 버전 설정 (ORDERS=[2])
+├── data/
+│   └── data.txt    # 배울 문장들
 ├── train/
-│   ├── data.txt    # 배울 문장들
 │   └── train.py    # 얇은 실행기 (실제 학습 코드는 base.py 사슬)
 ├── models/
 │   └── model.json  # train.py 를 실행하면 자동으로 생겨요

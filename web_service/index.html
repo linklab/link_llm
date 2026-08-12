@@ -171,11 +171,20 @@
       <span class="temp-val" id="tempVal">1.0</span>
       <span class="temp-tag" id="tempTag">균형</span>
     </div>
+    <div class="temp-box">
+      <span>top-k</span>
+      <input type="range" id="topk" min="0" max="10" step="1" value="0" style="max-width:110px;flex:0 0 auto" />
+      <span class="temp-val" id="topkVal">끄기</span>
+      <span style="flex:1"></span>
+      <span>top-p</span>
+      <input type="range" id="topp" min="0.1" max="1" step="0.05" value="1" style="max-width:110px;flex:0 0 auto" />
+      <span class="temp-val" id="toppVal">끄기</span>
+    </div>
     <div class="input-wrap">
       <textarea id="input" rows="1" placeholder="메시지를 입력하세요... (예: 나는)"></textarea>
       <button class="send" id="send">보내기</button>
     </div>
-    <div class="hint">온도가 낮으면 뻔하고 안정적인 답, 높으면 다양하고 엉뚱한 답이 나와요. (v0.0.4 기능)</div>
+    <div class="hint">온도(v0.0.5) · top-k / top-p(v0.0.7)로 다양성을 조절해요. top-k·top-p 는 확률이 낮은 '꼬리 후보'를 잘라내 안정성을 높입니다.</div>
   </footer>
 
 <script>
@@ -196,6 +205,21 @@
   }
   tempSlider.addEventListener("input", updateTempLabel);
   updateTempLabel();
+
+  // top-k / top-p 슬라이더 (0 / 1.0 이면 '끄기')
+  const topkSlider = document.getElementById("topk");
+  const toppSlider = document.getElementById("topp");
+  const topkVal = document.getElementById("topkVal");
+  const toppVal = document.getElementById("toppVal");
+  function updateTopLabels() {
+    const k = parseInt(topkSlider.value, 10);
+    const p = parseFloat(toppSlider.value);
+    topkVal.textContent = k === 0 ? "끄기" : String(k);
+    toppVal.textContent = p >= 1 ? "끄기" : p.toFixed(2);
+  }
+  topkSlider.addEventListener("input", updateTopLabels);
+  toppSlider.addEventListener("input", updateTopLabels);
+  updateTopLabels();
 
   // 1) 서버에서 버전 목록을 받아와 선택 상자를 채웁니다.
   async function loadVersions() {
@@ -238,6 +262,8 @@
     const message = input.value.trim();
     const version = versionSelect.value;
     const temperature = parseFloat(tempSlider.value);   // 온도 값
+    const top_k = parseInt(topkSlider.value, 10);       // 0 = 끄기
+    const top_p = parseFloat(toppSlider.value);         // 1.0 = 끄기
     if (!message) return;
 
     addBubble("user", message);
@@ -250,7 +276,7 @@
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ version, message, temperature })
+        body: JSON.stringify({ version, message, temperature, top_k, top_p })
       });
       const data = await res.json();
       thinking.textContent = data.reply || data.error || "(대답을 만들지 못했어요)";

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-v0.0.4 설정  -  백오프
+v0.0.7 설정  -  top-k / top-p 샘플링
 
-base.py 가 백오프(next_token/can_continue)를 추가했고,
-그게 동작하려면 표1·표2 가 둘 다 필요하므로 ORDERS = [1, 2] 로 둡니다.
+base.py 가 choose()에 top-k/top-p 자르기를 추가. 설정(ORDERS)은 v0.0.6 과 같음.
+top_k, top_p 는 '생성할 때' 정하는 값이라 여기(설정)에는 없어요 (test/웹에서 지정).
 """
 import os
 import importlib.util
@@ -21,7 +21,7 @@ NGramLM = _base.NGramLM
 
 
 class Model(NGramLM):
-    ORDERS = [1, 2]          # 표1 + 표2 -> 백오프 가능
+    ORDERS = [1, 2]
 
 
 DATA_PATH = os.path.join(_HERE, "data", "data.txt")

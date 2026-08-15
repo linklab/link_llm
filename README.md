@@ -24,7 +24,9 @@ link_lmm/
 │   │   ├── v0.0.8/         #   - 대화 형식 + 멀티턴        (lm.py 가 chat() 추가)
 │   │   └── v0.0.9/         #   - 퍼플렉서티 평가 + 데이터 정비 (개수 세기 시대 완성)
 │   └── v0.1/               # [신경망 시대] 마이너 그룹
-│       └── v0.1.0/         #   - 신경망 bigram + PyTorch autograd (첫 신경망 모델)
+│       ├── v0.1.0/         #   - 신경망 bigram + PyTorch autograd (nn.Module, 첫 신경망 모델)
+│       ├── v0.1.1/         #   - Dataset·DataLoader 미니배치 학습
+│       └── v0.1.2/         #   - torch.optim 옵티마이저 (수동 갱신 → optimizer.step)
 ├── web_service/            # ChatGPT 스타일 웹앱 (선택한 버전의 lm.py 를 불러와 재사용)
 │   ├── server.py
 │   └── index.html
@@ -126,6 +128,13 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
   경사하강으로 **학습**해요(미분은 autograd 가 대신). 확률 엔진만 신경망으로 바꾸고 나머지(대화·샘플링·PPL)는
   그대로라 웹앱이 그대로 로드해요. **신경망 시대(v0.1.x)의 시작.** (실행에 `pip install torch` 필요)
   자세한 설명은 [lmm/v0.1/v0.1.0/README.md](lmm/v0.1/v0.1.0/README.md) 참고.
+- [**v0.1.1**](lmm/v0.1/v0.1.1/) — **미니배치·벡터화 학습**: 모델(신경망 bigram)은 v0.1.0 그대로이고,
+  학습만 **full-batch → 미니배치 SGD**(매 에폭 셔플 + 배치 단위 갱신)로 바꿨어요. 저장 형식이 같아
+  웹앱이 그대로 로드하고, PPL 이 v0.1.0 과 비슷하면 "방법만 바꿔도 결과는 같다"가 확인돼요.
+  자세한 설명은 [lmm/v0.1/v0.1.1/README.md](lmm/v0.1/v0.1.1/README.md) 참고.
+- [**v0.1.2**](lmm/v0.1/v0.1.2/) — **옵티마이저(`torch.optim`)**: 손으로 하던 파라미터 갱신을
+  `optimizer.zero_grad() → backward() → optimizer.step()` 표준 3줄로. `OPTIMIZER` 로 **SGD / momentum / Adam**
+  을 골라 수렴을 비교해요. 모델·데이터·저장 형식은 그대로. 자세한 설명은 [lmm/v0.1/v0.1.2/README.md](lmm/v0.1/v0.1.2/README.md) 참고.
 
 ## 🗺️ 앞으로의 계획 (로드맵)
 

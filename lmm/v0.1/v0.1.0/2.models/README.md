@@ -6,10 +6,12 @@
 ## 이 버전 모델의 특징
 
 - **방식:** 개수 세기 → **신경망 학습**(경사하강). 미분은 PyTorch **autograd**(`loss.backward()`)가 담당.
-- **구조:** 가중치 `W` (어휘수 V × V). `W[i]` 가 "앞 토큰 i 다음 토큰들의 점수(logits)" 행이에요.
-  - 순전파: `logits = one-hot(prev) @ W == W[prev]` → `softmax` → 확률
-  - 손실: `F.cross_entropy` (softmax + NLL 을 수치적으로 안정하게 한 번에)
-  - 갱신: `W -= LR * W.grad` (**수동** 경사하강 — 옵티마이저는 v0.1.2에서)
+- **모델(`BigramModel`):** 강의 자료 **06.fcn** 의 `nn.Module` 스타일 — 은닉층 없는 **완전연결망 한 층**.
+  - `__init__`: `self.linear = nn.Linear(V, V, bias=False)`
+  - `forward(x)`: 앞 토큰 인덱스 → `F.one_hot` → `self.linear` → logits `(B, V)`
+  - 손실: `F.cross_entropy(model(x), y)` (softmax + NLL 을 수치적으로 안정하게 한 번에)
+  - 갱신: `for p in model.parameters(): p -= LR * p.grad` (**수동** 경사하강 — 옵티마이저는 v0.1.2에서)
+  - 저장/추론용 `self.W` 는 `model.linear.weight.t()` (그래야 `self.W[prev]` = 그 토큰의 logits → v0.0.x 인터페이스 그대로)
 - **문맥 길이:** 앞 1토큰 (bigram)
 - **인터페이스 재사용(v0.0.x 그대로):** 토크나이저(`punct`) · `<END>` · 대화(`chat`) · 온도/top-k·top-p 샘플링 · 퍼플렉서티.
   → 딱 하나 `token_prob`/`next_token` 이 "개수 비율" 대신 **신경망 softmax 확률**을 돌려주도록만 바꿨어요.

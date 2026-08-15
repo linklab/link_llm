@@ -19,15 +19,29 @@ v0.1.0 은 그 확률을 **학습**합니다. (PyTorch autograd 사용)
 | 학습 | 개수를 셈 | `W` 를 경사하강으로 학습 |
 | 미분 | 없음 | PyTorch `loss.backward()` |
 
-### 한 스텝의 학습 (핵심 5줄)
+### 신경망 모델 (nn.Module) + 한 스텝의 학습
+
+강의 자료 **06.fcn** 의 `nn.Module` 스타일로, 앞 토큰(one-hot) → `nn.Linear` → 다음 토큰 점수(logits):
 
 ```python
-logits = W[xs]                     # 순전파: one-hot(x) @ W == W[x]
-loss   = F.cross_entropy(logits, ys)   # softmax + NLL 을 한 번에
-W.grad = None
-loss.backward()                    # autograd 가 기울기 계산
+import torch.nn as nn
+
+class BigramModel(nn.Module):                  # 06.fcn 의 MyFirstModel 처럼
+    def __init__(self, vocab_size):
+        super().__init__()
+        self.vocab_size = vocab_size
+        self.linear = nn.Linear(vocab_size, vocab_size, bias=False)   # W: V -> V
+    def forward(self, x):                      # x: 앞 토큰 인덱스 (B,)
+        onehot = F.one_hot(x, num_classes=self.vocab_size).float()
+        return self.linear(onehot)             # logits (B, V)
+
+model  = BigramModel(V)
+logits = model(xs)                      # 순전파 (forward)
+loss   = F.cross_entropy(logits, ys)    # softmax + NLL 을 한 번에
+for p in model.parameters(): p.grad = None
+loss.backward()                         # autograd 가 기울기 계산
 with torch.no_grad():
-    W -= LR * W.grad               # 경사하강 1스텝 (수동 갱신)
+    for p in model.parameters(): p -= LR * p.grad   # 경사하강 1스텝 (수동 갱신)
 ```
 
 > **핵심 통찰:** 학습이 끝난 신경망 bigram 은 **개수 bigram 과 사실상 같아져요.**

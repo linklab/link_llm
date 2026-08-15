@@ -5,7 +5,8 @@ lm.py  (v0.1.0)  -  신경망 bigram + PyTorch autograd  (드디어 '세기'가 
 [개수 세기 시대(v0.0.x)와 무엇이 다른가]
   지금까지는 "앞 토큰 다음에 무엇이 몇 번 나왔나"를 **세어서** 확률을 만들었어요.
   v0.1.0 은 그 확률을 **학습**합니다.
-    - 가중치 행렬 W (어휘수 V × V) 를 하나 두고,
+    - 가중치 행렬 W (어휘수 V × V) 를 `nn.Module` 로 감싼 아주 작은 신경망(BigramModel)을 두고,
+      (강의 자료 06.fcn 스타일: nn.Linear 한 층 + forward)
     - 경사하강법(gradient descent)으로 W 를 조금씩 고쳐 데이터를 잘 맞히게 만들어요.
     - 미분(기울기)은 PyTorch 의 **autograd** (loss.backward()) 가 대신 계산해 줍니다.
 
@@ -30,9 +31,11 @@ import importlib.util
 try:
     import torch
     import torch.nn.functional as F
+    from torch import nn
 except ImportError:          # torch 가 없으면 학습/생성 시점에 안내 (모듈 로딩 자체는 되게)
     torch = None
     F = None
+    nn = None
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _VERSION_DIR = os.path.dirname(_HERE)
@@ -55,6 +58,29 @@ def _require_torch():
             "  pip install torch\n"
             "(torch 를 설치할 수 있는 파이썬 환경에서 실행해 주세요.)"
         )
+
+
+# ---------- 신경망 bigram 모델 (강의 자료 06.fcn 스타일: nn.Module 상속 + forward) ----------
+_Module = nn.Module if torch is not None else object   # torch 없이도 이 파일이 로딩되게
+
+
+class BigramModel(_Module):
+    """
+    앞 토큰(one-hot) -> nn.Linear -> 다음 토큰 점수(logits) 를 내는 아주 작은 신경망.
+    은닉층 없는 '완전연결망 한 층' 이에요 (06.fcn 의 MyFirstModel 처럼 nn.Module 스타일).
+      - __init__ : 레이어(nn.Linear) 를 정의
+      - forward  : 입력 x(앞 토큰 인덱스) -> one-hot -> Linear -> logits
+    (은닉층·비선형·임베딩은 v0.2.x 에서 더합니다. 여기선 딱 한 층.)
+    """
+    def __init__(self, vocab_size):
+        super().__init__()
+        self.vocab_size = vocab_size
+        # W: 어휘수 V -> V (bias 없음 — 개수 bigram 과 대응되도록)
+        self.linear = nn.Linear(vocab_size, vocab_size, bias=False)
+
+    def forward(self, x):                          # x: 앞 토큰 인덱스 (B,)
+        onehot = F.one_hot(x, num_classes=self.vocab_size).float()   # (B, V)
+        return self.linear(onehot)                 # logits (B, V)
 
 
 # v0.0.9 의 NGramLM(개수 세기 계보)을 물려받아, '확률 엔진'만 신경망으로 바꿉니다.
@@ -118,7 +144,7 @@ class NeuralLM(_load_prev("v0.0.9")):
                 ys.append(b)
         return xs, ys
 
-    # ---------- 학습 (개수 세기 대신 '경사하강') ----------
+    # ---------- 학습 (개수 세기 대신 '경사하강'; 모델은 nn.Module) ----------
     def train(self, sentences):
         _require_torch()
         # 1) 어휘 사전
@@ -130,32 +156,34 @@ class NeuralLM(_load_prev("v0.0.9")):
         xs_list, ys_list = self.make_pairs(sentences)
         xs = torch.tensor(xs_list, dtype=torch.long)
         ys = torch.tensor(ys_list, dtype=torch.long)
-        # len(xs): 2180
-        # len(ys): 2180
 
-        # 3) 가중치 W (V x V). W[i] 는 '앞 토큰 i' 다음 토큰들의 점수(logits) 행.
-        g = torch.Generator().manual_seed(self.SEED)
-        W = torch.randn((V, V), generator=g, requires_grad=True)
+        # 3) 모델 만들기 (nn.Module). 앞으로 model(x) 로 순전파해요.
+        torch.manual_seed(self.SEED)              # 초기화 재현 가능하게
+        model = BigramModel(V)
 
         print(f"  학습 시작: 어휘 {V}개, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, lr {self.LR}")
         for epoch in range(1, self.EPOCHS + 1):
-            # --- 순전파: one-hot(x) @ W == W[x] ---
-            logits = W[xs]                        # (N, V)
-            # cross_entropy = softmax + 음의 로그가능도(NLL) 를 한 번에 (수치적으로 안정)
-            loss = F.cross_entropy(logits, ys)
+            # --- 순전파: model(x) 가 forward() 를 불러 logits 를 냄 ---
+            logits = model(xs)                    # (N, V)
+            loss = F.cross_entropy(logits, ys)    # softmax + NLL 을 한 번에 (수치 안정)
 
-            # --- 역전파: autograd 가 dloss/dW 를 계산 ---
-            W.grad = None
+            # --- 역전파: autograd 가 각 파라미터의 기울기(.grad)를 계산 ---
+            for p in model.parameters():
+                p.grad = None
             loss.backward()
 
             # --- 경사하강 1스텝 (수동 갱신; 옵티마이저는 v0.1.2에서) ---
             with torch.no_grad():
-                W -= self.LR * W.grad
+                for p in model.parameters():
+                    p -= self.LR * p.grad
 
             if epoch == 1 or epoch % 20 == 0:
                 print(f"  epoch {epoch:4d}/{self.EPOCHS}   loss {loss.item():.4f}")
 
-        self.W = W.detach()
+        # 추론/저장이 쓰는 self.W 로 보관. (self.W[prev] = 그 앞 토큰 다음의 logits)
+        #   nn.Linear.weight 는 (out, in) 이라 one-hot 입력에선 logits[j]=weight[j, prev].
+        #   '앞 토큰 -> logits' 로 바로 인덱싱하려고 전치(.t())해 self.W[prev] 에 맞춰요.
+        self.W = model.linear.weight.detach().t().contiguous()
         return self.W
 
     # ---------- 저장 / 불러오기 ----------

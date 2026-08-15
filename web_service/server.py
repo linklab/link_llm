@@ -30,18 +30,38 @@ INDEX_PATH = os.path.join(HERE, "index.html")         # 화면(HTML) 파일
 
 
 # ----------------------------------------------------------------------
-# 1) 버전 찾기: lmm 폴더 안에서 "v로 시작하고 2.models/model.json 이 있는" 폴더를 모읍니다.
+# 1) 버전 찾기: 버전들은 마이너별 그룹 폴더 아래에 있어요.
+#    예) lmm/v0.0/v0.0.9/2.models/model.json , lmm/v0.1/v0.1.0/2.models/model.json
+#    그래서 "그룹(v0.0) -> 버전(v0.0.9)" 2단계로 훑어, model.json 이 있는 버전을 모읍니다.
 # ----------------------------------------------------------------------
+def _version_dir(version):
+    """버전 이름(v0.0.9)을 실제 폴더 경로(lmm/v0.0/v0.0.9)로 바꿉니다."""
+    group = version.rsplit(".", 1)[0]          # "v0.0.9" -> "v0.0"
+    return os.path.join(LMM_DIR, group, version)
+
+
+def _version_key(version):
+    """정렬용: 'v0.0.9' -> (0, 0, 9). (문자열 정렬은 v0.0.10 을 v0.0.9 앞에 두므로 숫자로.)"""
+    try:
+        return tuple(int(p) for p in version.lstrip("v").split("."))
+    except ValueError:
+        return ()
+
+
 def find_versions():
     versions = []
     if not os.path.isdir(LMM_DIR):
         return versions
-    for name in os.listdir(LMM_DIR):
-        folder = os.path.join(LMM_DIR, name)
-        model_file = os.path.join(folder, "2.models", "model.json")
-        if name.startswith("v") and os.path.isdir(folder) and os.path.exists(model_file):
-            versions.append(name)
-    versions.sort()               # v0.0.1, v0.0.2 ... 순서대로 정렬
+    for group in os.listdir(LMM_DIR):                       # 1단계: 그룹 폴더 (v0.0, v0.1 ...)
+        group_dir = os.path.join(LMM_DIR, group)
+        if not (group.startswith("v") and os.path.isdir(group_dir)):
+            continue
+        for name in os.listdir(group_dir):                 # 2단계: 버전 폴더 (v0.0.9 ...)
+            folder = os.path.join(group_dir, name)
+            model_file = os.path.join(folder, "2.models", "model.json")
+            if name.startswith("v") and os.path.isdir(folder) and os.path.exists(model_file):
+                versions.append(name)
+    versions.sort(key=_version_key)               # v0.0.1, v0.0.2 ... 순서대로 정렬
     return versions
 
 
@@ -51,7 +71,7 @@ def load_version_class(version):
     (폴더 이름에 '.' 이 있어 보통의 import 가 안 되므로 파일 경로로 불러와요.
      각 버전의 lm.py 는 이전 버전 lm.py 를 물려받는 사슬 구조예요.)
     """
-    model_py = os.path.join(LMM_DIR, version, "2.models", "lm.py")
+    model_py = os.path.join(_version_dir(version), "2.models", "lm.py")
     spec = importlib.util.spec_from_file_location("lmmlm_" + version.replace(".", "_"), model_py)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -61,7 +81,7 @@ def load_version_class(version):
 def load_lm(version):
     """선택한 버전의 클래스로 모델(model.json)을 불러옵니다. (각 버전 test.py 와 똑같은 클래스)"""
     cls = load_version_class(version)
-    model_file = os.path.join(LMM_DIR, version, "2.models", "model.json")
+    model_file = os.path.join(_version_dir(version), "2.models", "model.json")
     return cls().load(model_file)
 
 
@@ -167,13 +187,22 @@ class Handler(BaseHTTPRequestHandler):
                     and isinstance(pair[0], str) and isinstance(pair[1], str):
                 history.append((pair[0], pair[1]))
 
-        lm = load_lm(version)
-        if hasattr(lm, "chat"):
-            # v0.0.8~ : 대화 형식 + 멀티턴 (기록을 문맥으로 삼아 봇의 답만 생성)
-            reply = lm.chat(message, history, temperature=temperature, top_k=top_k, top_p=top_p)
-        else:
-            # v0.0.7 이하 : 예전처럼 한 문장씩 이어 붙임
-            reply = generate_reply(lm, message, temperature, top_k, top_p)
+        # 모델 로딩/생성 중 오류(예: v0.1.x 는 torch 필요)가 나도 서버가 죽지 않고
+        # 브라우저에 깔끔한 메시지를 돌려주도록 감쌉니다.
+        try:
+            lm = load_lm(version)
+            if hasattr(lm, "chat"):
+                # v0.0.8~ : 대화 형식 + 멀티턴 (기록을 문맥으로 삼아 봇의 답만 생성)
+                reply = lm.chat(message, history, temperature=temperature, top_k=top_k, top_p=top_p)
+            else:
+                # v0.0.7 이하 : 예전처럼 한 문장씩 이어 붙임
+                reply = generate_reply(lm, message, temperature, top_k, top_p)
+        except SystemExit as e:            # 예: "이 버전은 PyTorch 가 필요해요"
+            self._send_json({"error": str(e)}, status=500)
+            return
+        except Exception as e:
+            self._send_json({"error": f"모델 처리 중 오류가 났어요: {e}"}, status=500)
+            return
         self._send_json({"reply": reply, "version": version})
 
     # 서버 로그를 조용하게 (터미널을 깔끔하게 유지)

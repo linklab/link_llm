@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-test.py  (v0.1.2)  -  torch.optim 으로 학습한 신경망 bigram 평가
+test.py  (v0.1.3)  -  정규화·초기화 후 '일반화' 평가
 
-- 퍼플렉서티(PPL): 학습/검증 (v0.0.9 와 같은 자로) → v0.1.0/v0.1.1 과 비슷하면 성공
-- 대화(chat): 실제로 답을 만들어 보기
-(옵티마이저는 3.train/train.py 의 OPTIMIZER = "sgd"|"momentum"|"adam" 로 바꿔가며 비교해 보세요.)
+핵심은 **학습 PPL vs 검증 PPL 격차**예요:
+  - v0.0.9(개수): 학습 2.79 vs 검증 34.39 (약 12배)
+  - v0.1.3: weight_decay/초기화로 이 격차가 줄어드는지(검증 PPL↓) 확인
 
 ※ PyTorch 필요:  pip install torch
 """
@@ -32,11 +32,12 @@ def main():
     ppl_train = lm.perplexity(train_sents)
     ppl_valid = lm.perplexity(valid_sents)
 
-    print("=== v0.1.2 (torch.optim 옵티마이저) ===\n")
+    print("=== v0.1.3 (정규화 · 초기화) ===\n")
     print(f"학습 데이터({len(train_sents)}문장) PPL : {ppl_train:6.2f}")
     print(f"검증 데이터({len(valid_sents)}문장) PPL : {ppl_valid:6.2f}")
-    print("→ v0.1.0/v0.1.1 과 PPL 이 비슷하면, '갱신 방법만 바꿔도 결과는 같다'가 확인돼요.")
-    print("  (옵티마이저별 수렴 속도 차이는 학습 로그의 손실 곡선에서 확인.)\n")
+    print(f"→ 격차(검증/학습): {ppl_valid / ppl_train:.1f}배  "
+          f"(참고: v0.0.9 개수 모델은 약 12배)")
+    print("  weight_decay/초기화로 이 격차가 줄면 '일반화 개선'이 확인돼요.\n")
 
     print("--- 대화 예시 (greedy, temperature=0.0) ---")
     for msg in ["안녕", "오늘 날씨 어때?", "고마워"]:

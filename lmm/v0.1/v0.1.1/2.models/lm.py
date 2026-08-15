@@ -79,11 +79,7 @@ BigramModel = _prev.BigramModel
 
 # v0.1.0(신경망 bigram)을 물려받아, 학습을 Dataset + DataLoader 방식으로 바꿉니다.
 class NeuralLM(_prev.NGramLM):
-    # ----- 하이퍼파라미터 (필요하면 조정) -----
-    LR = 10.0          # 학습률
-    EPOCHS = 300       # 전체 데이터를 몇 번 반복(에폭)
-    BATCH_SIZE = 64    # 한 배치에 담는 (앞,다음) 짝의 수
-    SEED = 1234        # 초기 W + DataLoader 셔플을 재현 가능하게
+    # 하이퍼파라미터(LR / EPOCHS / BATCH_SIZE / SEED)는 3.train/train.py 에서 설정해요.
 
     def train(self, sentences):
         _require_torch()

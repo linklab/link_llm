@@ -68,12 +68,7 @@ build_dataloader = _prev.build_dataloader  # (앞,다음) 텐서 -> DataLoader (
 
 # v0.1.1 을 물려받아, 학습의 '갱신'만 torch.optim 으로 바꿉니다.
 class NeuralLM(_prev.NGramLM):
-    # ----- 하이퍼파라미터 -----
-    OPTIMIZER = "adam"     # "sgd" | "momentum" | "adam"  (골라 쓰기)
-    LR = 0.05              # Adam 기준값. SGD/momentum 은 훨씬 크게(예: 1~10) 잡아요.
-    EPOCHS = 100           # Adam 은 보통 더 빨리 수렴해서 v0.1.1 보다 적게
-    BATCH_SIZE = 64
-    SEED = 1234
+    # 하이퍼파라미터(OPTIMIZER / LR / EPOCHS / BATCH_SIZE / SEED)는 3.train/train.py 에서 설정해요.
 
     def make_optimizer(self, model):
         """OPTIMIZER 설정에 따라 torch.optim 옵티마이저를 만들어요."""

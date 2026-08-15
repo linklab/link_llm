@@ -33,7 +33,7 @@ for batch in loader:
 
 - **하이퍼파라미터:** `OPTIMIZER="adam"`, `LR=0.05`, `EPOCHS=100`, `BATCH_SIZE=64`.
   - ⚠️ **lr 은 옵티마이저마다 크게 달라요.** Adam 은 작게(0.01~0.1), SGD/momentum 은 크게(1~10).
-  - `OPTIMIZER` 를 바꿔가며 `4.test/test.py`(또는 학습 로그의 손실 곡선)로 수렴을 비교해 보세요.
+  - **하이퍼파라미터는 `3.train/train.py` 에서 설정**해요. `OPTIMIZER` 를 바꿔가며 `4.test/test.py`(또는 학습 로그의 손실 곡선)로 수렴을 비교해 보세요.
 
 ## model.json 형식
 

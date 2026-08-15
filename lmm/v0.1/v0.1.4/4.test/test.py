@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-test.py  (v0.1.2)  -  torch.optim 으로 학습한 신경망 bigram 평가
+test.py  (v0.1.4)  -  2토큰 문맥 신경망 평가
 
-- 퍼플렉서티(PPL): 학습/검증 (v0.0.9 와 같은 자로) → v0.1.0/v0.1.1 과 비슷하면 성공
+- 퍼플렉서티(PPL): 학습/검증 (v0.0.9 와 같은 자로)
 - 대화(chat): 실제로 답을 만들어 보기
-(옵티마이저는 3.train/train.py 의 OPTIMIZER = "sgd"|"momentum"|"adam" 로 바꿔가며 비교해 보세요.)
+핵심: 이제 신경망도 v0.0.9 와 '같은 2토큰 문맥'이라 공정한 대결.
+      검증 PPL 이 v0.0.9(34.39) 아래로 내려가면 신경망이 이긴 거예요.
+      (최종 대결표는 v0.1.5 캡스톤에서 여러 버전을 나란히 출력합니다.)
 
 ※ PyTorch 필요:  pip install torch
 """
@@ -32,11 +34,11 @@ def main():
     ppl_train = lm.perplexity(train_sents)
     ppl_valid = lm.perplexity(valid_sents)
 
-    print("=== v0.1.2 (torch.optim 옵티마이저) ===\n")
+    print("=== v0.1.4 (2토큰 문맥 신경망) ===\n")
     print(f"학습 데이터({len(train_sents)}문장) PPL : {ppl_train:6.2f}")
     print(f"검증 데이터({len(valid_sents)}문장) PPL : {ppl_valid:6.2f}")
-    print("→ v0.1.0/v0.1.1 과 PPL 이 비슷하면, '갱신 방법만 바꿔도 결과는 같다'가 확인돼요.")
-    print("  (옵티마이저별 수렴 속도 차이는 학습 로그의 손실 곡선에서 확인.)\n")
+    print("→ v0.0.9(카운트) 검증 PPL 34.39 아래면 '같은 문맥에서 신경망 승'.")
+    print("  1토큰 신경망(v0.1.0~3)보다 문맥이 넓어 더 잘 맞혀야 정상이에요.\n")
 
     print("--- 대화 예시 (greedy, temperature=0.0) ---")
     for msg in ["안녕", "오늘 날씨 어때?", "고마워"]:

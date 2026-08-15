@@ -29,7 +29,7 @@ for batch in loader:
 
 ## 옵티마이저 3종 비교
 
-`2.models/lm.py` 의 `OPTIMIZER` 를 바꿔 학습해 보세요:
+`3.train/train.py` 의 `OPTIMIZER` 를 바꿔 학습해 보세요:
 
 - **`"sgd"`** — `p -= lr*grad`. v0.1.1 과 같은 규칙(이제 표준 API).
 - **`"momentum"`** — 이전 방향을 관성처럼 누적 → 지그재그가 줄고 더 빨리 수렴.

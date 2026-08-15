@@ -89,10 +89,7 @@ class BigramModel(_Module):
 # stoi = string to integer — 토큰(문자열) → 정수 인덱스 매핑 (dict)
 # itos = integer to string — 정수 인덱스 → 토큰(문자열) 매핑 (list/dict)
 class NeuralLM(_load_prev("v0.0.9")):
-    # ----- 하이퍼파라미터 (v0.1.0: 가장 단순한 bigram / 수동 경사하강) -----
-    LR = 10.0          # 학습률 (full-batch 경사하강이라 크게 잡아요; 필요하면 조정)
-    EPOCHS = 10_000       # 전체 데이터를 몇 번 반복할지
-    SEED = 1234        # 초기 W 를 재현 가능하게
+    # 하이퍼파라미터(LR / EPOCHS / SEED)는 3.train/train.py 에서 설정해요.
 
     def __init__(self):
         super().__init__()

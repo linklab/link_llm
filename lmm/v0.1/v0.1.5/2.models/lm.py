@@ -69,7 +69,11 @@ def load_version_model(version):
         "lmm_cmp_" + version.replace(".", "_"), os.path.join(vdir, "2.models", "lm.py"))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.NGramLM().load(os.path.join(vdir, "2.models", "model.json"))
+    # 신경망(v0.1.x) 은 model.pt(+vocab.json), 카운트(v0.0.x) 는 model.json 을 로드해요.
+    mdir = os.path.join(vdir, "2.models")
+    pt = os.path.join(mdir, "model.pt")
+    model_file = pt if os.path.exists(pt) else os.path.join(mdir, "model.json")
+    return module.NGramLM().load(model_file)
 
 
 def compare(train_sents, valid_sents, versions):
@@ -96,4 +100,5 @@ def compare(train_sents, valid_sents, versions):
 
 DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")      # 학습용
 VALID_PATH = os.path.join(_VERSION_DIR, "1.data", "valid.txt")    # 검증용
-MODEL_PATH = os.path.join(_HERE, "model.json")
+MODEL_PATH = os.path.join(_HERE, "model.pt")                     # 가중치 (PyTorch 표준)
+VOCAB_PATH = os.path.join(_HERE, "vocab.json")                   # 어휘

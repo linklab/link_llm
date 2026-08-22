@@ -58,16 +58,15 @@ def _require_torch():
         )
 
 
-# v0.1.2 모듈에서 모델·데이터 파이프라인·NGramLM 계보를 함께 가져옵니다.
+# v0.1.2 모듈에서 데이터 파이프라인·NGramLM 계보를 가져옵니다. (모델은 build_net 상속)
 _prev = _load_prev_module("v0.1.2")
-BigramModel = _prev.BigramModel            # nn.Module 모델 (v0.1.0 것)
 build_dataloader = _prev.build_dataloader  # (앞,다음) 텐서 -> DataLoader (v0.1.1 것)
 
 
 # v0.1.2 를 물려받아, '정규화 + 초기화' 를 더해 일반화를 개선합니다.
 class NeuralLM(_prev.NGramLM):
-    # 하이퍼파라미터(OPTIMIZER / LR / EPOCHS / BATCH_SIZE / SEED / WEIGHT_DECAY / INIT / LABEL_SMOOTHING)
-    # 는 3.train/train.py 에서 설정해요.
+    # 하이퍼파라미터(OPTIMIZER / HIDDEN / LR / EPOCHS / BATCH_SIZE / SEED / WEIGHT_DECAY /
+    #  INIT / LABEL_SMOOTHING)는 3.train/train.py 에서 설정해요.
 
     def make_optimizer(self, model):
         """v0.1.2 의 옵티마이저에 weight_decay(L2 정규화)를 더해 만들어요."""
@@ -79,9 +78,10 @@ class NeuralLM(_prev.NGramLM):
         return torch.optim.Adam(params, lr=self.LR, weight_decay=wd)
 
     def init_model(self, model):
-        """모델 가중치 초기화. INIT='zeros' 면 0(균등 확률에서 출발), 'default' 면 nn.Linear 기본."""
+        """가중치 초기화. INIT='zeros' 면 **마지막 층을 0**으로 → 처음엔 균등 확률에서 출발."""
         if self.INIT == "zeros":
-            torch.nn.init.zeros_(model.linear.weight)
+            torch.nn.init.zeros_(model.fc2.weight)
+            torch.nn.init.zeros_(model.fc2.bias)
 
     def train(self, sentences):
         _require_torch()
@@ -97,21 +97,21 @@ class NeuralLM(_prev.NGramLM):
         # 2) 데이터로더 (v0.1.1 재사용)
         loader = build_dataloader(xs, ys, self.BATCH_SIZE, shuffle=True)
 
-        # 3) 모델 + 초기화 + 옵티마이저(weight_decay 포함)
+        # 3) 신경망(2층) + 초기화 + 옵티마이저(weight_decay 포함)
         torch.manual_seed(self.SEED)
-        model = BigramModel(V)
-        self.init_model(model)                    # ← 초기화 (v0.1.3)
-        optimizer = self.make_optimizer(model)    # ← weight_decay 포함 (v0.1.3)
+        self.net = self.build_net(V, self.HIDDEN)
+        self.init_model(self.net)                 # ← 초기화 (v0.1.3)
+        optimizer = self.make_optimizer(self.net) # ← weight_decay 포함 (v0.1.3)
 
         self.losses = []
-        print(f"  학습 시작: 어휘 {V}개, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, "
+        print(f"  학습 시작: 어휘 {V}개, 은닉 {self.HIDDEN}, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, "
               f"batch {self.BATCH_SIZE}, optim={self.OPTIMIZER}, lr {self.LR}, "
               f"weight_decay {self.WEIGHT_DECAY}, init={self.INIT}, label_smoothing {self.LABEL_SMOOTHING}")
 
         for epoch in range(1, self.EPOCHS + 1):
             total, n_batches = 0.0, 0
             for batch in loader:
-                logits = model(batch["input"])            # 순전파 (B, V)
+                logits = self.net(batch["input"])         # 순전파 (B, V)
                 loss = F.cross_entropy(logits, batch["target"],
                                        label_smoothing=self.LABEL_SMOOTHING)   # ← (v0.1.3)
 
@@ -127,9 +127,8 @@ class NeuralLM(_prev.NGramLM):
             if epoch == 1 or epoch % 5 == 0:
                 print(f"  epoch {epoch:3d}/{self.EPOCHS}   avg loss {avg:.4f}")
 
-        # self.W[prev] = 그 앞 토큰 다음의 logits (nn.Linear.weight 를 전치해 맞춤)
-        self.W = model.linear.weight.detach().t().contiguous()
-        return self.W
+        self.net.eval()
+        return self.net
 
 
 # web_service / 상속 사슬이 module.NGramLM 을 찾으므로 노출.
@@ -142,4 +141,5 @@ class Model(NeuralLM):
 
 DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")      # 학습용
 VALID_PATH = os.path.join(_VERSION_DIR, "1.data", "valid.txt")    # 검증용
-MODEL_PATH = os.path.join(_HERE, "model.json")
+MODEL_PATH = os.path.join(_HERE, "model.pt")                      # 가중치 (PyTorch 표준)
+VOCAB_PATH = os.path.join(_HERE, "vocab.json")                    # 어휘

@@ -23,10 +23,11 @@ if __name__ == "__main__":
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
     m.OPTIMIZER = "adam"   # "sgd" | "momentum" | "adam"  (골라 쓰기)
+    m.HIDDEN = 128         # 은닉층 크기 (2층 MLP)
     m.LR = 0.05            # Adam 기준값. SGD/momentum 은 훨씬 크게(예: 1~10)
-    m.EPOCHS = 300         # Adam 은 보통 더 빨리 수렴해서 v0.1.1 보다 적게
+    m.EPOCHS = 1_000         # Adam 은 보통 더 빨리 수렴해서 v0.1.1 보다 적게
     m.BATCH_SIZE = 64
     m.SEED = 1234
     # ==============================================================
 
-    m.run_train(model.DATA_PATH, model.MODEL_PATH)
+    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)

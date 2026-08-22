@@ -22,9 +22,10 @@ if __name__ == "__main__":
     m = model.Model()
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
-    m.LR = 10.0          # 학습률 (full-batch 경사하강이라 크게 잡아요)
-    m.EPOCHS = 10_000    # 전체 데이터를 몇 번 반복할지
-    m.SEED = 1234        # 초기 W 를 재현 가능하게
+    m.HIDDEN = 128       # 은닉층 크기 (2층 MLP)
+    m.LR = 1.0           # 학습률 (2층 MLP 는 예전 선형(10)보다 작게)
+    m.EPOCHS = 1_000    # 전체 데이터를 몇 번 반복할지
+    m.SEED = 1234        # 초기 가중치를 재현 가능하게
     # ==============================================================
 
-    m.run_train(model.DATA_PATH, model.MODEL_PATH)
+    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)

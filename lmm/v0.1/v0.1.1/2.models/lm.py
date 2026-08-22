@@ -72,14 +72,13 @@ _data = _load_data_module()
 BigramDataset = _data.BigramDataset          # (참고용) 데이터셋 클래스
 build_dataloader = _data.build_dataloader    # (앞,다음) 텐서 -> DataLoader
 
-# v0.1.0 모듈에서 신경망 모델(BigramModel = nn.Module)과 NGramLM 계보를 함께 가져옵니다.
+# v0.1.0 모듈에서 신경망 모델·NGramLM 계보를 가져옵니다. (build_net 은 v0.1.0 것을 상속)
 _prev = _load_prev_module("v0.1.0")
-BigramModel = _prev.BigramModel
 
 
-# v0.1.0(신경망 bigram)을 물려받아, 학습을 Dataset + DataLoader 방식으로 바꿉니다.
+# v0.1.0(2층 신경망)을 물려받아, 학습을 Dataset + DataLoader 방식으로 바꿉니다.
 class NeuralLM(_prev.NGramLM):
-    # 하이퍼파라미터(LR / EPOCHS / BATCH_SIZE / SEED)는 3.train/train.py 에서 설정해요.
+    # 하이퍼파라미터(HIDDEN / LR / EPOCHS / BATCH_SIZE / SEED)는 3.train/train.py 에서 설정해요.
 
     def train(self, sentences):
         _require_torch()
@@ -95,12 +94,12 @@ class NeuralLM(_prev.NGramLM):
         # 2) 데이터로더 (1.data/dataloader.py 가 Dataset+DataLoader 를 한 번에 만들어 줌)
         loader = build_dataloader(xs, ys, self.BATCH_SIZE, shuffle=True)
 
-        # 3) 모델 (nn.Module) — v0.1.0 의 BigramModel 을 그대로 재사용.
+        # 3) 신경망(2층) — v0.1.0 의 build_net 을 그대로 재사용.
         torch.manual_seed(self.SEED)              # 초기화 + 셔플 재현 가능하게
-        model = BigramModel(V)
+        self.net = self.build_net(V, self.HIDDEN)
 
         self.losses = []   # 에폭별 평균 손실 (손실 곡선 확인용)
-        print(f"  학습 시작: 어휘 {V}개, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, "
+        print(f"  학습 시작: 어휘 {V}개, 은닉 {self.HIDDEN}, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, "
               f"batch {self.BATCH_SIZE}({len(loader)}개/epoch), lr {self.LR}")
 
         for epoch in range(1, self.EPOCHS + 1):
@@ -108,20 +107,17 @@ class NeuralLM(_prev.NGramLM):
             for batch in loader:                          # DataLoader 가 배치로 묶어 줌
                 bx = batch["input"]                       # (B,)  앞 토큰
                 by = batch["target"]                      # (B,)  정답 토큰
-                # BATCH_SIZE가 4일 때
-                # tensor([  2,   0,   4, 162])
-                # tensor([258, 512,   5, 112])
 
-                # --- 순전파: model(bx) 가 forward() 를 불러 logits 를 냄 ---
-                logits = model(bx)                        # (B, V)
+                # --- 순전파: net(bx) 가 forward() 를 불러 logits 를 냄 ---
+                logits = self.net(bx)                     # (B, V)
                 loss = F.cross_entropy(logits, by)
 
                 # --- 역전파 + 경사하강 1스텝 (배치마다) ---
-                for p in model.parameters():
+                for p in self.net.parameters():
                     p.grad = None
                 loss.backward()
                 with torch.no_grad():
-                    for p in model.parameters():
+                    for p in self.net.parameters():
                         p -= self.LR * p.grad
 
                 total += loss.item()
@@ -132,9 +128,8 @@ class NeuralLM(_prev.NGramLM):
             if epoch == 1 or epoch % 5 == 0:
                 print(f"  epoch {epoch:3d}/{self.EPOCHS}   avg loss {avg:.4f}")
 
-        # self.W[prev] = 그 앞 토큰 다음의 logits (nn.Linear.weight 를 전치해 맞춤)
-        self.W = model.linear.weight.detach().t().contiguous()
-        return self.W
+        self.net.eval()
+        return self.net
 
 
 # web_service / 상속 사슬이 module.NGramLM 을 찾으므로 노출.
@@ -147,4 +142,5 @@ class Model(NeuralLM):
 
 DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")      # 학습용
 VALID_PATH = os.path.join(_VERSION_DIR, "1.data", "valid.txt")    # 검증용
-MODEL_PATH = os.path.join(_HERE, "model.json")
+MODEL_PATH = os.path.join(_HERE, "model.pt")                      # 가중치 (PyTorch 표준)
+VOCAB_PATH = os.path.join(_HERE, "vocab.json")                    # 어휘

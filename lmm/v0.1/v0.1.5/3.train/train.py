@@ -24,8 +24,9 @@ if __name__ == "__main__":
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
+    m.HIDDEN = 128             # 은닉층 크기 (2층 MLP)
     m.LR = 0.05                # Adam 기준값. SGD/momentum 은 크게(1~10)
-    m.EPOCHS = 300
+    m.EPOCHS = 1_000
     m.BATCH_SIZE = 64
     m.SEED = 1234
     m.WEIGHT_DECAY = 0.0       # 이 모델들엔 1e-4 에도 underfit 할 만큼 민감 → 0
@@ -33,4 +34,4 @@ if __name__ == "__main__":
     m.LABEL_SMOOTHING = 0.2    # ★ 2토큰은 용량이 2배라 과적합↑ → 세게(0.2)
     # ==============================================================
 
-    m.run_train(model.DATA_PATH, model.MODEL_PATH)
+    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)

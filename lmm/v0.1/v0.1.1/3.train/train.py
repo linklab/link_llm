@@ -22,10 +22,11 @@ if __name__ == "__main__":
     m = model.Model()
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
-    m.LR = 10.0          # 학습률
-    m.EPOCHS = 300       # 전체 데이터를 몇 번 반복(에폭)
+    m.HIDDEN = 128       # 은닉층 크기 (2층 MLP)
+    m.LR = 1.0           # 학습률 (2층 MLP 는 예전 선형(10)보다 작게)
+    m.EPOCHS = 1_000       # 전체 데이터를 몇 번 반복(에폭)
     m.BATCH_SIZE = 64    # 한 배치에 담는 (앞,다음) 짝의 수
-    m.SEED = 1234        # 초기 W + DataLoader 셔플을 재현 가능하게
+    m.SEED = 1234        # 초기 가중치 + DataLoader 셔플을 재현 가능하게
     # ==============================================================
 
-    m.run_train(model.DATA_PATH, model.MODEL_PATH)
+    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)

@@ -58,8 +58,11 @@ def find_versions():
             continue
         for name in os.listdir(group_dir):                 # 2단계: 버전 폴더 (v0.0.9 ...)
             folder = os.path.join(group_dir, name)
-            model_file = os.path.join(folder, "2.models", "model.json")
-            if name.startswith("v") and os.path.isdir(folder) and os.path.exists(model_file):
+            mdir = os.path.join(folder, "2.models")
+            # 신경망(v0.1.x) 은 model.pt, 카운트(v0.0.x) 는 model.json 을 학습 결과로 가져요.
+            has_model = os.path.exists(os.path.join(mdir, "model.pt")) \
+                or os.path.exists(os.path.join(mdir, "model.json"))
+            if name.startswith("v") and os.path.isdir(folder) and has_model:
                 versions.append(name)
     versions.sort(key=_version_key)               # v0.0.1, v0.0.2 ... 순서대로 정렬
     return versions
@@ -81,7 +84,9 @@ def load_version_class(version):
 def load_lm(version):
     """선택한 버전의 클래스로 모델(model.json)을 불러옵니다. (각 버전 test.py 와 똑같은 클래스)"""
     cls = load_version_class(version)
-    model_file = os.path.join(_version_dir(version), "2.models", "model.json")
+    mdir = os.path.join(_version_dir(version), "2.models")
+    pt = os.path.join(mdir, "model.pt")           # 신경망(v0.1.x): 가중치(+vocab.json)
+    model_file = pt if os.path.exists(pt) else os.path.join(mdir, "model.json")
     return cls().load(model_file)
 
 

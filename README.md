@@ -23,13 +23,15 @@ link_lmm/
 │   │   ├── v0.0.7/         #   - top-k / top-p 샘플링     (lm.py 가 choose 자르기 추가)
 │   │   ├── v0.0.8/         #   - 대화 형식 + 멀티턴        (lm.py 가 chat() 추가)
 │   │   └── v0.0.9/         #   - 퍼플렉서티 평가 + 데이터 정비 (개수 세기 시대 완성)
-│   └── v0.1/               # [신경망 시대] 마이너 그룹
-│       ├── v0.1.0/         #   - 신경망 bigram + PyTorch autograd (nn.Module, 첫 신경망 모델)
-│       ├── v0.1.1/         #   - Dataset·DataLoader 미니배치 학습
-│       ├── v0.1.2/         #   - torch.optim 옵티마이저 (수동 갱신 → optimizer.step)
-│       ├── v0.1.3/         #   - 정규화·초기화 (weight decay, init → 일반화 개선)
-│       ├── v0.1.4/         #   - 2토큰 문맥 신경망 (카운트와 같은 문맥으로 공정한 대결)
-│       └── v0.1.5/         #   - 기준선 대결(캡스톤): 카운트 vs 신경망 PPL 비교
+│   ├── v0.1/               # [신경망 시대] 2층 MLP, one-hot 입력 (마이너 그룹)
+│   │   ├── v0.1.0/         #   - 신경망 + PyTorch autograd (2층 MLP, model.pt/vocab.json 저장)
+│   │   ├── v0.1.1/         #   - Dataset·DataLoader 미니배치 학습
+│   │   ├── v0.1.2/         #   - torch.optim 옵티마이저 (수동 갱신 → optimizer.step)
+│   │   ├── v0.1.3/         #   - 정규화·초기화 (weight decay, init, label smoothing)
+│   │   ├── v0.1.4/         #   - 2토큰 문맥 신경망 (카운트와 같은 문맥으로 공정한 대결)
+│   │   └── v0.1.5/         #   - 기준선 대결(캡스톤): 카운트 vs 신경망 PPL 비교
+│   └── v0.2/               # [임베딩 시대] one-hot → 임베딩 (마이너 그룹)
+│       └── v0.2.0/         #   - 임베딩 도입 (nn.Embedding, Bengio 입력층)
 ├── web_service/            # ChatGPT 스타일 웹앱 (선택한 버전의 lm.py 를 불러와 재사용)
 │   ├── server.py
 │   └── index.html
@@ -74,9 +76,10 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 > 폴더 이름에 `.` 이 있어 일반 `import` 가 안 되므로, 이전 버전 `lm.py` 는 파일 경로로
 > 불러와요(각 `lm.py` 상단의 `_load_prev`). "이 버전이 뭘 바꿨나"는 그 `lm.py` 하나만,
 > "전체가 어떻게 도나"는 `v0.0.1/2.models/lm.py` 부터 사슬을 따라 읽으면 됩니다.
-> 모델 저장 형식은 개수 세기(v0.0.x) 버전은 `{ "max_order", "tokenizer", "tables" }`,
-> 신경망(v0.1.x~) 버전은 `{ "type", "tokenizer", "vocab", "W" }` (어휘 + 가중치) 예요.
-> (v0.1.4~ 2토큰 문맥은 `type="neural_context2"` + `W2`(V×2V)로 넓어지지만, 각 버전의 `load()`가 알아서 읽어요.)
+> 모델 저장 형식은 개수 세기(v0.0.x) 버전은 `{ "max_order", "tokenizer", "tables" }` 를 담은
+> `model.json` 하나예요. 신경망(v0.1.x~) 버전은 **PyTorch 표준**으로 나눠 저장해요 —
+> 가중치는 `model.pt`(`torch.save(net.state_dict())`), 어휘는 `vocab.json`(`{tokenizer, vocab}`).
+> 불러올 때 저장된 가중치 모양에서 은닉 크기를 복원해 신경망을 다시 만들고 `load_state_dict` 로 채웁니다.
 
 ## 클래스 이름은 왜 `NGramLM` 인가요?
 
@@ -149,6 +152,10 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 - [**v0.1.5**](lmm/v0.1/v0.1.5/) — **기준선 대결(캡스톤)**: 같은 학습/검증 데이터로 **v0.0.9(카운트) vs 신경망(1토큰·2토큰)**
   의 PPL 을 나란히 재서 "신경망이 정말 이겼나?"를 확인해요. `4.test/test.py` 가 대결표를 출력합니다.
   **신경망 시대(v0.1.x) 완성.** 자세한 설명은 [lmm/v0.1/v0.1.5/README.md](lmm/v0.1/v0.1.5/README.md) 참고.
+- [**v0.2.0**](lmm/v0.2/v0.2.0/) — **임베딩 도입**: 입력을 one-hot → **`nn.Embedding`** 으로 바꿔요.
+  `nn.Embedding(V,E)(idx) == one_hot(idx) @ C` 동치이지만 **E ≪ V 로 압축·공유**돼, 비슷한 토큰이
+  비슷한 벡터를 갖게 학습 → 문맥끼리 강점 공유. 2토큰 문맥·2층 MLP·저장방식은 v0.1.5 그대로.
+  **임베딩 시대(v0.2.x)의 시작.** 자세한 설명은 [lmm/v0.2/v0.2.0/README.md](lmm/v0.2/v0.2.0/README.md) 참고.
 
 ## 🗺️ 앞으로의 계획 (로드맵)
 
@@ -175,22 +182,22 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 | **v0.1.4** | **2토큰 문맥 신경망** | 문맥 1→2토큰(`nn.Linear(2V,V)`). 카운트와 같은 문맥으로 공정하게 |
 | **v0.1.5** | **기준선 대결 (캡스톤)** | 웹앱에서 v0.0.9(카운트) vs 신경망(1토큰·2토큰)을 PPL로 나란히 — "신경망이 정말 이겼나" |
 
-### v0.2.x — 임베딩 + MLP (Bengio, 7단계 · 전부 웹앱 완결)
+### v0.2.x — 임베딩 + 문맥 확장 (Bengio, 6단계 · 전부 웹앱 완결)
 
-one-hot → **임베딩 벡터**로. 역시 모든 버전이 웹앱에서 대화·평가 가능해요.
+one-hot → **임베딩 벡터**로. (은닉층 2층 MLP는 v0.1.x에서 이미 도입 → v0.2.x는 **표현·문맥**에 집중.)
+역시 모든 버전이 웹앱에서 대화·평가 가능해요.
 
 | 버전 | 한 걸음 | 완결 모델 (웹앱에서) |
 |------|--------|---------------------|
-| **v0.2.0** | 임베딩 bigram | `nn.Embedding` 경유 bigram. `one-hot @ W == lookup` + v0.1 대비 PPL |
-| **v0.2.1** | 문맥 확장(`block_size`) | 앞 N토큰 임베딩 concat = Bengio 입력층 |
-| **v0.2.2** | MLP 완성(은닉층+`tanh`) | Bengio 구조 완성 (`nn.Module` 리팩터 포함) |
-| **v0.2.3** | 초기화·정규화 | Kaiming/BatchNorm/weight decay → PPL 안정·개선 |
-| **v0.2.4** | 일반화·튜닝 | dropout·weight tying·early stopping, LR 스케줄·sweep |
-| **v0.2.5** | 임베딩 시각화 | 모델은 그대로 + PCA/t-SNE·nearest-neighbor 분석 |
-| **v0.2.6** | **3자 비교 (캡스톤)** | 웹앱에서 카운트 vs 신경망 bigram vs MLP 3자 PPL → v0.3 예고 |
+| **v0.2.0** | 임베딩 도입 ✅ | one-hot → `nn.Embedding`. `Embedding(V,E)(i)==one_hot(i)@C` (E≪V 압축·공유) |
+| **v0.2.1** | 문맥 확장(`block_size`) | 앞 N토큰(2→3→…) 임베딩 concat = 진짜 Bengio 입력층 |
+| **v0.2.2** | 초기화·정규화 | Kaiming/BatchNorm/weight decay → 깊은 MLP 안정·개선 |
+| **v0.2.3** | 일반화·튜닝 | dropout·weight tying·early stopping, LR 스케줄·sweep |
+| **v0.2.4** | 임베딩 시각화 | 모델은 그대로 + PCA/t-SNE·nearest-neighbor 분석 |
+| **v0.2.5** | **3자 비교 (캡스톤)** | 웹앱에서 카운트 vs one-hot 신경망 vs 임베딩 MLP 3자 PPL → v0.3 예고 |
 
 > 💡 이제 **모든 버전이 자체 PPL로 평가 가능**하므로, 독립 평가 버전은 각 마이너의 마지막
-> **비교 캡스톤**(v0.1.5·v0.2.6)으로 남겼어요 — 여러 모델을 웹앱에서 나란히 벤치마크하는 버전이에요.
+> **비교 캡스톤**(v0.1.5·v0.2.5)으로 남겼어요 — 여러 모델을 웹앱에서 나란히 벤치마크하는 버전이에요.
 
 ### 그 이후
 

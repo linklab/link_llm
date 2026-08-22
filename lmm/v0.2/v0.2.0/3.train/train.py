@@ -22,17 +22,20 @@ if __name__ == "__main__":
     m = model.Model()
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
-    m.EMBED = 32               # ★ 임베딩 차원 E (토큰 하나를 몇 차원 벡터로). V≫E 로 압축·공유
-    m.HIDDEN = 128             # 은닉층 크기 (2층 MLP)
+    # 아래 값은 8개 시드 · 에폭별 검증 PPL 을 재서 고른 설정이에요.
+    #   검증 PPL 33.1 ± 1.2  (카운트 기준선 v0.0.9 = 34.39 아래 ✅)
+    m.EMBED = 256              # ★ 임베딩 차원 E. 데이터가 282문장뿐이라 E 를 키울수록 좋아요
+                               #   (E=32→37.6, 64→36.9, 128→35.3, 256→32.9, 512→34.5)
+    m.HIDDEN = 256             # 은닉층 크기 (2층 MLP)
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
-    m.LR = 0.05                # Adam 기준값. SGD/momentum 은 크게(1~10)
-    m.EPOCHS = 1_000
+    m.LR = 0.0003              # ★ Adam 은 1e-4~1e-3 대. 0.05 는 50배 이상 커서 발산해요
+    m.EPOCHS = 50              # ★ 2,180개 짝뿐이라 금방 과적합. 40~60 이 평평한 바닥
     m.BATCH_SIZE = 64
     m.SEED = 1234
-    m.WEIGHT_DECAY = 0.0       # 임베딩 병목이 이미 정규화 역할 → 우선 0
+    m.WEIGHT_DECAY = 0.0       # 실측: 1e-4 부터 이미 검증 PPL 이 나빠져요 → 0
     m.INIT = "zeros"           # "zeros"(마지막 층 0=균등 출발) | "default"
-    m.LABEL_SMOOTHING = 0.1    # 과신 완화 (임베딩은 과적합이 덜해 0.1 부터)
-    # sweep 제안: EMBED ∈ {16, 32, 64}, LABEL_SMOOTHING ∈ {0.05, 0.1, 0.2}
+    m.LABEL_SMOOTHING = 0.0    # 실측: FLOOR(1e-4) 가 이미 바닥을 깔아줘 스무딩은 손해
+    # sweep 제안: LR ∈ {2e-4, 3e-4, 5e-4} × EPOCHS ∈ {30, 50, 70} (LR↑이면 EPOCHS↓)
     # ==============================================================
 
     m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)

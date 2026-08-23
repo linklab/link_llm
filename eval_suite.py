@@ -43,7 +43,7 @@ import hashlib
 import importlib.util
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LMM_DIR = os.path.join(HERE, "lmm")
+LLM_DIR = os.path.join(HERE, "llm")
 
 REFERENCE = "v0.2.0"      # 데이터·비교의 기준이 되는 버전 (가장 최신)
 N_CANDIDATES = 10         # ④ 답변 고르기: 진짜 1개 + 가짜 9개
@@ -57,7 +57,7 @@ SEED = 1234
 #    각 버전 lm.py 가 쓰는 방식과 같습니다.)
 # ----------------------------------------------------------------------
 def version_dir(version):
-    return os.path.join(LMM_DIR, version.rsplit(".", 1)[0], version)
+    return os.path.join(LLM_DIR, version.rsplit(".", 1)[0], version)
 
 
 def version_key(version):
@@ -75,10 +75,10 @@ def model_path(version):
 
 
 def all_versions():
-    """lmm/ 아래에서 **학습이 끝난** 버전을 모두 찾아 번호순으로."""
+    """llm/ 아래에서 **학습이 끝난** 버전을 모두 찾아 번호순으로."""
     found = []
-    for group in sorted(os.listdir(LMM_DIR)):
-        gdir = os.path.join(LMM_DIR, group)
+    for group in sorted(os.listdir(LLM_DIR)):
+        gdir = os.path.join(LLM_DIR, group)
         if not (group.startswith("v") and os.path.isdir(gdir)):
             continue
         for name in os.listdir(gdir):

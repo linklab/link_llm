@@ -220,9 +220,9 @@ __marimo__/
 .idea
 .claude
 
-# link_lmm: 신경망(v0.1.x~) 학습 결과(model.pt 가중치 + vocab.json 어휘)는 커서 추적 제외.
+# link_llm: 신경망(v0.1.x~) 학습 결과(model.pt 가중치 + vocab.json 어휘)는 커서 추적 제외.
 #   (개수 세기 시대 v0.0.x 는 작으니 그대로 유지 — 아래 예외 규칙으로 다시 포함)
-lmm/**/2.models/model.json
-lmm/**/2.models/model.pt
-lmm/**/2.models/vocab.json
-!lmm/v0.0/**/2.models/model.json
+llm/**/2.models/model.json
+llm/**/2.models/model.pt
+llm/**/2.models/vocab.json
+!llm/v0.0/**/2.models/model.json

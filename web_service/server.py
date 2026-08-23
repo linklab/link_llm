@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-server.py  -  나만의 작은 언어 모델(LMM)을 브라우저에서 써보는 웹 서버
+server.py  -  나만의 작은 언어 모델(LLM)을 브라우저에서 써보는 웹 서버
 
 [무엇을 하나요?]
 - 웹 브라우저로 http://127.0.0.1:8000 에 접속하면 ChatGPT 처럼 생긴 화면이 나와요.
@@ -25,19 +25,19 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 # ----------------------------------------------------------------------
 HERE = os.path.dirname(os.path.abspath(__file__))     # web_service 폴더
 PROJECT = os.path.dirname(HERE)                        # link_llm 폴더
-LMM_DIR = os.path.join(PROJECT, "lmm")                 # 버전 폴더들이 모여있는 곳
+LLM_DIR = os.path.join(PROJECT, "llm")                 # 버전 폴더들이 모여있는 곳
 INDEX_PATH = os.path.join(HERE, "index.html")         # 화면(HTML) 파일
 
 
 # ----------------------------------------------------------------------
 # 1) 버전 찾기: 버전들은 마이너별 그룹 폴더 아래에 있어요.
-#    예) lmm/v0.0/v0.0.9/2.models/model.json , lmm/v0.1/v0.1.0/2.models/model.json
+#    예) llm/v0.0/v0.0.9/2.models/model.json , llm/v0.1/v0.1.0/2.models/model.json
 #    그래서 "그룹(v0.0) -> 버전(v0.0.9)" 2단계로 훑어, model.json 이 있는 버전을 모읍니다.
 # ----------------------------------------------------------------------
 def _version_dir(version):
-    """버전 이름(v0.0.9)을 실제 폴더 경로(lmm/v0.0/v0.0.9)로 바꿉니다."""
+    """버전 이름(v0.0.9)을 실제 폴더 경로(llm/v0.0/v0.0.9)로 바꿉니다."""
     group = version.rsplit(".", 1)[0]          # "v0.0.9" -> "v0.0"
-    return os.path.join(LMM_DIR, group, version)
+    return os.path.join(LLM_DIR, group, version)
 
 
 def _version_key(version):
@@ -50,10 +50,10 @@ def _version_key(version):
 
 def find_versions():
     versions = []
-    if not os.path.isdir(LMM_DIR):
+    if not os.path.isdir(LLM_DIR):
         return versions
-    for group in os.listdir(LMM_DIR):                       # 1단계: 그룹 폴더 (v0.0, v0.1 ...)
-        group_dir = os.path.join(LMM_DIR, group)
+    for group in os.listdir(LLM_DIR):                       # 1단계: 그룹 폴더 (v0.0, v0.1 ...)
+        group_dir = os.path.join(LLM_DIR, group)
         if not (group.startswith("v") and os.path.isdir(group_dir)):
             continue
         for name in os.listdir(group_dir):                 # 2단계: 버전 폴더 (v0.0.9 ...)
@@ -75,7 +75,7 @@ def load_version_class(version):
      각 버전의 lm.py 는 이전 버전 lm.py 를 물려받는 사슬 구조예요.)
     """
     model_py = os.path.join(_version_dir(version), "2.models", "lm.py")
-    spec = importlib.util.spec_from_file_location("lmmlm_" + version.replace(".", "_"), model_py)
+    spec = importlib.util.spec_from_file_location("llmlm_" + version.replace(".", "_"), model_py)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.NGramLM

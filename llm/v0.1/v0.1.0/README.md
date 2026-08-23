@@ -55,7 +55,7 @@ with torch.no_grad():
 > ```
 
 ```bash
-python3 3.train/train.py     # 학습 → 2.models/model.json 생성
+python3 3.train/train.py     # 학습 → 2.models/model.pt + 3.train/loss.svg (손실 곡선)
 python3 4.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
 ```
 
@@ -74,3 +74,15 @@ python3 4.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
 - v0.1.4 **기준선 대결(캡스톤)** — 웹앱에서 v0.0.9(카운트) vs 신경망 bigram 을 PPL 로 나란히
 
 > 다음 v0.2.x 에서는 one-hot 을 **임베딩 벡터**로 바꾸고 은닉층을 얹어 **MLP(Bengio)** 로 갑니다.
+
+## 손실 곡선 — `3.train/loss.svg`
+
+학습이 끝나면 **에폭별 손실**을 SVG 그래프로 남겨요. 숫자만 흘려보내지 말고
+"정말 내려가고 있나"를 눈으로 확인하는 게 신경망 학습의 첫 습관이에요.
+
+- matplotlib 을 쓰지 않아요. 선 하나 그리는 데 필요한 건 좌표 계산이 전부라
+  `save_loss_plot()` 이 SVG 를 직접 씁니다 (의존성은 여전히 torch 하나).
+- 이 버전은 **full-batch 수동 SGD** 라 곡선이 완만하고, 1,000 에폭에서도
+  **아직 내려가는 중**이에요 — 덜 수렴했다는 뜻이고, v0.1.1(미니배치)·v0.1.2(Adam)에서
+  같은 에폭 수로 훨씬 낮은 지점에 도달하는 걸 곡선끼리 비교하면 바로 보입니다.
+- `save_loss_plot()` 은 v0.1.0 에 있어서 **이후 모든 신경망 버전이 그대로 물려받아요.**

@@ -138,6 +138,7 @@ class NeuralLM(_load_prev("v0.0.9")):
         torch.manual_seed(self.SEED)              # 초기화 재현 가능하게
         self.net = self.build_net(V, self.HIDDEN)
 
+        self.losses = []   # 에폭별 손실 (3.train/loss.svg 곡선용)
         print(f"  학습 시작: 어휘 {V}개, 은닉 {self.HIDDEN}, 짝 {len(xs_list)}개, "
               f"epochs {self.EPOCHS}, lr {self.LR}")
         for epoch in range(1, self.EPOCHS + 1):
@@ -151,6 +152,7 @@ class NeuralLM(_load_prev("v0.0.9")):
                 for p in self.net.parameters():
                     p -= self.LR * p.grad         # 경사하강 1스텝 (수동; 옵티마이저는 v0.1.2)
 
+            self.losses.append(loss.item())
             if epoch == 1 or epoch % 20 == 0:
                 print(f"  epoch {epoch:4d}/{self.EPOCHS}   loss {loss.item():.4f}")
 
@@ -183,6 +185,84 @@ class NeuralLM(_load_prev("v0.0.9")):
         self.net.eval()
         return self
 
+    # ---------- 손실 곡선: 의존성 없이 SVG 를 직접 그려요 ----------
+    def save_loss_plot(self, path, title=""):
+        """
+        에폭별 손실(self.losses)을 SVG 그래프로 저장합니다.
+
+        matplotlib 을 쓰지 않아요 — 이 저장소는 torch 말고는 의존성이 없고,
+        선 하나 그리는 데 필요한 건 좌표 계산이 전부라서 직접 그립니다.
+        (SVG 는 그냥 텍스트라 브라우저·GitHub 에서 바로 보여요.)
+        """
+        losses = getattr(self, "losses", None)
+        if not losses:
+            return None                       # 손실을 기록하지 않는 모델(카운트 등)
+
+        W, H = 760, 380                       # 전체 크기
+        L, R, T, B = 74, 26, 46, 54           # 여백(왼/오른/위/아래)
+        pw, ph = W - L - R, H - T - B         # 그래프 영역
+        n = len(losses)
+        lo, hi = min(losses), max(losses)
+        if hi - lo < 1e-9:                    # 손실이 평평하면 눈금이 뭉개지니 살짝 벌려요
+            hi, lo = lo + 0.5, lo - 0.5
+
+        def px(i):                            # 에폭 i(0부터) -> x 좌표
+            return L + (pw * i / (n - 1) if n > 1 else pw / 2)
+
+        def py(v):                            # 손실 v -> y 좌표 (위가 큰 값)
+            return T + ph * (hi - v) / (hi - lo)
+
+        out = [
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
+            f'viewBox="0 0 {W} {H}" font-family="sans-serif">',
+            f'<rect width="{W}" height="{H}" fill="#ffffff"/>',
+            f'<text x="{L}" y="26" font-size="16" fill="#111">{title}</text>',
+        ]
+
+        # 가로 눈금선 + y축 라벨 (손실)
+        for k in range(5):
+            v = lo + (hi - lo) * k / 4
+            y = py(v)
+            out.append(f'<line x1="{L}" y1="{y:.1f}" x2="{L + pw}" y2="{y:.1f}" '
+                       f'stroke="#e5e5e5" stroke-width="1"/>')
+            out.append(f'<text x="{L - 10}" y="{y + 4:.1f}" font-size="11" fill="#666" '
+                       f'text-anchor="end">{v:.2f}</text>')
+
+        # x축 라벨 (에폭)
+        for k in range(5):
+            i = round((n - 1) * k / 4)
+            out.append(f'<text x="{px(i):.1f}" y="{T + ph + 20}" font-size="11" fill="#666" '
+                       f'text-anchor="middle">{i + 1}</text>')
+
+        # 축
+        out.append(f'<line x1="{L}" y1="{T}" x2="{L}" y2="{T + ph}" stroke="#999"/>')
+        out.append(f'<line x1="{L}" y1="{T + ph}" x2="{L + pw}" y2="{T + ph}" stroke="#999"/>')
+        out.append(f'<text x="{L + pw / 2}" y="{H - 14}" font-size="12" fill="#444" '
+                   f'text-anchor="middle">epoch</text>')
+        out.append(f'<text x="18" y="{T + ph / 2}" font-size="12" fill="#444" '
+                   f'text-anchor="middle" transform="rotate(-90 18 {T + ph / 2})">loss</text>')
+
+        # 손실 곡선
+        pts = " ".join(f"{px(i):.1f},{py(v):.1f}" for i, v in enumerate(losses))
+        out.append(f'<polyline points="{pts}" fill="none" stroke="#2b6cb0" stroke-width="1.8"/>')
+
+        # 최저점 표시 (라벨이 그래프 밖으로 잘리지 않게 가장자리에서는 정렬을 바꿔요)
+        j = min(range(n), key=lambda i: losses[i])
+        mx, my = px(j), py(losses[j])
+        anchor = "end" if mx > L + pw * 0.8 else ("start" if mx < L + pw * 0.2 else "middle")
+        out.append(f'<circle cx="{mx:.1f}" cy="{my:.1f}" r="3.5" fill="#c53030"/>')
+        out.append(f'<text x="{mx:.1f}" y="{my - 10:.1f}" font-size="11" fill="#c53030" '
+                   f'text-anchor="{anchor}">최저 {losses[j]:.4f} (epoch {j + 1})</text>')
+
+        # 요약
+        out.append(f'<text x="{L + pw}" y="26" font-size="11" fill="#666" text-anchor="end">'
+                   f'{n} epochs · 시작 {losses[0]:.4f} → 마지막 {losses[-1]:.4f}</text>')
+        out.append("</svg>")
+
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(out))
+        return path
+
     def run_train(self, data_path, model_path, vocab_path):
         print(f"데이터를 읽는 중... ({data_path})")
         sentences = self.read_sentences(data_path)
@@ -190,6 +270,13 @@ class NeuralLM(_load_prev("v0.0.9")):
         self.train(sentences)
         self.save(model_path, vocab_path)
         print(f"모델 저장 완료 -> {model_path}  (+ vocab.json)")
+
+        # 손실 곡선은 그 버전의 3.train/ 폴더에 (model_path 기준으로 경로를 되짚어요)
+        version_dir = os.path.dirname(os.path.dirname(model_path))
+        version = os.path.basename(version_dir)
+        plot_path = os.path.join(version_dir, "3.train", "loss.svg")
+        if self.save_loss_plot(plot_path, f"{version} 학습 손실 곡선"):
+            print(f"손실 곡선 저장 완료 -> {plot_path}")
 
     # ---------- 확률 엔진: 개수 표 대신 신경망 forward ----------
     def _context_tensor(self, recent):

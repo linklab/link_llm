@@ -13,7 +13,7 @@ link_llm/
 │   │   ├── v0.0.1/         #   - 앞 단어 1개로 예측 (가장 기본)
 │   │   │   ├── 1.data/       #      data.txt (학습용 문장)
 │   │   │   ├── 2.models/     #      lm.py (NGramLM + 설정) + model.json (학습 결과)
-│   │   │   ├── 3.train/      #      얇은 train.py
+│   │   │   ├── 3.train/      #      얇은 train.py (+ 신경망 버전은 loss.svg 손실 곡선)
 │   │   │   └── 4.test/       #      얇은 test.py
 │   │   ├── v0.0.2/         #   - 앞 단어 2개 (lm.py 가 v0.0.1 을 상속, 새 코드 없음)
 │   │   ├── v0.0.3/         #   - 문장 끝(<END>) 학습    (lm.py 가 <END> 추가)
@@ -72,6 +72,8 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 - **각 버전 `2.models/lm.py`** — `NGramLM`(그 버전이 새로 추가/변경한 함수) + `Model`(설정 `ORDERS`).
   → "이 버전이 뭘 더했나"가 한눈에.
 - **`3.train/train.py`·`4.test/test.py`** — `2.models/lm.py` 를 불러와 실행하는 **얇은 껍데기**.
+  → 신경망(v0.1.0~) 은 학습이 끝나면 에폭별 손실 곡선을 `3.train/loss.svg` 에 남겨요
+    (matplotlib 없이 SVG 를 직접 그립니다 — 의존성은 torch 하나 그대로).
 - **`web_service/server.py`** — 선택된 버전의 `2.models/lm.py` 를 불러와 `generate` 만 호출.
 
 > 폴더 이름에 `.` 이 있어 일반 `import` 가 안 되므로, 이전 버전 `lm.py` 는 파일 경로로

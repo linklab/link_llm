@@ -207,6 +207,16 @@ class NeuralLM(_load_prev("v0.0.9")):
             logits = self.net(x)[0]              # (V,)
         return torch.softmax(logits, dim=0)
 
+    def next_dist(self, recent):
+        """
+        후보 분포(v0.0.9 accuracy() 가 쓰는 것)를 신경망 버전으로. 개수 표 대신 softmax 라
+        **어휘 전체**에 확률이 퍼져 있어요 — 카운트처럼 '표에 없어서 못 맞히는' 일이 없습니다.
+        """
+        probs = self._probs(recent)
+        if probs is None:
+            return None
+        return {self.itos[j]: float(probs[j]) for j in range(len(self.itos))}
+
     def token_prob(self, recent, token):
         """퍼플렉서티(v0.0.9)가 부르는 함수. '개수 비율' 대신 '신경망이 준 확률'로 답합니다."""
         if token not in self.stoi:

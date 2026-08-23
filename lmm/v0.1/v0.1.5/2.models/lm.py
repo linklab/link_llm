@@ -78,10 +78,14 @@ def load_version_model(version):
 
 def compare(train_sents, valid_sents, versions):
     """
-    각 버전 모델의 학습/검증 PPL 을 같은 문장으로 재요.
+    각 버전 모델을 같은 문장으로 재요 — **두 가지 자**로 봅니다.
+      · PPL      : 확률을 얼마나 잘 배분했나 (v0.0.9 perplexity)
+      · 정확도    : 1등을 얼마나 맞혔나 + 정답이 후보에 있기라도 한가 (v0.0.9 accuracy)
+    두 지표는 순위가 뒤바뀔 수 있어요 — 그게 '지표를 하나만 보면 안 되는' 이유예요.
+
     돌려주는 것: (rows, skipped)
-      rows    = [(version, kind, ppl_train, ppl_valid), ...]   # 불러온 것
-      skipped = [(version, 이유), ...]                          # 못 부른 것
+      rows    = [(version, kind, ppl_train, ppl_valid, top1, coverage), ...]   # 불러온 것
+      skipped = [(version, 이유), ...]                                          # 못 부른 것
     """
     rows, skipped = [], []
     for v in versions:
@@ -94,7 +98,9 @@ def compare(train_sents, valid_sents, versions):
             skipped.append((v, "model.json 없음 — 먼저 그 버전 train.py 실행"))
             continue
         kind = "카운트" if v.startswith("v0.0") else "신경망"
-        rows.append((v, kind, lm.perplexity(train_sents), lm.perplexity(valid_sents)))
+        acc = lm.accuracy(valid_sents)           # 정확도는 '처음 보는' 검증 데이터로만
+        rows.append((v, kind, lm.perplexity(train_sents), lm.perplexity(valid_sents),
+                     acc["top1"], acc["coverage"]))
     return rows, skipped
 
 

@@ -52,6 +52,55 @@ class NGramLM(_load_prev("v0.0.8")):
                     return counts[token] / sum(counts.values())
         return self.FLOOR
 
+    def next_dist(self, recent):
+        """
+        지금 문맥(recent) 다음에 올 토큰들의 **확률 분포** {토큰: 확률} 을 돌려줍니다.
+        백오프로 **처음 찾은 표**를 그대로 확률로 바꿔요 — generate() 가 다음 토큰을 뽑을 때
+        보는 바로 그 표예요. 문맥을 아예 못 찾으면 None.
+
+        ※ token_prob() 은 "그 표에 그 토큰이 없으면 더 짧은 문맥으로 한 번 더" 찾지만,
+          여기서는 '모델이 실제로 예측을 뽑는 표' 를 그대로 봅니다(생성과 같은 규칙).
+        """
+        for n in self._orders_desc():
+            if len(recent) >= n:
+                counts = self._tables().get(str(n), {}).get(" ".join(recent[-n:]))
+                if counts:
+                    total = sum(counts.values())
+                    return {t: c / total for t, c in counts.items()}
+        return None
+
+    def accuracy(self, sentences, top_k=5):
+        """
+        '다음 토큰 맞히기' 를 **순위**로 재요. PPL 이 "확률을 얼마나 잘 배분했나" 라면
+        정확도는 "1등을 얼마나 맞혔나" 예요 — 둘은 순위가 뒤바뀔 수도 있어요.
+
+          top1     : 1등으로 찍은 토큰이 정답인 비율
+          topk     : 정답이 상위 k개 안에 든 비율
+          coverage : 정답이 후보 목록에 **있기라도 한** 비율
+                     (카운트 모델은 표에 없으면 그 토큰을 아예 못 만들어요.
+                      = 백오프의 한계가 PPL 의 FLOOR 에 가려지지 않고 그대로 보이는 숫자)
+
+        채점 위치는 perplexity() 와 똑같아요 (문맥이 없는 맨 앞 토큰은 제외).
+        """
+        n_all = n_top1 = n_topk = n_cov = 0
+        for sentence in sentences:
+            tokens = self.prepare(self.tokenize(sentence))
+            for i in range(1, len(tokens)):
+                n_all += 1
+                dist = self.next_dist(tokens[:i])
+                if not dist or tokens[i] not in dist:
+                    continue                      # 후보에 없음 = 맞힐 방법이 없음
+                n_cov += 1
+                ranked = [t for t, _ in sorted(dist.items(), key=lambda kv: -kv[1])]
+                if ranked[0] == tokens[i]:
+                    n_top1 += 1
+                if tokens[i] in ranked[:top_k]:
+                    n_topk += 1
+        if n_all == 0:
+            return {"top1": 0.0, "topk": 0.0, "coverage": 0.0, "n": 0, "k": top_k}
+        return {"top1": n_top1 / n_all, "topk": n_topk / n_all,
+                "coverage": n_cov / n_all, "n": n_all, "k": top_k}
+
     def perplexity(self, sentences):
         """
         문장들의 퍼플렉서티(PPL)를 계산합니다. = exp( 평균( -log p(각 토큰) ) ).

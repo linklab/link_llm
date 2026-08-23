@@ -40,6 +40,15 @@ def main():
     print("→ v0.1.5(one-hot 2토큰) 검증 PPL 보다 내려가면 '임베딩의 공유 표현이 일반화에 도움'.")
     print("  더 내려가면 카운트(v0.0.9 = 34.39)도 넘볼 수 있어요.\n")
 
+    # --- 순위로 재는 평가 (v0.0.9 의 accuracy) — PPL 과 '다른 것'을 봅니다 ---
+    acc = lm.accuracy(valid_sents)
+    print(f"검증 top-1 정확도  : {acc['top1'] * 100:5.1f}%   ← 1등으로 찍은 토큰이 정답")
+    print(f"검증 top-5 정확도  : {acc['topk'] * 100:5.1f}%")
+    print(f"정답이 후보에 있음 : {acc['coverage'] * 100:5.1f}%   ← 신경망은 어휘 전체에 확률을 주므로 높아요")
+    print("→ PPL 은 '확률을 얼마나 잘 배분했나', 정확도는 '1등을 얼마나 맞혔나' — 순위가 뒤바뀌기도 해요.")
+    print("  실제로 여기서 뒤바뀌어요: 임베딩은 one-hot(v0.1.5)보다 PPL 은 높지만(33.39 vs 31.98)")
+    print("  top-1 정확도는 더 높습니다(47.6% vs 46.6%). '임베딩 효과'는 이 자로 보면 보여요.\n")
+
     print("--- 대화 예시 (greedy, temperature=0.0) ---")
     for msg in ["안녕", "오늘 날씨 어때?", "고마워"]:
         reply = lm.chat(msg, history=None, temperature=0.0)

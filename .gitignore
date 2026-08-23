@@ -226,3 +226,6 @@ llm/**/2.models/model.json
 llm/**/2.models/model.pt
 llm/**/2.models/vocab.json
 !llm/v0.0/**/2.models/model.json
+
+# 학습 산출물: 손실 곡선 SVG (3.train/train.py 를 돌리면 다시 생겨요)
+llm/**/3.train/loss.svg

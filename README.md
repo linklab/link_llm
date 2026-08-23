@@ -74,6 +74,7 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 - **`3.train/train.py`·`4.test/test.py`** — `2.models/lm.py` 를 불러와 실행하는 **얇은 껍데기**.
   → 신경망(v0.1.0~) 은 학습이 끝나면 에폭별 손실 곡선을 `3.train/loss.svg` 에 남겨요
     (matplotlib 없이 SVG 를 직접 그립니다 — 의존성은 torch 하나 그대로).
+    학습 산출물이라 **커밋하지 않아요** — `3.train/train.py` 를 돌리면 생깁니다.
 - **`web_service/server.py`** — 선택된 버전의 `2.models/lm.py` 를 불러와 `generate` 만 호출.
 
 > 폴더 이름에 `.` 이 있어 일반 `import` 가 안 되므로, 이전 버전 `lm.py` 는 파일 경로로

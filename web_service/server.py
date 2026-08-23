@@ -24,7 +24,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 # 경로 설정
 # ----------------------------------------------------------------------
 HERE = os.path.dirname(os.path.abspath(__file__))     # web_service 폴더
-PROJECT = os.path.dirname(HERE)                        # link_lmm 폴더
+PROJECT = os.path.dirname(HERE)                        # link_llm 폴더
 LMM_DIR = os.path.join(PROJECT, "lmm")                 # 버전 폴더들이 모여있는 곳
 INDEX_PATH = os.path.join(HERE, "index.html")         # 화면(HTML) 파일
 

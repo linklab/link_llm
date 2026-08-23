@@ -1,4 +1,4 @@
-# link_lmm — 나만의 작은 언어 모델 (v0.1.1)
+# link_llm — 나만의 작은 언어 모델 (v0.1.1)
 
 **PyTorch `Dataset` + `DataLoader` 로 학습.** 모델은 v0.1.0(신경망 bigram) 그대로이고,
 학습 데이터를 공급하는 방식을 강의 자료(`03.real_world_data_to_tensors`)의 표준 방식으로 바꿨어요.

@@ -78,7 +78,7 @@ class NeuralLM(_prev.NGramLM):
             return torch.optim.SGD(params, lr=self.LR, momentum=0.9)
         return torch.optim.Adam(params, lr=self.LR)          # 기본: Adam
 
-    def train(self, sentences):
+    def train(self, sentences, valid_sentences=None):
         _require_torch()
         # 1) 어휘 + (앞, 다음) 짝  (v0.1.0 의 build_vocab / make_pairs 재사용)
         self.itos = self.build_vocab(sentences)
@@ -98,6 +98,7 @@ class NeuralLM(_prev.NGramLM):
         optimizer = self.make_optimizer(self.net)
 
         self.losses = []
+        stopper = self.start_early_stopping(valid_sentences)
         print(f"  학습 시작: 어휘 {V}개, 은닉 {self.HIDDEN}, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, "
               f"batch {self.BATCH_SIZE}({len(loader)}개/epoch), optim={self.OPTIMIZER}, lr {self.LR}")
 
@@ -119,7 +120,10 @@ class NeuralLM(_prev.NGramLM):
             self.losses.append(avg)
             if epoch == 1 or epoch % 5 == 0:
                 print(f"  epoch {epoch:3d}/{self.EPOCHS}   avg loss {avg:.4f}")
+            if self.should_stop_early(stopper, epoch):
+                break
 
+        self.finish_early_stopping(stopper)
         self.net.eval()
         return self.net
 

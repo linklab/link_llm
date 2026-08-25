@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
     # 아래 값은 8개 시드 · 에폭별 검증 PPL 을 재서 고른 설정이에요.
-    #   검증 PPL 32.4 ± 0.4  (카운트 기준선 v0.0.9 = 34.39 아래 ✅)
+    #   조기 종료 시 검증 PPL 31.81 (카운트 기준선 v0.0.9 = 34.39 아래 ✅)
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
     m.HIDDEN = 256             # 은닉층 크기 (2층 MLP). one-hot 입력은 넓을수록 유리
     m.LR = 0.0003              # ★ Adam 은 1e-4~1e-3 대. 0.05 는 50배 이상 커서 발산해요
@@ -33,7 +33,14 @@ if __name__ == "__main__":
     m.WEIGHT_DECAY = 0.0       # 실측: 1e-4 부터 이미 검증 PPL 이 나빠져요 → 0
     m.INIT = "zeros"           # "zeros" | "default"  (nn.Linear 초기화)
     m.LABEL_SMOOTHING = 0.0    # 실측: FLOOR(1e-4) 가 이미 바닥을 깔아줘 스무딩은 손해
-    # sweep 제안: LR ∈ {2e-4, 3e-4, 1e-3} × EPOCHS ∈ {50, 100, 160} (LR↑이면 EPOCHS↓)
+    # sweep 제안: HIDDEN ∈ {128, 256, 512} × LR ∈ {2e-4, 3e-4, 1e-3}
+    #             (EPOCHS 는 조기 종료가 알아서 정하므로 더 이상 손댈 필요 없어요)
+    # --- 조기 종료 (early stopping) ---
+    # 검증 PPL 이 PATIENCE 에폭 동안 나아지지 않으면 멈추고, **가장 좋았던 가중치**로 되돌려요.
+    # 그래서 EPOCHS 는 이제 '정확히 맞춰야 하는 값'이 아니라 넉넉한 **상한**이면 됩니다.
+    m.EARLY_STOPPING = True    # False 면 EPOCHS 를 끝까지 돕니다
+    m.PATIENCE = 10            # 몇 에폭까지 참을지
+    m.MIN_DELTA = 0.0          # 이만큼은 좋아져야 '개선'으로 인정
     # ==============================================================
 
-    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)
+    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH, model.VALID_PATH)

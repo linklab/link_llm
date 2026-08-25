@@ -26,7 +26,7 @@ if __name__ == "__main__":
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
     m.HIDDEN = 256             # 은닉층 크기 (2층 MLP)
     m.LR = 0.0003              # ★ Adam 은 1e-4~1e-3 대. 0.05 는 50배 이상 커서 발산해요
-    m.EPOCHS = 130             # ★ 2,180개 짝뿐이라 금방 과적합. 100~160 이 평평한 바닥
+    m.EPOCHS = 1_500             # ★ 2,180개 짝뿐이라 금방 과적합. 100~160 이 평평한 바닥
     m.BATCH_SIZE = 64
     m.SEED = 1234
     m.WEIGHT_DECAY = 0.0       # 실측: 1e-4 부터 이미 검증 PPL 이 나빠져요 → 0

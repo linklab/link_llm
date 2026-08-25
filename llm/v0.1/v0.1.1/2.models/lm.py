@@ -80,7 +80,7 @@ _prev = _load_prev_module("v0.1.0")
 class NeuralLM(_prev.NGramLM):
     # 하이퍼파라미터(HIDDEN / LR / EPOCHS / BATCH_SIZE / SEED)는 3.train/train.py 에서 설정해요.
 
-    def train(self, sentences):
+    def train(self, sentences, valid_sentences=None):
         _require_torch()
         # 1) 어휘 사전 + (앞, 다음) 짝  (v0.1.0 의 build_vocab / make_pairs 재사용)
         self.itos = self.build_vocab(sentences)
@@ -99,6 +99,7 @@ class NeuralLM(_prev.NGramLM):
         self.net = self.build_net(V, self.HIDDEN)
 
         self.losses = []   # 에폭별 평균 손실 (손실 곡선 확인용)
+        stopper = self.start_early_stopping(valid_sentences)
         print(f"  학습 시작: 어휘 {V}개, 은닉 {self.HIDDEN}, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, "
               f"batch {self.BATCH_SIZE}({len(loader)}개/epoch), lr {self.LR}")
 
@@ -127,7 +128,10 @@ class NeuralLM(_prev.NGramLM):
             self.losses.append(avg)
             if epoch == 1 or epoch % 5 == 0:
                 print(f"  epoch {epoch:3d}/{self.EPOCHS}   avg loss {avg:.4f}")
+            if self.should_stop_early(stopper, epoch):
+                break
 
+        self.finish_early_stopping(stopper)
         self.net.eval()
         return self.net
 

@@ -22,6 +22,7 @@ lm.py  (v0.1.0)  -  신경망 언어모델 (2층 MLP) + PyTorch autograd  ('세�
 """
 
 import os
+import math
 import json
 import importlib.util
 
@@ -82,16 +83,87 @@ class BigramModel(_Module):
 
 
 # v0.0.9 의 NGramLM(개수 세기 계보)을 물려받아, '확률 엔진'만 신경망으로 바꿉니다.
+# ---------- 조기 종료 (early stopping) ----------
+# PyTorch 본체에는 early stopping 이 없어요 (Lightning·Ignite 같은 별도 패키지에 있어요).
+# 이 저장소는 의존성을 torch 하나로 유지하려고, 표준 동작을 그대로 15줄로 직접 구현합니다.
+#   · 검증 점수가 좋아지면 그때의 가중치를 통째로 기억해 두고,
+#   · patience 에폭 동안 나아지지 않으면 멈춘 뒤 **가장 좋았던 가중치로 되돌려요.**
+# (torch.optim.lr_scheduler.ReduceLROnPlateau 가 쓰는 patience 개념과 같아요.)
+class EarlyStopping:
+    def __init__(self, patience=10, min_delta=0.0):
+        self.patience = patience        # 몇 에폭까지 참을지
+        self.min_delta = min_delta      # 이만큼은 좋아져야 '개선'으로 인정
+        self.best = float("inf")        # 지금까지 가장 좋은(=낮은) 검증 점수
+        self.best_epoch = 0
+        self.best_state = None          # 그때의 가중치 사본
+        self.bad_epochs = 0
+
+    def step(self, score, epoch, model):
+        """이번 에폭 점수를 넣어요. 멈춰야 하면 True."""
+        if score < self.best - self.min_delta:
+            self.best, self.best_epoch, self.bad_epochs = score, epoch, 0
+            self.best_state = {k: v.detach().clone() for k, v in model.state_dict().items()}
+            return False
+        self.bad_epochs += 1
+        return self.bad_epochs >= self.patience
+
+    def restore(self, model):
+        """가장 좋았던 가중치로 되돌려요 (마지막 에폭이 아니라 최고점을 저장하려고)."""
+        if self.best_state is not None:
+            model.load_state_dict(self.best_state)
+
+
 # 이름은 신경망 시대에 맞춰 NeuralLM 으로, 아래에서 NGramLM 으로도 노출(web_service 호환).
 # stoi = string to integer (토큰→인덱스),  itos = integer to string (인덱스→토큰)
 class NeuralLM(_load_prev("v0.0.9")):
     # 하이퍼파라미터(HIDDEN / LR / EPOCHS / SEED)는 3.train/train.py 에서 설정해요.
+
+    # 조기 종료 기본값 (3.train/train.py 에서 바꿔요)
+    EARLY_STOPPING = True      # False 면 EPOCHS 를 끝까지 돕니다
+    PATIENCE = 10              # 검증 PPL 이 이만큼 안 좋아지면 중단
+    MIN_DELTA = 0.0            # 개선으로 인정할 최소 폭
 
     def __init__(self):
         super().__init__()
         self.stoi = None       # 토큰 -> 정수 인덱스
         self.itos = None       # 정수 인덱스 -> 토큰 (어휘 목록)
         self.net = None        # 학습된 신경망(nn.Module)
+        self.losses = []       # 에폭별 학습 손실
+        self.valid_scores = [] # 에폭별 검증 PPL (조기 종료 판단 근거)
+        self.stopped_epoch = 0 # 실제로 채택된(=가장 좋았던) 에폭
+
+    # ---------- 조기 종료: 하위 버전 train() 들이 공통으로 쓰는 3개 도우미 ----------
+    def start_early_stopping(self, valid_sentences):
+        """검증 문장이 있고 EARLY_STOPPING 이 켜져 있으면 감시자를 만들어요."""
+        self.valid_scores = []
+        self._valid_sentences = valid_sentences
+        if not valid_sentences or not self.EARLY_STOPPING:
+            return None
+        print(f"  조기 종료 켬: 검증 PPL 기준, patience={self.PATIENCE}, min_delta={self.MIN_DELTA}")
+        return EarlyStopping(self.PATIENCE, self.MIN_DELTA)
+
+    def should_stop_early(self, stopper, epoch):
+        """에폭 끝에서 검증 PPL 을 재고 '멈출 때인가'를 알려줘요."""
+        if stopper is None:
+            return False
+        self.net.eval()                                   # 평가 모드로 재고
+        score = self.perplexity(self._valid_sentences)    # v0.0.9 의 PPL 을 그대로 사용
+        self.net.train()                                  # 다시 학습 모드
+        self.valid_scores.append(score)
+        if stopper.step(score, epoch, self.net):
+            print(f"  ⏹ 조기 종료: {self.PATIENCE}에폭 동안 검증 PPL 개선 없음 "
+                  f"(epoch {epoch} 에서 중단)")
+            return True
+        return False
+
+    def finish_early_stopping(self, stopper):
+        """가장 좋았던 가중치로 되돌리고, 그 에폭을 기록해요."""
+        if stopper is None:
+            return
+        stopper.restore(self.net)
+        self.stopped_epoch = stopper.best_epoch
+        print(f"  ✔ 최고 검증 PPL {stopper.best:.2f} (epoch {stopper.best_epoch}) "
+              f"가중치로 되돌려 저장합니다")
 
     # ---------- 어휘 / 데이터 준비 ----------
     def build_vocab(self, sentences):
@@ -123,7 +195,7 @@ class NeuralLM(_load_prev("v0.0.9")):
         return BigramModel(vocab_size, hidden)
 
     # ---------- 학습 (개수 세기 대신 '경사하강'; 전체 배치 · 수동 갱신) ----------
-    def train(self, sentences):
+    def train(self, sentences, valid_sentences=None):
         _require_torch()
         # 1) 어휘 + (앞, 다음) 짝
         self.itos = self.build_vocab(sentences)
@@ -139,6 +211,7 @@ class NeuralLM(_load_prev("v0.0.9")):
         self.net = self.build_net(V, self.HIDDEN)
 
         self.losses = []   # 에폭별 손실 (3.train/loss.svg 곡선용)
+        stopper = self.start_early_stopping(valid_sentences)
         print(f"  학습 시작: 어휘 {V}개, 은닉 {self.HIDDEN}, 짝 {len(xs_list)}개, "
               f"epochs {self.EPOCHS}, lr {self.LR}")
         for epoch in range(1, self.EPOCHS + 1):
@@ -155,7 +228,10 @@ class NeuralLM(_load_prev("v0.0.9")):
             self.losses.append(loss.item())
             if epoch == 1 or epoch % 20 == 0:
                 print(f"  epoch {epoch:4d}/{self.EPOCHS}   loss {loss.item():.4f}")
+            if self.should_stop_early(stopper, epoch):
+                break
 
+        self.finish_early_stopping(stopper)
         self.net.eval()
         return self.net
 
@@ -188,28 +264,34 @@ class NeuralLM(_load_prev("v0.0.9")):
     # ---------- 손실 곡선: 의존성 없이 SVG 를 직접 그려요 ----------
     def save_loss_plot(self, path, title=""):
         """
-        에폭별 손실(self.losses)을 SVG 그래프로 저장합니다.
+        에폭별 **학습 손실**(파랑, 왼쪽 축)과 **검증 PPL**(빨강, 오른쪽 축)을 SVG 로 저장합니다.
+        조기 종료가 켜져 있으면 채택된 에폭에 세로 점선을 그어요 —
+        "학습 손실은 계속 내려가는데 검증은 돌아선다"가 한눈에 보이는 그림이에요.
 
-        matplotlib 을 쓰지 않아요 — 이 저장소는 torch 말고는 의존성이 없고,
-        선 하나 그리는 데 필요한 건 좌표 계산이 전부라서 직접 그립니다.
+        matplotlib 을 쓰지 않아요. 선 긋는 데 필요한 건 좌표 계산이 전부라 직접 그립니다.
         (SVG 는 그냥 텍스트라 브라우저·GitHub 에서 바로 보여요.)
         """
         losses = getattr(self, "losses", None)
         if not losses:
             return None                       # 손실을 기록하지 않는 모델(카운트 등)
+        valids = getattr(self, "valid_scores", None) or []
+        best_epoch = getattr(self, "stopped_epoch", 0)
 
         W, H = 760, 380                       # 전체 크기
-        L, R, T, B = 74, 26, 46, 54           # 여백(왼/오른/위/아래)
+        L, R, T, B = 74, 62, 46, 54           # 여백(왼/오른/위/아래)
         pw, ph = W - L - R, H - T - B         # 그래프 영역
         n = len(losses)
-        lo, hi = min(losses), max(losses)
-        if hi - lo < 1e-9:                    # 손실이 평평하면 눈금이 뭉개지니 살짝 벌려요
-            hi, lo = lo + 0.5, lo - 0.5
+
+        def span(vals):                       # 값 범위 (평평하면 살짝 벌려요)
+            lo, hi = min(vals), max(vals)
+            return (lo - 0.5, hi + 0.5) if hi - lo < 1e-9 else (lo, hi)
+
+        lo, hi = span(losses)
 
         def px(i):                            # 에폭 i(0부터) -> x 좌표
             return L + (pw * i / (n - 1) if n > 1 else pw / 2)
 
-        def py(v):                            # 손실 v -> y 좌표 (위가 큰 값)
+        def py(v):                            # 학습 손실 -> y 좌표
             return T + ph * (hi - v) / (hi - lo)
 
         out = [
@@ -219,13 +301,13 @@ class NeuralLM(_load_prev("v0.0.9")):
             f'<text x="{L}" y="26" font-size="16" fill="#111">{title}</text>',
         ]
 
-        # 가로 눈금선 + y축 라벨 (손실)
+        # 가로 눈금선 + 왼쪽 축 라벨 (학습 손실)
         for k in range(5):
             v = lo + (hi - lo) * k / 4
             y = py(v)
             out.append(f'<line x1="{L}" y1="{y:.1f}" x2="{L + pw}" y2="{y:.1f}" '
                        f'stroke="#e5e5e5" stroke-width="1"/>')
-            out.append(f'<text x="{L - 10}" y="{y + 4:.1f}" font-size="11" fill="#666" '
+            out.append(f'<text x="{L - 10}" y="{y + 4:.1f}" font-size="11" fill="#2b6cb0" '
                        f'text-anchor="end">{v:.2f}</text>')
 
         # x축 라벨 (에폭)
@@ -239,35 +321,68 @@ class NeuralLM(_load_prev("v0.0.9")):
         out.append(f'<line x1="{L}" y1="{T + ph}" x2="{L + pw}" y2="{T + ph}" stroke="#999"/>')
         out.append(f'<text x="{L + pw / 2}" y="{H - 14}" font-size="12" fill="#444" '
                    f'text-anchor="middle">epoch</text>')
-        out.append(f'<text x="18" y="{T + ph / 2}" font-size="12" fill="#444" '
-                   f'text-anchor="middle" transform="rotate(-90 18 {T + ph / 2})">loss</text>')
+        out.append(f'<text x="18" y="{T + ph / 2}" font-size="12" fill="#2b6cb0" '
+                   f'text-anchor="middle" transform="rotate(-90 18 {T + ph / 2})">train loss</text>')
 
-        # 손실 곡선
+        # 검증 PPL (오른쪽 축). PPL 은 exp(손실) 이라 **로그 눈금**으로 그려요 —
+        # 1에폭째 PPL 이 수백이라 선형 눈금이면 바닥의 32~40 구간이 뭉개져 안 보입니다.
+        if valids:
+            vlo, vhi = min(valids), max(valids)
+            if vhi / max(vlo, 1e-9) < 1.05:
+                vlo, vhi = vlo * 0.95, vhi * 1.05
+            llo, lhi = math.log(vlo), math.log(vhi)
+
+            def vy(v):
+                return T + ph * (lhi - math.log(v)) / (lhi - llo)
+
+            vpts = " ".join(f"{px(i):.1f},{vy(v):.1f}" for i, v in enumerate(valids))
+            out.append(f'<polyline points="{vpts}" fill="none" stroke="#c53030" '
+                       f'stroke-width="1.6" stroke-dasharray="4 2"/>')
+            for k in range(5):
+                v = math.exp(llo + (lhi - llo) * k / 4)
+                out.append(f'<text x="{L + pw + 10}" y="{vy(v) + 4:.1f}" font-size="11" '
+                           f'fill="#c53030">{v:.1f}</text>')
+            out.append(f'<text x="{W - 14}" y="{T + ph / 2}" font-size="12" fill="#c53030" '
+                       f'text-anchor="middle" '
+                       f'transform="rotate(90 {W - 14} {T + ph / 2})">valid PPL (log)</text>')
+
+        # 학습 손실 곡선
         pts = " ".join(f"{px(i):.1f},{py(v):.1f}" for i, v in enumerate(losses))
         out.append(f'<polyline points="{pts}" fill="none" stroke="#2b6cb0" stroke-width="1.8"/>')
 
-        # 최저점 표시 (라벨이 그래프 밖으로 잘리지 않게 가장자리에서는 정렬을 바꿔요)
-        j = min(range(n), key=lambda i: losses[i])
-        mx, my = px(j), py(losses[j])
-        anchor = "end" if mx > L + pw * 0.8 else ("start" if mx < L + pw * 0.2 else "middle")
-        out.append(f'<circle cx="{mx:.1f}" cy="{my:.1f}" r="3.5" fill="#c53030"/>')
-        out.append(f'<text x="{mx:.1f}" y="{my - 10:.1f}" font-size="11" fill="#c53030" '
-                   f'text-anchor="{anchor}">최저 {losses[j]:.4f} (epoch {j + 1})</text>')
+        # 조기 종료로 채택된 에폭에 세로 점선
+        if best_epoch and 1 <= best_epoch <= n:
+            bx = px(best_epoch - 1)
+            out.append(f'<line x1="{bx:.1f}" y1="{T}" x2="{bx:.1f}" y2="{T + ph}" '
+                       f'stroke="#666" stroke-width="1.2" stroke-dasharray="5 4"/>')
+            anchor = "end" if bx > L + pw * 0.6 else "start"
+            dx = -6 if anchor == "end" else 6
+            out.append(f'<text x="{bx + dx:.1f}" y="{T + 14}" font-size="11" fill="#444" '
+                       f'text-anchor="{anchor}">채택 epoch {best_epoch}</text>')
 
         # 요약
+        summary = f'{n} epochs · 학습손실 {losses[0]:.4f} → {losses[-1]:.4f}'
+        if valids:
+            summary += f' · 검증PPL 최저 {min(valids):.2f}'
         out.append(f'<text x="{L + pw}" y="26" font-size="11" fill="#666" text-anchor="end">'
-                   f'{n} epochs · 시작 {losses[0]:.4f} → 마지막 {losses[-1]:.4f}</text>')
+                   f'{summary}</text>')
         out.append("</svg>")
 
         with open(path, "w", encoding="utf-8") as f:
             f.write("\n".join(out))
         return path
 
-    def run_train(self, data_path, model_path, vocab_path):
+    def run_train(self, data_path, model_path, vocab_path, valid_path=None):
         print(f"데이터를 읽는 중... ({data_path})")
         sentences = self.read_sentences(data_path)
         print(f"문장 {len(sentences)}개 / 토크나이저={self.tokenizer_name()}")
-        self.train(sentences)
+
+        # 조기 종료용 검증 문장 (없으면 EPOCHS 를 끝까지 돕니다)
+        valid_sentences = None
+        if valid_path and os.path.exists(valid_path):
+            valid_sentences = self.read_sentences(valid_path)
+            print(f"검증 문장 {len(valid_sentences)}개 ({valid_path})")
+        self.train(sentences, valid_sentences)
         self.save(model_path, vocab_path)
         print(f"모델 저장 완료 -> {model_path}  (+ vocab.json)")
 

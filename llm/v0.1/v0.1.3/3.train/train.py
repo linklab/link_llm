@@ -22,11 +22,11 @@ if __name__ == "__main__":
     m = model.Model()
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
-    # 아래 값은 5개 시드 · 에폭별 검증 PPL 을 재서 고른 설정이에요 (검증 PPL 39.5 ± 0.4).
+    # 아래 값은 5개 시드 · 에폭별 검증 PPL 을 재서 고른 설정이에요 (조기 종료 시 검증 PPL 39.3).
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
     m.HIDDEN = 256             # 은닉층 크기 (2층 MLP)
     m.LR = 0.0003              # ★ Adam 은 1e-4~1e-3 대. 0.05 는 50배 이상 커서 발산해요
-    m.EPOCHS = 130             # ★ 2,180개 짝뿐이라 금방 과적합. 100~160 이 평평한 바닥
+    m.EPOCHS = 300             # 상한. 실제 종료 지점은 아래 조기 종료가 정해요
     m.BATCH_SIZE = 64
     m.SEED = 1234
     m.WEIGHT_DECAY = 0.0       # 실측: 1e-4 부터 이미 검증 PPL 이 나빠져요 → 0
@@ -35,6 +35,12 @@ if __name__ == "__main__":
                                #   이 평가에서는 perplexity() 가 FLOOR(1e-4)로 이미 바닥을
                                #   깔아줘서(=add-k 스무딩과 같은 역할) 스무딩이 중복이거든요.
                                #   개념을 눈으로 보려면 0.1/0.2 로 올려 PPL 변화를 확인해 보세요.
+    # --- 조기 종료 (early stopping) ---
+    # 검증 PPL 이 PATIENCE 에폭 동안 나아지지 않으면 멈추고, **가장 좋았던 가중치**로 되돌려요.
+    # 그래서 EPOCHS 는 이제 '정확히 맞춰야 하는 값'이 아니라 넉넉한 **상한**이면 됩니다.
+    m.EARLY_STOPPING = True    # False 면 EPOCHS 를 끝까지 돕니다
+    m.PATIENCE = 10            # 몇 에폭까지 참을지
+    m.MIN_DELTA = 0.0          # 이만큼은 좋아져야 '개선'으로 인정
     # ==============================================================
 
-    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)
+    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH, model.VALID_PATH)

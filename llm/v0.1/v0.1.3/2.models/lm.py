@@ -83,7 +83,7 @@ class NeuralLM(_prev.NGramLM):
             torch.nn.init.zeros_(model.fc2.weight)
             torch.nn.init.zeros_(model.fc2.bias)
 
-    def train(self, sentences):
+    def train(self, sentences, valid_sentences=None):
         _require_torch()
         # 1) 어휘 + (앞, 다음) 짝
         self.itos = self.build_vocab(sentences)
@@ -104,6 +104,7 @@ class NeuralLM(_prev.NGramLM):
         optimizer = self.make_optimizer(self.net) # ← weight_decay 포함 (v0.1.3)
 
         self.losses = []
+        stopper = self.start_early_stopping(valid_sentences)
         print(f"  학습 시작: 어휘 {V}개, 은닉 {self.HIDDEN}, 짝 {len(xs_list)}개, epochs {self.EPOCHS}, "
               f"batch {self.BATCH_SIZE}, optim={self.OPTIMIZER}, lr {self.LR}, "
               f"weight_decay {self.WEIGHT_DECAY}, init={self.INIT}, label_smoothing {self.LABEL_SMOOTHING}")
@@ -126,7 +127,10 @@ class NeuralLM(_prev.NGramLM):
             self.losses.append(avg)
             if epoch == 1 or epoch % 5 == 0:
                 print(f"  epoch {epoch:3d}/{self.EPOCHS}   avg loss {avg:.4f}")
+            if self.should_stop_early(stopper, epoch):
+                break
 
+        self.finish_early_stopping(stopper)
         self.net.eval()
         return self.net
 

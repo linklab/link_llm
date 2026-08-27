@@ -55,8 +55,8 @@ with torch.no_grad():
 > ```
 
 ```bash
-python3 3.train/train.py     # 학습 → 2.models/model.pt + 3.train/loss.svg (손실 곡선)
-python3 4.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
+python3 1.train/train.py     # 학습 → 0.model/model.pt + 1.train/loss.svg (손실 곡선)
+python3 2.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
 ```
 
 학습으로 `model.json` 이 생기면, 루트의 웹앱(`web_service`)에서도 v0.1.0 을 골라
@@ -65,7 +65,7 @@ python3 4.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
 ## 완결성 — 웹앱에서 바로 평가
 
 이 버전은 **학습 → 생성/대화 → PPL 측정**까지 한 버전에 완결돼요.
-`2.models / 3.train / 4.test` 구조(+ 루트 공용 `data/`)도 v0.0.x 와 똑같아서 `web_service` 가 그대로 불러옵니다.
+`0.model / 1.train / 2.test` 구조(+ 루트 공용 `data/`)도 v0.0.x 와 똑같아서 `web_service` 가 그대로 불러옵니다.
 
 ## 여기서부터 신경망 (v0.1.x, 5단계)
 
@@ -75,7 +75,7 @@ python3 4.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
 
 > 다음 v0.2.x 에서는 one-hot 을 **임베딩 벡터**로 바꾸고 은닉층을 얹어 **MLP(Bengio)** 로 갑니다.
 
-## 손실 곡선 — `3.train/loss.svg`
+## 손실 곡선 — `1.train/loss.svg`
 
 학습이 끝나면 **에폭별 손실**을 SVG 그래프로 남겨요. 숫자만 흘려보내지 말고
 "정말 내려가고 있나"를 눈으로 확인하는 게 신경망 학습의 첫 습관이에요.
@@ -89,7 +89,7 @@ python3 4.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
   같은 에폭 수로 훨씬 낮은 지점에 도달하는 걸 곡선끼리 비교하면 바로 보입니다.
 - `save_loss_plot()` 은 v0.1.0 에 있어서 **이후 모든 신경망 버전이 그대로 물려받아요.**
 - `loss.svg` 는 model.pt 처럼 **학습 산출물이라 커밋하지 않아요**(`.gitignore`).
-  클론 직후에는 없고, `3.train/train.py` 를 한 번 돌리면 생깁니다.
+  클론 직후에는 없고, `1.train/train.py` 를 한 번 돌리면 생깁니다.
 
 ## 조기 종료 (early stopping)
 

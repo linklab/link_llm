@@ -222,10 +222,10 @@ __marimo__/
 
 # link_llm: 신경망(v0.1.x~) 학습 결과(model.pt 가중치 + vocab.json 어휘)는 커서 추적 제외.
 #   (개수 세기 시대 v0.0.x 는 작으니 그대로 유지 — 아래 예외 규칙으로 다시 포함)
-llm/**/2.models/model.json
-llm/**/2.models/model.pt
-llm/**/2.models/vocab.json
-!llm/v0.0/**/2.models/model.json
+llm/**/0.model/model.json
+llm/**/0.model/model.pt
+llm/**/0.model/vocab.json
+!llm/v0.0/**/0.model/model.json
 
-# 학습 산출물: 손실 곡선 SVG (3.train/train.py 를 돌리면 다시 생겨요)
-llm/**/3.train/loss.svg
+# 학습 산출물: 손실 곡선 SVG (1.train/train.py 를 돌리면 다시 생겨요)
+llm/**/1.train/loss.svg

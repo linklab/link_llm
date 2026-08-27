@@ -29,7 +29,7 @@ for batch in loader:
 
 ## 옵티마이저 3종 비교
 
-`3.train/train.py` 의 `OPTIMIZER` 를 바꿔 학습해 보세요:
+`1.train/train.py` 의 `OPTIMIZER` 를 바꿔 학습해 보세요:
 
 - **`"sgd"`** — `p -= lr*grad`. v0.1.1 과 같은 규칙(이제 표준 API).
 - **`"momentum"`** — 이전 방향을 관성처럼 누적 → 지그재그가 줄고 더 빨리 수렴.
@@ -45,8 +45,8 @@ for batch in loader:
 > ```
 
 ```bash
-python3 3.train/train.py     # torch.optim 으로 학습 → 2.models/model.json
-python3 4.test/test.py       # 학습/검증 PPL + 대화 예시
+python3 1.train/train.py     # torch.optim 으로 학습 → 0.model/model.json
+python3 2.test/test.py       # 학습/검증 PPL + 대화 예시
 ```
 
 `model.json` 이 생기면 웹앱(`web_service`)에서 v0.1.2 를 골라 **대화로 바로 평가**할 수 있어요.

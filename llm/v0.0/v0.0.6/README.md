@@ -48,8 +48,8 @@
 ## 사용 방법
 
 ```bash
-python3 3.train/train.py     # 1) 학습 (문장부호 분리 + 백오프용 표1, 표2)
-python3 4.test/test.py       # 2) 문장을 만들어 보기 (문장부호가 자연스럽게 나옴)
+python3 1.train/train.py     # 1) 학습 (문장부호 분리 + 백오프용 표1, 표2)
+python3 2.test/test.py       # 2) 문장을 만들어 보기 (문장부호가 자연스럽게 나옴)
 ```
 
 웹앱(`web_service`)은 각 버전의 `tokenizer` 정보를 읽어 자동으로 맞는 방식으로 처리해요.

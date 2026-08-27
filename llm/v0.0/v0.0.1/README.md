@@ -17,17 +17,17 @@
 
 ```
 v0.0.1/
-├── 2.models/         # 모델 코드와 결과가 있는 곳
+├── 0.model/         # 모델 코드와 결과가 있는 곳
 │   ├── lm.py       #   - NGramLM(기능) + Model(설정 ORDERS=[1]) — 뒤 버전들이 물려받음
 │   └── model.json  #   - train.py 를 실행하면 자동으로 생겨요
-├── 3.train/          # 학습(공부)시키는 곳
-│   └── train.py    #   - 얇은 실행기 (실제 학습 코드는 2.models/lm.py)
-└── 4.test/           # 만든 모델을 시험해 보는 곳
-    └── test.py     #   - 얇은 실행기 (실제 생성 코드는 2.models/lm.py)
+├── 1.train/          # 학습(공부)시키는 곳
+│   └── train.py    #   - 얇은 실행기 (실제 학습 코드는 0.model/lm.py)
+└── 2.test/           # 만든 모델을 시험해 보는 곳
+    └── test.py     #   - 얇은 실행기 (실제 생성 코드는 0.model/lm.py)
 ```
 
-> v0.0.1 은 언어 모델의 **기반 클래스** `NGramLM` 을 [`2.models/lm.py`](2.models/lm.py) 에 통째로 담아요.
-> 뒤 버전들(v0.0.2 ...)은 이 클래스를 물려받아 **바뀌는 함수만** 자기 `2.models/lm.py` 에 덧붙입니다.
+> v0.0.1 은 언어 모델의 **기반 클래스** `NGramLM` 을 [`0.model/lm.py`](0.model/lm.py) 에 통째로 담아요.
+> 뒤 버전들(v0.0.2 ...)은 이 클래스를 물려받아 **바뀌는 함수만** 자기 `0.model/lm.py` 에 덧붙입니다.
 
 ## 사용 방법
 
@@ -36,15 +36,15 @@ v0.0.1/
 ### 1단계 — 학습시키기
 
 ```bash
-python3 3.train/train.py
+python3 1.train/train.py
 ```
 
-실행하면 `2.models/model.json` 파일이 만들어져요.
+실행하면 `0.model/model.json` 파일이 만들어져요.
 
 ### 2단계 — 문장 만들어 보기
 
 ```bash
-python3 4.test/test.py
+python3 2.test/test.py
 ```
 
 배운 문장을 바탕으로 새 문장을 만들어 보여줍니다.
@@ -52,7 +52,7 @@ python3 4.test/test.py
 ## 더 해보기 (직접 바꿔보세요!)
 
 - `공용 data/data.txt` 에 **내가 좋아하는 문장**을 더 추가한 뒤 다시 학습시켜 보세요.
-- `4.test/test.py` 의 시작 단어 목록을 바꿔 보세요.
+- `2.test/test.py` 의 시작 단어 목록을 바꿔 보세요.
 - 학습을 다시 하면(`train.py` 실행) 모델이 새로운 문장을 배웁니다.
 
 ## 버전

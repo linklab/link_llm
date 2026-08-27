@@ -44,8 +44,8 @@ nn.Embedding(V, E)(idx)  ==  F.one_hot(idx, V).float() @ C     # C: V×E
 > ```
 
 ```bash
-python3 3.train/train.py     # 임베딩 MLP 학습 → 2.models/model.pt (+ vocab.json)
-python3 4.test/test.py       # 학습/검증 PPL + 대화 예시
+python3 1.train/train.py     # 임베딩 MLP 학습 → 0.model/model.pt (+ vocab.json)
+python3 2.test/test.py       # 학습/검증 PPL + 대화 예시
 ```
 
 검증 PPL 이 **v0.1.5(one-hot 2토큰) 보다 내려가면** "임베딩의 공유 표현이 일반화에 도움",
@@ -79,7 +79,7 @@ python3 4.test/test.py       # 학습/검증 PPL + 대화 예시
 
 ## 하이퍼파라미터를 어떻게 골랐나
 
-`3.train/train.py` 의 기본값은 **에폭별 검증 PPL 곡선 × 8개 시드**를 재서 고른 값이에요.
+`1.train/train.py` 의 기본값은 **에폭별 검증 PPL 곡선 × 8개 시드**를 재서 고른 값이에요.
 직접 바꿔볼 때 참고할 실측 정리:
 
 - **`LR` 이 가장 중요해요.** Adam 은 `1e-4 ~ 1e-3` 대가 정상입니다.

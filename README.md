@@ -12,9 +12,9 @@ link_llm/
 ├── llm/                    # 모델 버전들을 모아두는 곳
 │   ├── v0.0/               # [개수 세기 시대] 마이너 그룹
 │   │   ├── v0.0.1/         #   - 앞 단어 1개로 예측 (가장 기본)
-│   │   │   ├── 2.models/     #      lm.py (NGramLM + 설정) + model.json (학습 결과)
-│   │   │   ├── 3.train/      #      얇은 train.py (+ 신경망 버전은 loss.svg 손실 곡선)
-│   │   │   └── 4.test/       #      얇은 test.py   (데이터는 루트 data/ 를 공용)
+│   │   │   ├── 0.model/     #      lm.py (NGramLM + 설정) + model.json (학습 결과)
+│   │   │   ├── 1.train/      #      얇은 train.py (+ 신경망 버전은 loss.svg 손실 곡선)
+│   │   │   └── 2.test/       #      얇은 test.py   (데이터는 루트 data/ 를 공용)
 │   │   ├── v0.0.2/         #   - 앞 단어 2개 (lm.py 가 v0.0.1 을 상속, 새 코드 없음)
 │   │   ├── v0.0.3/         #   - 문장 끝(<END>) 학습    (lm.py 가 <END> 추가)
 │   │   ├── v0.0.4/         #   - 백오프(2→1단어 재시도)  (lm.py 가 백오프 추가)
@@ -42,49 +42,49 @@ link_llm/
 
 > 상속·로딩은 그룹을 자동으로 찾아가요: 각 `lm.py` 의 `_load_prev` 는 이전 버전 이름
 > (예: `v0.0.9`)에서 그룹(`v0.0`)을 계산해 `llm/v0.0/v0.0.9/…` 경로로 불러오고,
-> `web_service` 도 `llm/<그룹>/<버전>/2.models/model.json` 을 훑어 버전을 찾습니다.
+> `web_service` 도 `llm/<그룹>/<버전>/0.model/model.json` 을 훑어 버전을 찾습니다.
 
-## 코드 구조 (버전별 2.models/lm.py + 상속 사슬)
+## 코드 구조 (버전별 0.model/lm.py + 상속 사슬)
 
 버전마다 코드가 거의 똑같이 반복되던 것을, **상속 사슬**로 정리했어요.
-각 버전의 `2.models/lm.py` 하나에 **NGramLM(기능) + Model(설정)** 이 함께 들어 있고,
+각 버전의 `0.model/lm.py` 하나에 **NGramLM(기능) + Model(설정)** 이 함께 들어 있고,
 그 버전이 **처음 추가한 함수만** 담아 나머지는 이전 버전에서 물려받아요.
 
 ```
-v0.0.1/2.models/lm.py  NGramLM (기반: 읽기·학습·저장·생성 전부) + Model
+v0.0.1/0.model/lm.py  NGramLM (기반: 읽기·학습·저장·생성 전부) + Model
       ▲ 상속
-v0.0.2/2.models/lm.py  (새 코드 없음 — ORDERS=[2] 설정만으로 앞 2단어)
+v0.0.2/0.model/lm.py  (새 코드 없음 — ORDERS=[2] 설정만으로 앞 2단어)
       ▲
-v0.0.3/2.models/lm.py  + prepare()/is_end()      ← 문장 끝 <END>
+v0.0.3/0.model/lm.py  + prepare()/is_end()      ← 문장 끝 <END>
       ▲
-v0.0.4/2.models/lm.py  + next_token()/can_continue()  ← 백오프
+v0.0.4/0.model/lm.py  + next_token()/can_continue()  ← 백오프
       ▲
-v0.0.5/2.models/lm.py  + choose()                ← 확률 + 온도
+v0.0.5/0.model/lm.py  + choose()                ← 확률 + 온도
       ▲
-v0.0.6/2.models/lm.py  + tokenize()/detokenize() ← 문장부호 분리
+v0.0.6/0.model/lm.py  + tokenize()/detokenize() ← 문장부호 분리
       ▲
-v0.0.7/2.models/lm.py  + choose()/generate()     ← top-k / top-p 샘플링
+v0.0.7/0.model/lm.py  + choose()/generate()     ← top-k / top-p 샘플링
       ▲
-v0.0.8/2.models/lm.py  + chat()/build_chat_context()  ← 대화 형식 + 멀티턴
+v0.0.8/0.model/lm.py  + chat()/build_chat_context()  ← 대화 형식 + 멀티턴
       ▲
-v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
+v0.0.9/0.model/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 ```
 
-- **각 버전 `2.models/lm.py`** — `NGramLM`(그 버전이 새로 추가/변경한 함수) + `Model`(설정 `ORDERS`).
+- **각 버전 `0.model/lm.py`** — `NGramLM`(그 버전이 새로 추가/변경한 함수) + `Model`(설정 `ORDERS`).
   → "이 버전이 뭘 더했나"가 한눈에.
-- **`3.train/train.py`·`4.test/test.py`** — `2.models/lm.py` 를 불러와 실행하는 **얇은 껍데기**.
-  → 신경망(v0.1.0~) 은 학습이 끝나면 에폭별 손실 곡선을 `3.train/loss.svg` 에 남겨요
+- **`1.train/train.py`·`2.test/test.py`** — `0.model/lm.py` 를 불러와 실행하는 **얇은 껍데기**.
+  → 신경망(v0.1.0~) 은 학습이 끝나면 에폭별 손실 곡선을 `1.train/loss.svg` 에 남겨요
     (matplotlib 없이 SVG 를 직접 그립니다 — 의존성은 torch 하나 그대로).
-    학습 산출물이라 **커밋하지 않아요** — `3.train/train.py` 를 돌리면 생깁니다.
+    학습 산출물이라 **커밋하지 않아요** — `1.train/train.py` 를 돌리면 생깁니다.
   → 신경망 버전은 **조기 종료(early stopping)** 도 켜져 있어요. 매 에폭 검증 PPL 을 재서
     좋아지지 않으면 멈추고 **가장 좋았던 가중치로 되돌려** 저장하므로, `EPOCHS` 는
     맞춰야 하는 값이 아니라 넉넉한 상한이면 됩니다
     (PyTorch 본체엔 없는 기능이라 `lm.py` 안에 직접 구현 — 의존성은 torch 하나 그대로).
-- **`web_service/server.py`** — 선택된 버전의 `2.models/lm.py` 를 불러와 `generate` 만 호출.
+- **`web_service/server.py`** — 선택된 버전의 `0.model/lm.py` 를 불러와 `generate` 만 호출.
 
 > 폴더 이름에 `.` 이 있어 일반 `import` 가 안 되므로, 이전 버전 `lm.py` 는 파일 경로로
 > 불러와요(각 `lm.py` 상단의 `_load_prev`). "이 버전이 뭘 바꿨나"는 그 `lm.py` 하나만,
-> "전체가 어떻게 도나"는 `v0.0.1/2.models/lm.py` 부터 사슬을 따라 읽으면 됩니다.
+> "전체가 어떻게 도나"는 `v0.0.1/0.model/lm.py` 부터 사슬을 따라 읽으면 됩니다.
 > 모델 저장 형식은 개수 세기(v0.0.x) 버전은 `{ "max_order", "tokenizer", "tables" }` 를 담은
 > `model.json` 하나예요. 신경망(v0.1.x~) 버전은 **PyTorch 표준**으로 나눠 저장해요 —
 > 가중치는 `model.pt`(`torch.save(net.state_dict())`), 어휘는 `vocab.json`(`{tokenizer, vocab}`).
@@ -162,7 +162,7 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
   softmax 의 부드러움으로 카운트의 FLOOR 절벽을 피해 **검증 PPL 34.39 → 31.81** 로 낮춥니다.
   자세한 설명은 [llm/v0.1/v0.1.4/README.md](llm/v0.1/v0.1.4/README.md) 참고.
 - [**v0.1.5**](llm/v0.1/v0.1.5/) — **기준선 대결(캡스톤)**: 같은 학습/검증 데이터로 **v0.0.9(카운트) vs 신경망(1토큰·2토큰)**
-  의 PPL 을 나란히 재서 "신경망이 정말 이겼나?"를 확인해요. `4.test/test.py` 가 대결표를 출력합니다.
+  의 PPL 을 나란히 재서 "신경망이 정말 이겼나?"를 확인해요. `2.test/test.py` 가 대결표를 출력합니다.
   결과: 1토큰 신경망(38~40)은 카운트(34.39)에 지고, **같은 2토큰**으로 맞춘 v0.1.4~5 가 **31.81** 로 이겨요.
   **신경망 시대(v0.1.x) 완성.** 자세한 설명은 [llm/v0.1/v0.1.5/README.md](llm/v0.1/v0.1.5/README.md) 참고.
 - [**v0.2.0**](llm/v0.2/v0.2.0/) — **임베딩 도입**: 입력을 one-hot → **`nn.Embedding`** 으로 바꿔요.
@@ -179,7 +179,7 @@ v0.0.9/2.models/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 
 ## 📏 여러 지표로 비교하기 — `eval_suite.py`
 
-각 버전의 `4.test/test.py` 는 '그 버전 하나'를 봅니다. `eval_suite.py` 는 학습된 버전을
+각 버전의 `2.test/test.py` 는 '그 버전 하나'를 봅니다. `eval_suite.py` 는 학습된 버전을
 **모두 모아 같은 데이터로** 나란히 재요. 그리고 **지표를 하나만 보지 않습니다.**
 
 ```bash
@@ -231,7 +231,7 @@ v0.2.0   신경망       3.74    32.76    19.30   46.6%   83.6%    16.0%    538,
 > 샘플링(온도/top-k·top-p)·생성(`generate`)·퍼플렉서티(PPL)는 그대로 두고, 각 신경망 버전은
 > **"다음 토큰 확률을 어디서 얻느냐"(개수 표 → 신경망)만** 바꿔요. **v0.1.0부터 PyTorch autograd 사용.**
 >
-> 덕분에 **모든 버전이** `2.models / 3.train / 4.test` 구조 + **루트 공용 `data/`** 를 그대로 써서 `web_service` 가 수정 없이 로드하고,
+> 덕분에 **모든 버전이** `0.model / 1.train / 2.test` 구조 + **루트 공용 `data/`** 를 그대로 써서 `web_service` 가 수정 없이 로드하고,
 > **학습 → 생성/대화 → PPL 측정**까지 완결되어 **웹앱에서 바로 평가**할 수 있어요.
 > (각 마이너의 마지막은 여러 모델을 웹앱에서 나란히 비교하는 **캡스톤** 버전이에요.)
 
@@ -396,4 +396,4 @@ v0.0.2·v0.0.3 은 **앞 두 단어**로 다음 단어를 찾는 모델이에요
 ## 새 버전을 만들려면?
 
 `llm/v0.0.2` 처럼 `llm/` 아래에 새 폴더를 만들어 관리하면 이전 버전을 그대로 보존할 수 있어요.
-(새 버전은 `3.train/train.py`를 한 번 실행해 `2.models/model.json`을 만들어야 웹앱 목록에 나타납니다.)
+(새 버전은 `1.train/train.py`를 한 번 실행해 `0.model/model.json`을 만들어야 웹앱 목록에 나타납니다.)

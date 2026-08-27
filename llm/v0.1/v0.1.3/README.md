@@ -23,8 +23,8 @@
 > ```
 
 ```bash
-python3 3.train/train.py     # 정규화·초기화로 학습 → 2.models/model.json
-python3 4.test/test.py       # 학습/검증 PPL 격차 + 대화 예시
+python3 1.train/train.py     # 정규화·초기화로 학습 → 0.model/model.json
+python3 2.test/test.py       # 학습/검증 PPL 격차 + 대화 예시
 ```
 
 `model.json` 이 생기면 웹앱(`web_service`)에서 v0.1.3 을 골라 **대화로 바로 평가**할 수 있어요.

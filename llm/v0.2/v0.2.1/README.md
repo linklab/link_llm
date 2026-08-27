@@ -48,8 +48,8 @@ N토큰이 다 안 차는 문장 앞부분은 `<PAD>`(어휘 0번)로 채워요.
 > ⚠️ **PyTorch** 필요. `pip install torch`
 
 ```bash
-python3 3.train/train.py     # N토큰 문맥 학습 → 2.models/model.pt (+ vocab.json)
-python3 4.test/test.py       # 학습/검증 PPL + 대화 예시
+python3 1.train/train.py     # N토큰 문맥 학습 → 0.model/model.pt (+ vocab.json)
+python3 2.test/test.py       # 학습/검증 PPL + 대화 예시
 ```
 
 검증 PPL 이 **v0.2.0(2토큰) 보다 내려가면** "문맥 확장이 일반화에 도움".

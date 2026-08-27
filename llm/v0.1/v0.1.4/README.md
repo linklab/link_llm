@@ -37,8 +37,8 @@
 > ```
 
 ```bash
-python3 3.train/train.py     # 2토큰 문맥 학습 → 2.models/model.json (W2)
-python3 4.test/test.py       # 학습/검증 PPL + 대화 예시
+python3 1.train/train.py     # 2토큰 문맥 학습 → 0.model/model.json (W2)
+python3 2.test/test.py       # 학습/검증 PPL + 대화 예시
 ```
 
 검증 PPL 이 **v0.0.9 의 34.39 아래**로 내려가면, "같은 문맥에서 신경망이 카운트를 이겼다".

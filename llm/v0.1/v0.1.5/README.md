@@ -12,15 +12,15 @@
 
 ```bash
 # (torch 환경) 비교할 신경망 버전들을 먼저 학습해 model.json 을 만들어 두고…
-python3 llm/v0.1/v0.1.0/3.train/train.py
-python3 llm/v0.1/v0.1.3/3.train/train.py
-python3 llm/v0.1/v0.1.4/3.train/train.py    # 2토큰 문맥
-python3 llm/v0.1/v0.1.5/3.train/train.py
+python3 llm/v0.1/v0.1.0/1.train/train.py
+python3 llm/v0.1/v0.1.3/1.train/train.py
+python3 llm/v0.1/v0.1.4/1.train/train.py    # 2토큰 문맥
+python3 llm/v0.1/v0.1.5/1.train/train.py
 # 대결표 출력
-python3 llm/v0.1/v0.1.5/4.test/test.py
+python3 llm/v0.1/v0.1.5/2.test/test.py
 ```
 
-실제 출력 (각 버전 `3.train/train.py` 의 기본 하이퍼파라미터로 학습했을 때):
+실제 출력 (각 버전 `1.train/train.py` 의 기본 하이퍼파라미터로 학습했을 때):
 ```
 버전     종류   학습PPL  검증PPL   격차   top-1   후보有
 v0.0.9   카운트   2.79   34.39   12.3배   45.5%   72.0%   ← 개수 세기 기준선(앞 2토큰)
@@ -60,7 +60,7 @@ v0.1.5   신경망   3.60   31.81    8.8배   47.1%   83.6%
 ## 완결성 — 웹앱에서도
 
 `model.json` 을 `type` 으로 구분해 로드하므로, 웹앱(`web_service`)에서 v0.1.5 를 골라 **대화로도** 평가할 수 있어요.
-(대결표는 `4.test/test.py`, 대화는 웹앱 — 둘 다 됩니다.)
+(대결표는 `2.test/test.py`, 대화는 웹앱 — 둘 다 됩니다.)
 
 ## 신경망 시대 완성 (v0.1.x)
 

@@ -46,12 +46,12 @@ v0.0.2 는 앞 2단어만 보므로 `tables` 에 `"2"` 표 하나만 들어갑�
 
 ```
 v0.0.2/
-├── 2.models/
+├── 0.model/
 │   ├── lm.py       # v0.0.1 을 상속만 함 (새 코드 없음! 설정 ORDERS=[2] 만으로 앞 2단어)
 │   └── model.json  # train.py 를 실행하면 자동으로 생겨요
-├── 3.train/
+├── 1.train/
 │   └── train.py    # 얇은 실행기 (실제 학습 코드는 lm.py 사슬)
-└── 4.test/
+└── 2.test/
     └── test.py     # 얇은 실행기 (실제 생성 코드는 lm.py 사슬)
 ```
 
@@ -62,19 +62,19 @@ v0.0.2/
 ### 1단계 — 학습시키기
 
 ```bash
-python3 3.train/train.py
+python3 1.train/train.py
 ```
 
 ### 2단계 — 문장 만들어 보기
 
 ```bash
-python3 4.test/test.py
+python3 2.test/test.py
 ```
 
 ## 더 해보기
 
 - `공용 data/data.txt` 에 문장을 더 추가한 뒤 다시 학습시켜 보세요.
-- `4.test/test.py` 의 시작 두 단어를 바꿔 보세요.
+- `2.test/test.py` 의 시작 두 단어를 바꿔 보세요.
 - `lm.py` 의 `ORDERS` 를 `[3]` 으로 바꾸면 "앞 세 단어"를 보는 모델도 만들 수 있어요.
 
 ## 한계 (→ 다음 버전 예고)

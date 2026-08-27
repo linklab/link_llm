@@ -47,8 +47,8 @@ PPL 은 **"확률을 얼마나 잘 배분했나"** 를 봅니다. 그런데 실�
 ## 실행 결과
 
 ```bash
-python3 3.train/train.py     # 학습 (data.txt)
-python3 4.test/test.py       # 평가 (PPL + 정확도)
+python3 1.train/train.py     # 학습 (data.txt)
+python3 2.test/test.py       # 평가 (PPL + 정확도)
 ```
 
 ```

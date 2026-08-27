@@ -31,7 +31,7 @@ INDEX_PATH = os.path.join(HERE, "index.html")         # 화면(HTML) 파일
 
 # ----------------------------------------------------------------------
 # 1) 버전 찾기: 버전들은 마이너별 그룹 폴더 아래에 있어요.
-#    예) llm/v0.0/v0.0.9/2.models/model.json , llm/v0.1/v0.1.0/2.models/model.json
+#    예) llm/v0.0/v0.0.9/0.model/model.json , llm/v0.1/v0.1.0/0.model/model.json
 #    그래서 "그룹(v0.0) -> 버전(v0.0.9)" 2단계로 훑어, model.json 이 있는 버전을 모읍니다.
 # ----------------------------------------------------------------------
 def _version_dir(version):
@@ -58,7 +58,7 @@ def find_versions():
             continue
         for name in os.listdir(group_dir):                 # 2단계: 버전 폴더 (v0.0.9 ...)
             folder = os.path.join(group_dir, name)
-            mdir = os.path.join(folder, "2.models")
+            mdir = os.path.join(folder, "0.model")
             # 신경망(v0.1.x) 은 model.pt, 카운트(v0.0.x) 는 model.json 을 학습 결과로 가져요.
             has_model = os.path.exists(os.path.join(mdir, "model.pt")) \
                 or os.path.exists(os.path.join(mdir, "model.json"))
@@ -70,11 +70,11 @@ def find_versions():
 
 def load_version_class(version):
     """
-    선택한 버전 폴더의 2.models/lm.py 를 불러와, 그 버전의 NGramLM 클래스를 돌려줍니다.
+    선택한 버전 폴더의 0.model/lm.py 를 불러와, 그 버전의 NGramLM 클래스를 돌려줍니다.
     (폴더 이름에 '.' 이 있어 보통의 import 가 안 되므로 파일 경로로 불러와요.
      각 버전의 lm.py 는 이전 버전 lm.py 를 물려받는 사슬 구조예요.)
     """
-    model_py = os.path.join(_version_dir(version), "2.models", "lm.py")
+    model_py = os.path.join(_version_dir(version), "0.model", "lm.py")
     spec = importlib.util.spec_from_file_location("llmlm_" + version.replace(".", "_"), model_py)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -84,7 +84,7 @@ def load_version_class(version):
 def load_lm(version):
     """선택한 버전의 클래스로 모델(model.json)을 불러옵니다. (각 버전 test.py 와 똑같은 클래스)"""
     cls = load_version_class(version)
-    mdir = os.path.join(_version_dir(version), "2.models")
+    mdir = os.path.join(_version_dir(version), "0.model")
     pt = os.path.join(mdir, "model.pt")           # 신경망(v0.1.x): 가중치(+vocab.json)
     model_file = pt if os.path.exists(pt) else os.path.join(mdir, "model.json")
     return cls().load(model_file)
@@ -93,7 +93,7 @@ def load_lm(version):
 # ----------------------------------------------------------------------
 # 2) 문장 생성
 # ----------------------------------------------------------------------
-# 문장 생성 코드는 각 버전 폴더의 2.models/lm.py 에 있는 NGramLM 에 있어요.
+# 문장 생성 코드는 각 버전 폴더의 0.model/lm.py 에 있는 NGramLM 에 있어요.
 # 웹서버는 선택된 버전의 클래스를 불러와서(load) generate 를 부를 뿐입니다.
 def generate_reply(lm, message, temperature, top_k=0, top_p=1.0):
     """

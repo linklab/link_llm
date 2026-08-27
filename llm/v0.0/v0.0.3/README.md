@@ -39,12 +39,12 @@
 
 ```
 v0.0.3/
-├── 2.models/
+├── 0.model/
 │   ├── lm.py       # v0.0.2 를 상속 + prepare()/is_end() 추가 (문장 끝 <END>), 설정 ORDERS=[2]
 │   └── model.json  # train.py 를 실행하면 자동으로 생겨요
-├── 3.train/
+├── 1.train/
 │   └── train.py    # 얇은 실행기 (실제 학습 코드는 lm.py 사슬)
-└── 4.test/
+└── 2.test/
     └── test.py     # 얇은 실행기 (실제 생성 코드는 lm.py 사슬)
 ```
 
@@ -53,8 +53,8 @@ v0.0.3/
 준비물: **Python 3** (추가 설치 필요 없음!)
 
 ```bash
-python3 3.train/train.py     # 1) 학습
-python3 4.test/test.py       # 2) 문장 만들어 보기
+python3 1.train/train.py     # 1) 학습
+python3 2.test/test.py       # 2) 문장 만들어 보기
 ```
 
 ## 한계 (→ 다음 버전 예고)

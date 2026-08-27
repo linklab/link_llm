@@ -50,8 +50,8 @@ v0.0.4 는 표를 **두 개** 만들어 둡니다.
 ## 사용 방법
 
 ```bash
-python3 3.train/train.py     # 1) 학습 (표1, 표2 를 함께 만듦)
-python3 4.test/test.py       # 2) 1단어/2단어 시작으로 문장 만들어 보기
+python3 1.train/train.py     # 1) 학습 (표1, 표2 를 함께 만듦)
+python3 2.test/test.py       # 2) 1단어/2단어 시작으로 문장 만들어 보기
 ```
 
 ## 버전

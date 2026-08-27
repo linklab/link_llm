@@ -63,8 +63,8 @@
 ## 사용 방법
 
 ```bash
-python3 3.train/train.py     # 1) 대화 데이터 학습
-python3 4.test/test.py       # 2) 여러 턴 주고받는 대화 데모
+python3 1.train/train.py     # 1) 대화 데이터 학습
+python3 2.test/test.py       # 2) 여러 턴 주고받는 대화 데모
 ```
 
 웹앱(`web_service`)에서 **v0.0.8 을 고르면 진짜 여러 턴 대화**가 이어져요.

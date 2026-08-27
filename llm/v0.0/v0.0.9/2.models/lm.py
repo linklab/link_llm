@@ -8,7 +8,7 @@ lm.py  (v0.0.9)  -  퍼플렉서티(perplexity) 평가 + 데이터 정비 (NGram
       PPL = exp( 평균( -log p(각 토큰) ) )   →  낮을수록 '잘 맞힘'
       직관: "다음 토큰을 정할 때 평균 몇 개 중에서 헷갈리나". PPL=5 면 5개 중 하나 고르는 수준.
 
-[데이터 정비]  1.data/ 를 학습용(data.txt)과 검증용(valid.txt)으로 나눴어요.
+[데이터 정비]  공용 data/ 를 학습용(data.txt)과 검증용(valid.txt)으로 나눴어요.
   - 학습 데이터: 모델이 외운 것 → PPL 이 낮음
   - 검증 데이터: 처음 보는 것 → PPL 이 더 높음  (이 차이가 '외우기 vs 일반화' 격차)
 
@@ -24,6 +24,8 @@ import importlib.util
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _VERSION_DIR = os.path.dirname(_HERE)
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_VERSION_DIR)))  # 저장소 루트
+_DATA_DIR = os.path.join(_ROOT, "data")                                  # 모든 버전 공용 데이터
 
 
 def _load_prev(prev_version):
@@ -122,6 +124,6 @@ class Model(NGramLM):
     ORDERS = [1, 2]
 
 
-DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")     # 학습용
-VALID_PATH = os.path.join(_VERSION_DIR, "1.data", "valid.txt")   # 검증용 (처음 보는 데이터)
+DATA_PATH = os.path.join(_DATA_DIR, "data.txt")     # 학습용
+VALID_PATH = os.path.join(_DATA_DIR, "valid.txt")   # 검증용 (처음 보는 데이터)
 MODEL_PATH = os.path.join(_HERE, "model.json")

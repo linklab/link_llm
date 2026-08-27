@@ -2,7 +2,7 @@
 """
 train.py  (v0.2.1)  -  학습 실행기 (+ 하이퍼파라미터)  · N토큰 문맥 임베딩 MLP
 
-1.data/data.txt 를 학습해 2.models/model.pt(가중치) + vocab.json(어휘) 을 만듭니다.
+공용 data/data.txt 를 학습해 2.models/model.pt(가중치) + vocab.json(어휘) 을 만듭니다.
 v0.2.0 대비 새 하이퍼파라미터: BLOCK_SIZE (문맥 길이 N = 앞 몇 토큰을 볼지).
 
 ※ PyTorch 필요:  pip install torch

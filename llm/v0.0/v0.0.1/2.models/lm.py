@@ -14,6 +14,8 @@ import random
 
 _HERE = os.path.dirname(os.path.abspath(__file__))     # 이 버전의 models 폴더
 _VERSION_DIR = os.path.dirname(_HERE)                  # 이 버전 폴더 (v0.0.1)
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_VERSION_DIR)))  # 저장소 루트
+_DATA_DIR = os.path.join(_ROOT, "data")                                  # 모든 버전 공용 데이터
 
 
 class NGramLM:
@@ -146,5 +148,5 @@ class Model(NGramLM):
     ORDERS = [1]              # 앞 1단어만 봄
 
 
-DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")
+DATA_PATH = os.path.join(_DATA_DIR, "data.txt")
 MODEL_PATH = os.path.join(_HERE, "model.json")

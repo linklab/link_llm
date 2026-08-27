@@ -14,6 +14,8 @@ import importlib.util
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _VERSION_DIR = os.path.dirname(_HERE)
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_VERSION_DIR)))  # 저장소 루트
+_DATA_DIR = os.path.join(_ROOT, "data")                                  # 모든 버전 공용 데이터
 
 
 def _load_prev(prev_version):
@@ -48,5 +50,5 @@ class Model(NGramLM):
     ORDERS = [1, 2]
 
 
-DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")
+DATA_PATH = os.path.join(_DATA_DIR, "data.txt")
 MODEL_PATH = os.path.join(_HERE, "model.json")

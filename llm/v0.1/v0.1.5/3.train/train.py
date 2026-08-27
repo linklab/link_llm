@@ -3,7 +3,7 @@
 train.py  (v0.1.5)  -  학습 실행기 (+ 하이퍼파라미터)
 
 모델·학습은 v0.1.4(2토큰 문맥) 그대로예요. 하이퍼파라미터를 여기서 정해 모델에 넘기고,
-1.data/data.txt 를 학습해 2.models/model.json 을 만듭니다.
+공용 data/data.txt 를 학습해 2.models/model.json 을 만듭니다.
 (이 model.json 이 4.test/test.py 의 '대결'에서 v0.1.5 쪽으로 쓰여요.)
 
 ※ PyTorch 필요:  pip install torch

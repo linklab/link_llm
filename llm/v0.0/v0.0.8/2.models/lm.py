@@ -7,7 +7,7 @@ lm.py  (v0.0.8)  -  대화 형식 + 멀티턴 문맥 (NGramLM 상속 + 설정)
   - build_chat_context(): 대화 기록 + 이번 입력을 '<사용자> ... <봇> ...' 형식의 토큰으로.
   - chat(): 그 문맥을 이어 붙여 '봇의 답' 만 만들어 돌려줍니다. (멀티턴)
 
-[학습 데이터도 대화 형식]  1.data/data.txt 의 각 줄이
+[학습 데이터도 대화 형식]  공용 data/data.txt 의 각 줄이
   "<사용자> 안녕 <봇> 안녕하세요 !"  처럼 한 번의 대화(주고받기)로 되어 있어요.
 그래서 모델은 "<봇> 다음엔 답이 오고 <END> 로 끝난다" 를 배웁니다.
 
@@ -25,6 +25,8 @@ import importlib.util
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _VERSION_DIR = os.path.dirname(_HERE)
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_VERSION_DIR)))  # 저장소 루트
+_DATA_DIR = os.path.join(_ROOT, "data")                                  # 모든 버전 공용 데이터
 
 
 def _load_prev(prev_version):
@@ -77,5 +79,5 @@ class Model(NGramLM):
     ORDERS = [1, 2]
 
 
-DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")
+DATA_PATH = os.path.join(_DATA_DIR, "data.txt")
 MODEL_PATH = os.path.join(_HERE, "model.json")

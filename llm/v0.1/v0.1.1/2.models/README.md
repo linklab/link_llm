@@ -15,7 +15,7 @@
 ## 강의 자료(03.real_world_data_to_tensors) 관례를 그대로
 
 ```python
-# 1.data/dataloader.py — 데이터셋 + 로더 생성을 모아둠
+# 2.models/dataloader.py — 데이터셋 + 로더 생성을 모아둠
 from torch.utils.data import Dataset, DataLoader
 
 class BigramDataset(Dataset):
@@ -38,7 +38,7 @@ for batch in loader:
     ...
 ```
 
-- **`1.data/dataloader.py`** 에 `BigramDataset` + `build_dataloader` 를 모아 뒀어요.
+- **`2.models/dataloader.py`** 에 `BigramDataset` + `build_dataloader` 를 모아 뒀어요.
 - `Dataset` 세 메서드: `__init__`(data·target 준비) / `__len__`(개수) / `__getitem__`(**한 샘플을 `{'input':..,'target':..}` 로**).
 - `DataLoader` 가 매 에폭 **셔플**하고 **배치 크기**로 묶어 줘요 (v0.1.0 의 수동 `randperm`/슬라이싱을 대체).
 - 학습 시작에 `torch.manual_seed(SEED)` 를 한 번 불러 초기화·셔플을 **재현 가능**하게.

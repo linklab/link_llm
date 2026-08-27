@@ -39,8 +39,6 @@
 
 ```
 v0.0.3/
-├── 1.data/
-│   └── data.txt    # 배울 문장들
 ├── 2.models/
 │   ├── lm.py       # v0.0.2 를 상속 + prepare()/is_end() 추가 (문장 끝 <END>), 설정 ORDERS=[2]
 │   └── model.json  # train.py 를 실행하면 자동으로 생겨요

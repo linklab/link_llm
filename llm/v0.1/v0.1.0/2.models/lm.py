@@ -37,6 +37,8 @@ except ImportError:          # torch 가 없으면 학습/생성 시점에 안�
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _VERSION_DIR = os.path.dirname(_HERE)
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_VERSION_DIR)))  # 저장소 루트
+_DATA_DIR = os.path.join(_ROOT, "data")                                  # 모든 버전 공용 데이터
 
 
 def _load_prev(prev_version):
@@ -464,7 +466,7 @@ class Model(NeuralLM):
     pass
 
 
-DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")      # 학습용
-VALID_PATH = os.path.join(_VERSION_DIR, "1.data", "valid.txt")    # 검증용 (처음 보는 대화)
+DATA_PATH = os.path.join(_DATA_DIR, "data.txt")      # 학습용
+VALID_PATH = os.path.join(_DATA_DIR, "valid.txt")    # 검증용 (처음 보는 대화)
 MODEL_PATH = os.path.join(_HERE, "model.pt")                      # 가중치 (PyTorch 표준)
 VOCAB_PATH = os.path.join(_HERE, "vocab.json")                    # 어휘 (토크나이저 + 목록)

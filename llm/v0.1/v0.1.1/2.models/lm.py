@@ -36,6 +36,8 @@ except ImportError:
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _VERSION_DIR = os.path.dirname(_HERE)
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_VERSION_DIR)))  # 저장소 루트
+_DATA_DIR = os.path.join(_ROOT, "data")                                  # 모든 버전 공용 데이터
 
 
 def _load_prev_module(prev_version):
@@ -58,10 +60,10 @@ def _require_torch():
         )
 
 
-# ---------- 데이터 파이프라인은 1.data/dataloader.py 에 분리해 두고 불러옵니다 ----------
+# ---------- 데이터 파이프라인은 2.models/dataloader.py 에 분리해 두고 불러옵니다 ----------
 def _load_data_module():
-    """1.data/dataloader.py (BigramDataset + build_dataloader) 를 경로로 불러와요."""
-    path = os.path.join(_VERSION_DIR, "1.data", "dataloader.py")
+    """2.models/dataloader.py (BigramDataset + build_dataloader) 를 경로로 불러와요."""
+    path = os.path.join(_HERE, "dataloader.py")
     spec = importlib.util.spec_from_file_location("llm_v0_1_1_dataloader", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -91,7 +93,7 @@ class NeuralLM(_prev.NGramLM):
         xs = torch.tensor(xs_list, dtype=torch.long)
         ys = torch.tensor(ys_list, dtype=torch.long)
 
-        # 2) 데이터로더 (1.data/dataloader.py 가 Dataset+DataLoader 를 한 번에 만들어 줌)
+        # 2) 데이터로더 (2.models/dataloader.py 가 Dataset+DataLoader 를 한 번에 만들어 줌)
         loader = build_dataloader(xs, ys, self.BATCH_SIZE, shuffle=True)
 
         # 3) 신경망(2층) — v0.1.0 의 build_net 을 그대로 재사용.
@@ -144,7 +146,7 @@ class Model(NeuralLM):
     pass
 
 
-DATA_PATH = os.path.join(_VERSION_DIR, "1.data", "data.txt")      # 학습용
-VALID_PATH = os.path.join(_VERSION_DIR, "1.data", "valid.txt")    # 검증용
+DATA_PATH = os.path.join(_DATA_DIR, "data.txt")      # 학습용
+VALID_PATH = os.path.join(_DATA_DIR, "valid.txt")    # 검증용
 MODEL_PATH = os.path.join(_HERE, "model.pt")                      # 가중치 (PyTorch 표준)
 VOCAB_PATH = os.path.join(_HERE, "vocab.json")                    # 어휘

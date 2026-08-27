@@ -65,7 +65,7 @@ python3 4.test/test.py       # 평가 (학습/검증 PPL + 대화 예시)
 ## 완결성 — 웹앱에서 바로 평가
 
 이 버전은 **학습 → 생성/대화 → PPL 측정**까지 한 버전에 완결돼요.
-`1.data / 2.models / 3.train / 4.test` 구조도 v0.0.x 와 똑같아서 `web_service` 가 그대로 불러옵니다.
+`2.models / 3.train / 4.test` 구조(+ 루트 공용 `data/`)도 v0.0.x 와 똑같아서 `web_service` 가 그대로 불러옵니다.
 
 ## 여기서부터 신경망 (v0.1.x, 5단계)
 

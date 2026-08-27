@@ -2,7 +2,7 @@
 """
 train.py  (v0.1.1)  -  학습 실행기 (+ 하이퍼파라미터)
 
-하이퍼파라미터를 여기서 정해 모델에 넘기고, 1.data/data.txt 를 학습해
+하이퍼파라미터를 여기서 정해 모델에 넘기고, 공용 data/data.txt 를 학습해
 2.models/model.json 을 만듭니다.
 
 ※ PyTorch 필요:  pip install torch

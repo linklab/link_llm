@@ -2,7 +2,7 @@
 """
 train.py  (v0.2.0)  -  학습 실행기 (+ 하이퍼파라미터)  · 임베딩 MLP
 
-1.data/data.txt 를 학습해 2.models/model.pt(가중치) + vocab.json(어휘) 을 만듭니다.
+공용 data/data.txt 를 학습해 2.models/model.pt(가중치) + vocab.json(어휘) 을 만듭니다.
 v0.1.5 대비 새 하이퍼파라미터: EMBED (임베딩 차원).
 
 ※ PyTorch 필요:  pip install torch

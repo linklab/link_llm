@@ -60,10 +60,10 @@ def _require_torch():
         )
 
 
-# ---------- 데이터 파이프라인은 0.model/dataloader.py 에 분리해 두고 불러옵니다 ----------
+# ---------- 데이터 파이프라인은 data/dataloader.py 에 분리해 두고 불러옵니다 ----------
 def _load_data_module():
-    """0.model/dataloader.py (BigramDataset + build_dataloader) 를 경로로 불러와요."""
-    path = os.path.join(_HERE, "dataloader.py")
+    """data/dataloader.py (BigramDataset + build_dataloader) 를 경로로 불러와요."""
+    path = os.path.join(_DATA_DIR, "dataloader.py")
     spec = importlib.util.spec_from_file_location("llm_v0_1_1_dataloader", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -93,7 +93,7 @@ class NeuralLM(_prev.NGramLM):
         xs = torch.tensor(xs_list, dtype=torch.long)
         ys = torch.tensor(ys_list, dtype=torch.long)
 
-        # 2) 데이터로더 (0.model/dataloader.py 가 Dataset+DataLoader 를 한 번에 만들어 줌)
+        # 2) 데이터로더 (data/dataloader.py 가 Dataset+DataLoader 를 한 번에 만들어 줌)
         loader = build_dataloader(xs, ys, self.BATCH_SIZE, shuffle=True)
 
         # 3) 신경망(2층) — v0.1.0 의 build_net 을 그대로 재사용.

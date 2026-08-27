@@ -17,7 +17,7 @@
 ## 강의 자료 관례 그대로
 
 ```python
-# 0.model/dataloader.py — 데이터셋 + 로더 생성을 여기에 모아요
+# data/dataloader.py — 데이터셋 + 로더 생성을 여기에 모아요
 from torch.utils.data import Dataset, DataLoader
 
 class BigramDataset(Dataset):
@@ -46,7 +46,7 @@ for batch in loader:
 ```
 
 - **`BigramModel`** — v0.1.0 의 `nn.Module` 모델(`nn.Linear` 한 층)을 그대로 재사용. `model(x)` 로 순전파.
-- **`BigramDataset` + `build_dataloader`** — 데이터셋 클래스와 로더 생성 헬퍼를 **`0.model/dataloader.py`** 에 분리. `Dataset` 은 `__getitem__` 이 **`{'input','target'}` 딕셔너리**를 반환.
+- **`BigramDataset` + `build_dataloader`** — 데이터셋 클래스와 로더 생성 헬퍼를 **`data/dataloader.py`** 에 분리. `Dataset` 은 `__getitem__` 이 **`{'input','target'}` 딕셔너리**를 반환.
 - **`DataLoader`** — 셔플 + 배치를 자동으로. lm.py 는 `loader = build_dataloader(xs, ys, batch_size)` 한 줄만 부릅니다. (`torch.manual_seed(SEED)` 로 재현 가능)
 - 앞으로(v0.1.x~) 이 데이터 파이프라인을 계속 씁니다.
 

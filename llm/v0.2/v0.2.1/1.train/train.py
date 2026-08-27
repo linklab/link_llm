@@ -33,7 +33,9 @@ if __name__ == "__main__":
     m.WEIGHT_DECAY = 0.0       # 임베딩 병목이 정규화 역할 → 우선 0
     m.INIT = "default"         # ★ "zeros"(fc2=0)는 Adam 과 궁합이 나빠 미수렴 → 무작위 초기화
     m.LABEL_SMOOTHING = 0.1    # 과신 완화
+    m.EARLY_STOPPING = True    # ★ 검증 PPL 기준 조기 종료(최고 가중치 복원) — 과적합 방지
+    m.PATIENCE = 15
     # sweep 제안: BLOCK_SIZE ∈ {2, 3, 4}, EMBED ∈ {16, 32, 64}
     # ==============================================================
 
-    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH)
+    m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH, model.VALID_PATH)

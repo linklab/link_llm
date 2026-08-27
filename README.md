@@ -32,7 +32,8 @@ link_llm/
 │   │   └── v0.1.5/         #   - 기준선 대결(캡스톤): 카운트 vs 신경망 PPL 비교
 │   └── v0.2/               # [임베딩 시대] one-hot → 임베딩 (마이너 그룹)
 │       ├── v0.2.0/         #   - 임베딩 도입 (nn.Embedding, Bengio 입력층)
-│       └── v0.2.1/         #   - 문맥 확장 (block_size, 앞 N토큰 임베딩 concat)
+│       ├── v0.2.1/         #   - 문맥 확장 (block_size, 앞 N토큰 임베딩 concat)
+│       └── v0.2.2/         #   - 초기화·정규화 (Kaiming init·BatchNorm 토글·weight decay·조기종료)
 ├── web_service/            # ChatGPT 스타일 웹앱 (선택한 버전의 lm.py 를 불러와 재사용)
 │   ├── server.py
 │   └── index.html
@@ -176,6 +177,10 @@ v0.0.9/0.model/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
   각 토큰 임베딩을 이어붙여(`emb(x).flatten(1)`) MLP 에 넣는 = 진짜 **Bengio(2003) 입력층**.
   `BLOCK_SIZE`(기본 3)만 바꾸면 문맥 길이가 늘어요(2면 v0.2.0 과 동일). `build_net`·`make_pairs`·
   `_context_tensor`·`load` 만 재정의하고 나머지는 상속. 자세한 설명은 [llm/v0.2/v0.2.1/README.md](llm/v0.2/v0.2.1/README.md) 참고.
+- [**v0.2.2**](llm/v0.2/v0.2.2/) — **초기화·정규화**: v0.2.1(N=3)의 과적합(학습 2.56/검증 62.98)을
+  **Kaiming 초기화 + weight decay + 조기 종료**로 잡아 검증 **37.94**로. BatchNorm은 토글(`USE_BN`)로
+  넣되, **이 작은 데이터(282문장)에선 오히려 손해(38→41)** — "모든 기법이 모든 규모에서 통하진 않는다"를
+  실증해요. 자세한 설명은 [llm/v0.2/v0.2.2/README.md](llm/v0.2/v0.2.2/README.md) 참고.
 
 ## 📏 여러 지표로 비교하기 — `eval_suite.py`
 
@@ -257,7 +262,7 @@ one-hot → **임베딩 벡터**로. (은닉층 2층 MLP는 v0.1.x에서 이미 
 |------|--------|---------------------|
 | **v0.2.0** | 임베딩 도입 ✅ | one-hot → `nn.Embedding`. `Embedding(V,E)(i)==one_hot(i)@C` (E≪V 압축·공유) |
 | **v0.2.1** | 문맥 확장(`block_size`) ✅ | 앞 N토큰(2→3→…) 임베딩 concat = 진짜 Bengio 입력층 |
-| **v0.2.2** | 초기화·정규화 | Kaiming/BatchNorm/weight decay → 깊은 MLP 안정·개선 |
+| **v0.2.2** | 초기화·정규화 ✅ | Kaiming init·weight decay·조기종료 (BatchNorm은 토글 — 작은 데이터엔 손해) |
 | **v0.2.3** | 일반화·튜닝 | dropout·weight tying·early stopping, LR 스케줄·sweep |
 | **v0.2.4** | 임베딩 시각화 | 모델은 그대로 + PCA/t-SNE·nearest-neighbor 분석 |
 | **v0.2.5** | **3자 비교 (캡스톤)** | 웹앱에서 카운트 vs one-hot 신경망 vs 임베딩 MLP 3자 PPL → v0.3 예고 |

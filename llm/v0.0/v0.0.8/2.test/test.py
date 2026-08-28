@@ -22,15 +22,13 @@ MODEL_PATH = _model.MODEL_PATH
 
 def main():
     lm = Model.load_or_exit(MODEL_PATH)
-    print("=== v0.0.8 (대화 형식 + 멀티턴) ===\n")
+    print("=== v0.0.8 (긴 문맥으로 문장 이어가기) ===\n")
 
-    conversation = ["안녕", "이름이 뭐야?", "노래 불러줘", "고마워", "잘 자"]
-    history = []
-    for user_msg in conversation:
-        reply = lm.chat(user_msg, history, temperature=0.3)
-        print(f"  나 : {user_msg}")
-        print(f"  봇 : {reply}\n")
-        history.append((user_msg, reply))   # 기록에 쌓아 다음 턴 문맥으로 사용
+    # 산문으로 '사전학습'한 모델이라, 씨앗을 주면 그다음을 이어 씁니다.
+    # (역할 토큰/대화 형식 자체는 v0.5 SFT 단계에서 다뤄요.)
+    for seed in ["아침 일찍", "봄 바람", "나는 조용한"]:
+        print(f"  [씨앗] {seed}")
+        print(f"  [생성] {lm.generate(seed, temperature=0.3)}\n")
 
 
 if __name__ == "__main__":

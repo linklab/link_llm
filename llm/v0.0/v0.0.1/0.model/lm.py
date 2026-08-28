@@ -148,5 +148,5 @@ class Model(NGramLM):
     ORDERS = [1]              # 앞 1단어만 봄
 
 
-DATA_PATH = os.path.join(_DATA_DIR, "data.txt")
+DATA_PATH = os.path.join(_DATA_DIR, "pretrain", "train.txt")
 MODEL_PATH = os.path.join(_HERE, "model.json")

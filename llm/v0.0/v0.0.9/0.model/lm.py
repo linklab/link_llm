@@ -124,6 +124,6 @@ class Model(NGramLM):
     ORDERS = [1, 2]
 
 
-DATA_PATH = os.path.join(_DATA_DIR, "data.txt")     # 학습용
-VALID_PATH = os.path.join(_DATA_DIR, "valid.txt")   # 검증용 (처음 보는 데이터)
+DATA_PATH = os.path.join(_DATA_DIR, "pretrain", "train.txt")     # 학습용
+VALID_PATH = os.path.join(_DATA_DIR, "pretrain", "valid.txt")   # 검증용 (처음 보는 데이터)
 MODEL_PATH = os.path.join(_HERE, "model.json")

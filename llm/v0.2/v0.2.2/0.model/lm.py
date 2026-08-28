@@ -137,7 +137,7 @@ class Model(NeuralLM):
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_VERSION_DIR)))  # 저장소 루트
 _DATA_DIR = os.path.join(_ROOT, "data")                                  # 모든 버전 공용 데이터
-DATA_PATH = os.path.join(_DATA_DIR, "data.txt")      # 학습용
-VALID_PATH = os.path.join(_DATA_DIR, "valid.txt")    # 검증용
+DATA_PATH = os.path.join(_DATA_DIR, "pretrain", "train.txt")      # 학습용
+VALID_PATH = os.path.join(_DATA_DIR, "pretrain", "valid.txt")    # 검증용
 MODEL_PATH = os.path.join(_HERE, "model.pt")         # 가중치 (PyTorch 표준)
 VOCAB_PATH = os.path.join(_HERE, "vocab.json")       # 어휘 (0번=<PAD>)

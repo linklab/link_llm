@@ -47,10 +47,10 @@ def main():
     print(f"정답이 후보에 있음 : {acc['coverage'] * 100:5.1f}%   ← 신경망은 어휘 전체에 확률을 주므로 높아요")
     print("→ PPL 은 '확률을 얼마나 잘 배분했나', 정확도는 '1등을 얼마나 맞혔나' — 순위가 뒤바뀌기도 해요.\n")
 
-    print("--- 대화 예시 (greedy, temperature=0.0) ---")
-    for msg in ["안녕", "오늘 날씨 어때?", "고마워"]:
-        reply = lm.chat(msg, history=None, temperature=0.0)
-        print(f"  <나> {msg}\n  <봇> {reply}")
+    print("--- 이어쓰기(completion) 예시 (greedy, temperature=0.0) ---")
+    print("    산문으로 '사전학습'한 모델이라 문장 이어쓰기를 봅니다. (대화 능력은 v0.5 SFT에서)")
+    for seed in ["아침 일찍", "나는 조용한", "봄 바람"]:
+        print(f"  [씨앗] {seed}\n  [생성] {lm.generate(seed, temperature=0.0)}")
 
 
 if __name__ == "__main__":

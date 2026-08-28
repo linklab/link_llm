@@ -44,8 +44,12 @@ import importlib.util
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LLM_DIR = os.path.join(HERE, "llm")
+# 데이터는 루트 data/ 로 중앙화됨. 사전학습(산문) 코퍼스를 공용 기준으로 사용.
+DATA_DIR = os.path.join(HERE, "data", "pretrain")
+TRAIN_TXT = os.path.join(DATA_DIR, "train.txt")
+VALID_TXT = os.path.join(DATA_DIR, "valid.txt")
 
-REFERENCE = "v0.2.0"      # 데이터·비교의 기준이 되는 버전 (가장 최신)
+REFERENCE = "v0.2.0"      # 비교의 기준이 되는 버전 (문장 읽기·토크나이즈용)
 N_CANDIDATES = 10         # ④ 답변 고르기: 진짜 1개 + 가짜 9개
 TEMPERATURES = (0.0, 0.7, 1.0)   # ⑤ 생성 다양성을 재볼 온도들
 SEED = 1234
@@ -69,7 +73,7 @@ def version_key(version):
 
 def model_path(version):
     """학습 결과 파일. 신경망은 model.pt, 개수 세기는 model.json."""
-    mdir = os.path.join(version_dir(version), "2.models")
+    mdir = os.path.join(version_dir(version), "0.model")
     pt = os.path.join(mdir, "model.pt")
     return pt if os.path.exists(pt) else os.path.join(mdir, "model.json")
 
@@ -88,17 +92,16 @@ def all_versions():
 
 
 def data_fingerprint(version):
-    """그 버전 학습 데이터의 지문(해시). 기준과 다르면 비교에서 빼요."""
-    path = os.path.join(version_dir(version), "1.data", "data.txt")
-    if not os.path.exists(path):
+    """학습 데이터의 지문(해시). 이제 모든 버전이 루트 data/pretrain 을 공용하므로 동일해요."""
+    if not os.path.exists(TRAIN_TXT):
         return None
-    with open(path, "rb") as f:
+    with open(TRAIN_TXT, "rb") as f:
         return hashlib.md5(f.read()).hexdigest()
 
 
 def load_model(version):
     """그 버전의 lm.py 를 불러와 학습된 모델을 복원합니다."""
-    path = os.path.join(version_dir(version), "2.models", "lm.py")
+    path = os.path.join(version_dir(version), "0.model", "lm.py")
     spec = importlib.util.spec_from_file_location("eval_" + version.replace(".", "_"), path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -352,11 +355,10 @@ def main(argv):
     quick = "--quick" in argv
     asked = [a for a in argv if not a.startswith("-")]
 
-    ref_dir = version_dir(REFERENCE)
-    train_path = os.path.join(ref_dir, "1.data", "data.txt")
-    valid_path = os.path.join(ref_dir, "1.data", "valid.txt")
+    train_path = TRAIN_TXT
+    valid_path = VALID_TXT
     if not os.path.exists(valid_path):
-        raise SystemExit(f"기준 버전({REFERENCE})의 검증 데이터가 없어요: {valid_path}")
+        raise SystemExit(f"검증 데이터가 없어요: {valid_path}  (data/pretrain/generate.py 실행)")
 
     reference_data = data_fingerprint(REFERENCE)
     if asked:
@@ -378,7 +380,7 @@ def main(argv):
     valid_sentences = ruler.read_sentences(valid_path)
     prompts = [s.split(ruler.BOT)[0].replace(ruler.USER, "").strip() for s in valid_sentences]
 
-    print(f"기준 데이터: {REFERENCE}/1.data  ·  비교 대상 {len(versions)}개  "
+    print(f"기준 데이터: data/pretrain (산문 사전학습)  ·  비교 대상 {len(versions)}개  "
           f"{'(--quick: 생성 지표 생략)' if quick else ''}")
     rows, more_skipped = collect(versions, train_sentences, valid_sentences, prompts, quick)
     report(rows, skipped + more_skipped, train_sentences, valid_sentences, quick)

@@ -35,5 +35,5 @@ class Model(NGramLM):
     ORDERS = [2]              # 앞 2단어를 봄
 
 
-DATA_PATH = os.path.join(_DATA_DIR, "data.txt")
+DATA_PATH = os.path.join(_DATA_DIR, "pretrain", "train.txt")
 MODEL_PATH = os.path.join(_HERE, "model.json")

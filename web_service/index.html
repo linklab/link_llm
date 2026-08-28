@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>link_llm 챗</title>
+<title>link_llm 이어쓰기</title>
 <style>
   /* ===== 기본 색/글꼴 ===== */
   :root {
@@ -62,7 +62,7 @@
     cursor: pointer;
   }
 
-  /* ===== 대화 영역 ===== */
+  /* ===== 이어쓰기 영역 ===== */
   #chat {
     flex: 1;
     overflow-y: auto;
@@ -148,7 +148,7 @@
 <body>
   <header>
     <div class="logo">L</div>
-    <h1>link_llm 챗</h1>
+    <h1>link_llm 이어쓰기</h1>
     <div class="spacer"></div>
     <div class="version-box">
       <label for="version">모델 버전</label>
@@ -158,9 +158,9 @@
 
   <div id="chat">
     <div class="empty" id="empty">
-      <div class="big">무엇이든 입력해 보세요 🙂</div>
-      위에서 <b>모델 버전</b>을 고른 뒤, 아래에 문장을 적어 보내면<br />
-      그 버전이 학습한 내용을 바탕으로 대답을 만들어 줘요.
+      <div class="big">문장의 앞부분을 적어 보세요 ✍️</div>
+      위에서 <b>모델 버전</b>을 고른 뒤, 아래에 첫 부분을 적어 보내면<br />
+      그 버전이 <b>산문으로 학습</b>한 내용을 바탕으로 <b>뒤를 이어 써</b> 줘요.
     </div>
   </div>
 
@@ -181,8 +181,8 @@
       <span class="temp-val" id="toppVal">끄기</span>
     </div>
     <div class="input-wrap">
-      <textarea id="input" rows="1" placeholder="메시지를 입력하세요... (예: 나는)"></textarea>
-      <button class="send" id="send">보내기</button>
+      <textarea id="input" rows="1" placeholder="이어쓸 첫 부분을 적으세요... (예: 아침 일찍)"></textarea>
+      <button class="send" id="send">이어쓰기</button>
     </div>
     <div class="hint">온도(v0.0.5) · top-k / top-p(v0.0.7)로 다양성을 조절해요. top-k·top-p 는 확률이 낮은 '꼬리 후보'를 잘라내 안정성을 높입니다.</div>
   </footer>
@@ -197,9 +197,10 @@
   const tempVal = document.getElementById("tempVal");
   const tempTag = document.getElementById("tempTag");
 
-  // 대화 기록 (멀티턴): [[사용자말, 봇답], ...]. v0.0.8 부터 서버가 문맥으로 사용해요.
+  // 이어쓰기(completion) 이력: [[입력, 이어쓴 결과], ...]. 산문 사전학습 모델이라
+  // 서버는 매 요청을 '한 번의 이어쓰기'로 처리해요(멀티턴 대화 문맥은 v0.5 SFT부터).
   let history = [];
-  // 모델 버전을 바꾸면 대화 문맥을 새로 시작합니다.
+  // 모델 버전을 바꾸면 화면 이력을 새로 시작합니다.
   versionSelect.addEventListener("change", () => { history = []; });
 
   // 온도 슬라이더: 값을 화면에 보여주고, 낮음/균형/높음 이름표를 붙여요.
@@ -262,7 +263,7 @@
     return bubble;
   }
 
-  // 3) 메시지 보내기: 서버에 물어보고 대답을 받아 화면에 표시합니다.
+  // 3) 이어쓰기 보내기: 서버에 첫 부분을 보내 이어쓴 결과를 받아 화면에 표시합니다.
   async function send() {
     const message = input.value.trim();
     const version = versionSelect.value;
@@ -281,11 +282,11 @@
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // history: 지금까지의 대화(최근 8턴). v0.0.8 부터 멀티턴 문맥으로 쓰여요.
+        // history 도 함께 보내지만, 산문 이어쓰기라 서버는 이번 입력만 사용해요(멀티턴은 v0.5).
         body: JSON.stringify({ version, message, temperature, top_k, top_p, history: history.slice(-8) })
       });
       const data = await res.json();
-      const reply = data.reply || data.error || "(대답을 만들지 못했어요)";
+      const reply = data.reply || data.error || "(이어쓰지 못했어요)";
       thinking.textContent = reply;
       if (data.reply) history.push([message, data.reply]);   // 성공한 주고받기만 기록
     } catch (e) {

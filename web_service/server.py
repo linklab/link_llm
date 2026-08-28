@@ -5,13 +5,14 @@ server.py  -  나만의 작은 언어 모델(LLM)을 브라우저에서 써보�
 [무엇을 하나요?]
 - 웹 브라우저로 http://127.0.0.1:8000 에 접속하면 ChatGPT 처럼 생긴 화면이 나와요.
 - 화면 위쪽에서 '버전'(v0.0.1 등)을 고를 수 있어요.
-- 메시지를 보내면, 그 버전이 학습해둔 모델(model.json)을 이용해 대답(문장)을 만들어 줍니다.
+- 첫 부분을 적어 보내면, 그 버전이 산문으로 사전학습한 모델을 이용해 **뒤를 이어 써(completion)** 줍니다.
+  (대화 형식/멀티턴은 v0.5 SFT 단계에서. 지금 모델은 산문 이어쓰기예요.)
 
 [어려운 설치가 필요 없어요]
 - 파이썬에 기본으로 들어있는 http.server 만 사용해요. (pip install 필요 없음!)
 
 [전체 그림]
-브라우저 ──(메시지 + 버전)──▶ 이 서버 ──▶ 해당 버전의 model.json 을 읽어 문장 생성 ──▶ 브라우저에 대답 표시
+브라우저 ──(첫 부분 + 버전)──▶ 이 서버 ──▶ 해당 버전 모델을 읽어 이어쓰기 생성 ──▶ 브라우저에 결과 표시
 """
 
 import json
@@ -97,7 +98,7 @@ def load_lm(version):
 # 웹서버는 선택된 버전의 클래스를 불러와서(load) generate 를 부를 뿐입니다.
 def generate_reply(lm, message, temperature, top_k=0, top_p=1.0):
     """
-    NGramLM 으로 대답 문장을 만듭니다.
+    입력한 첫 부분을 씨앗으로 그다음을 이어 써(completion) 문장을 만듭니다.
     top_k / top_p 는 v0.0.7 부터 지원해요. 그 인자를 받는 버전에만 안전하게 넘깁니다.
     (구버전 generate 는 temperature 만 받으므로, 지원 여부를 보고 전달)
     """
@@ -141,7 +142,7 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._send_json({"error": "not found"}, status=404)
 
-    # POST 요청 처리 (채팅 메시지 받아서 대답 만들기)
+    # POST 요청 처리 (입력한 첫 부분을 받아 이어쓰기 생성)
     def do_POST(self):
         if self.path != "/api/chat":
             self._send_json({"error": "not found"}, status=404)
@@ -185,7 +186,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json({"error": "메시지를 입력해 주세요."}, status=400)
             return
 
-        # 대화 기록: [[사용자말, 봇답], ...] (문자열 짝만 안전하게 걸러냄)
+        # 이어쓰기 이력: [[입력, 결과], ...] (문자열 짝만 안전하게 걸러냄; 산문 모델은 미사용)
         history = []
         for pair in data.get("history", []):
             if isinstance(pair, list) and len(pair) >= 2 \
@@ -196,12 +197,10 @@ class Handler(BaseHTTPRequestHandler):
         # 브라우저에 깔끔한 메시지를 돌려주도록 감쌉니다.
         try:
             lm = load_lm(version)
-            if hasattr(lm, "chat"):
-                # v0.0.8~ : 대화 형식 + 멀티턴 (기록을 문맥으로 삼아 봇의 답만 생성)
-                reply = lm.chat(message, history, temperature=temperature, top_k=top_k, top_p=top_p)
-            else:
-                # v0.0.7 이하 : 예전처럼 한 문장씩 이어 붙임
-                reply = generate_reply(lm, message, temperature, top_k, top_p)
+            # 산문으로 '사전학습'한 모델이라 **이어쓰기(completion)** — 입력한 첫 부분을
+            # 씨앗으로 그다음을 생성해요. (대화 형식/멀티턴은 v0.5 SFT 단계에서.
+            #  chat() 기계는 v0.0.8~ 에 갖춰져 있지만 산문 모델엔 역할 토큰이 없어 쓰지 않아요.)
+            reply = generate_reply(lm, message, temperature, top_k, top_p)
         except SystemExit as e:            # 예: "이 버전은 PyTorch 가 필요해요"
             self._send_json({"error": str(e)}, status=500)
             return

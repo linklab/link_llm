@@ -36,11 +36,11 @@ if __name__ == "__main__":
                                #   깔아줘서(=add-k 스무딩과 같은 역할) 스무딩이 중복이거든요.
                                #   개념을 눈으로 보려면 0.1/0.2 로 올려 PPL 변화를 확인해 보세요.
     # --- 조기 종료 (early stopping) ---
-    # 검증 PPL 이 PATIENCE 에폭 동안 나아지지 않으면 멈추고, **가장 좋았던 가중치**로 되돌려요.
+    # 학습 손실(Loss)이 PATIENCE 에폭 동안 나아지지 않으면 멈추고, **가장 좋았던 가중치**로 되돌려요.
     # 그래서 EPOCHS 는 이제 '정확히 맞춰야 하는 값'이 아니라 넉넉한 **상한**이면 됩니다.
     m.EARLY_STOPPING = True    # False 면 EPOCHS 를 끝까지 돕니다
-    m.PATIENCE = 10            # 몇 에폭까지 참을지
-    m.MIN_DELTA = 0.0          # 이만큼은 좋아져야 '개선'으로 인정
+    m.PATIENCE = 20            # 조기 종료 인내 에폭(통일)
+    m.MIN_DELTA = 0.0          # 개선으로 인정할 최소 폭(통일)
     # ==============================================================
 
     m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH, model.VALID_PATH)

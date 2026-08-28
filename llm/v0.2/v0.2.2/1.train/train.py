@@ -36,9 +36,10 @@ if __name__ == "__main__":
     m.USE_BN = False           # ★ BatchNorm: 이 작은 데이터엔 손해(41 vs 38) → 끔. True 로 비교해 보세요
     m.LABEL_SMOOTHING = 0.1    # 과신 완화
 
-    # 조기 종료: 검증 PPL 이 PATIENCE 에폭 동안 안 좋아지면 멈추고 **최고 가중치**로 복원
+    # 조기 종료: 학습 손실(Loss)이 PATIENCE 에폭 동안 안 좋아지면 멈추고 **최고 가중치**로 복원
     m.EARLY_STOPPING = True
-    m.PATIENCE = 15
+    m.PATIENCE = 20            # 조기 종료 인내 에폭(통일)
+    m.MIN_DELTA = 0.0          # 개선으로 인정할 최소 폭(통일)
     # ==============================================================
 
     m.run_train(model.DATA_PATH, model.MODEL_PATH, model.VOCAB_PATH, model.VALID_PATH)

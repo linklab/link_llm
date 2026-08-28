@@ -122,7 +122,7 @@ class NeuralLM(_load_prev("v0.0.9")):
 
     # 조기 종료 기본값 (1.train/train.py 에서 바꿔요)
     EARLY_STOPPING = True      # False 면 EPOCHS 를 끝까지 돕니다
-    PATIENCE = 10              # 검증 PPL 이 이만큼 안 좋아지면 중단
+    PATIENCE = 20              # 학습 손실(Loss)이 이만큼 안 좋아지면 중단
     MIN_DELTA = 0.0            # 개선으로 인정할 최소 폭
 
     def __init__(self):
@@ -136,35 +136,36 @@ class NeuralLM(_load_prev("v0.0.9")):
 
     # ---------- 조기 종료: 하위 버전 train() 들이 공통으로 쓰는 3개 도우미 ----------
     def start_early_stopping(self, valid_sentences):
-        """검증 문장이 있고 EARLY_STOPPING 이 켜져 있으면 감시자를 만들어요."""
+        """EARLY_STOPPING 이 켜져 있으면 감시자를 만들어요. (기준 = 학습 손실 Loss)"""
         self.valid_scores = []
         self._valid_sentences = valid_sentences
-        if not valid_sentences or not self.EARLY_STOPPING:
+        if not self.EARLY_STOPPING:
             return None
-        print(f"  조기 종료 켬: 검증 PPL 기준, patience={self.PATIENCE}, min_delta={self.MIN_DELTA}")
+        print(f"  조기 종료 켬: 학습 손실(Loss) 기준, patience={self.PATIENCE}, min_delta={self.MIN_DELTA}")
         return EarlyStopping(self.PATIENCE, self.MIN_DELTA)
 
     def should_stop_early(self, stopper, epoch):
-        """에폭 끝에서 검증 PPL 을 재고 '멈출 때인가'를 알려줘요."""
+        """에폭 끝에서 '학습 손실(Loss)'로 멈출 때인가를 판단해요. (검증 PPL 은 곡선용으로만 기록)"""
         if stopper is None:
             return False
-        self.net.eval()                                   # 평가 모드로 재고
-        score = self.perplexity(self._valid_sentences)    # v0.0.9 의 PPL 을 그대로 사용
-        self.net.train()                                  # 다시 학습 모드
-        self.valid_scores.append(score)
+        score = self.losses[-1]                           # ★ 조기 종료 기준 = 이번 에폭 '학습 손실(Loss)'
+        if self._valid_sentences:                         # 검증 PPL 은 loss.svg 빨강 곡선용으로만 계속 기록
+            self.net.eval()
+            self.valid_scores.append(self.perplexity(self._valid_sentences))
+            self.net.train()
         if stopper.step(score, epoch, self.net):
-            print(f"  ⏹ 조기 종료: {self.PATIENCE}에폭 동안 검증 PPL 개선 없음 "
+            print(f"  ⏹ 조기 종료: {self.PATIENCE}에폭 동안 학습 손실 개선 없음 "
                   f"(epoch {epoch} 에서 중단)")
             return True
         return False
 
     def finish_early_stopping(self, stopper):
-        """가장 좋았던 가중치로 되돌리고, 그 에폭을 기록해요."""
+        """가장 낮았던 학습 손실의 가중치로 되돌리고, 그 에폭을 기록해요."""
         if stopper is None:
             return
         stopper.restore(self.net)
         self.stopped_epoch = stopper.best_epoch
-        print(f"  ✔ 최고 검증 PPL {stopper.best:.2f} (epoch {stopper.best_epoch}) "
+        print(f"  ✔ 최저 학습 손실 {stopper.best:.4f} (epoch {stopper.best_epoch}) "
               f"가중치로 되돌려 저장합니다")
 
     # ---------- 어휘 / 데이터 준비 ----------

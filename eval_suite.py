@@ -3,7 +3,7 @@
 eval_suite.py  -  여러 버전을 한 번에, **여러 지표로** 비교하는 평가 도구
 
 [왜 필요한가요?]
-각 버전의 `4.test/test.py` 는 '그 버전 하나'를 봅니다. 이 도구는 학습된 버전을 **모두 모아**
+각 버전의 `2.test/test.py` 는 '그 버전 하나'를 봅니다. 이 도구는 학습된 버전을 **모두 모아**
 같은 데이터로 나란히 재요. 그리고 무엇보다 **지표를 하나만 보지 않습니다.**
 
   ① PPL          : 확률을 얼마나 잘 배분했나        (낮을수록 좋음)
@@ -13,25 +13,27 @@ eval_suite.py  -  여러 버전을 한 번에, **여러 지표로** 비교하는
   ⑤ 생성 다양성   : 온도를 바꾸면 답이 실제로 다양해지나 (PPL 이 절대 못 보는 것)
   ⑥ 크기          : 파라미터 수 · 파일 크기            (공짜 성능은 없어요)
 
-①②③ 은 각 버전 `2.models/lm.py` 가 이미 가진 `perplexity()` / `accuracy()` 를 그대로 부르고,
+①②③ 은 각 버전 `0.model/lm.py` 가 이미 가진 `perplexity()` / `accuracy()` 를 그대로 부르고,
 ④⑤⑥ 은 여러 모델을 나란히 놓아야 의미가 생기는 것이라 이 파일에 있어요.
 
 [핵심 - 지표마다 승자가 다릅니다]
-  · PPL 1등은 v0.1.5(one-hot), top-1 정확도 1등은 v0.2.0(임베딩) 입니다.
-  · 온도 0 에서 v0.1.x 1토큰 모델은 **모든 질문에 같은 답**을 합니다 — PPL 로는 안 보여요.
+  · 검증 PPL 1등과 top-1 정확도 1등은 **보통 서로 다른 버전**이에요.
+  · 파라미터가 100배 많아도 PPL 은 조금밖에 안 좋아지기도 해요 — 크기도 지표입니다.
+  · 온도 0(greedy)에서 다양성이 바닥이면 첫머리가 달라도 같은 말을 하는 붕괴예요 — PPL 로는 안 보여요.
 "이 모델이 더 좋다"고 말하려면 **어느 자로 쟀는지**를 같이 말해야 한다는 게 이 도구의 교훈이에요.
+(구체적인 순위는 학습할 때마다 달라지니 여기 적지 않아요 — 실행해서 나온 표가 답입니다.)
 
 [실행 방법]
     python3 eval_suite.py                    # 학습된 버전 전부
     python3 eval_suite.py v0.0.9 v0.2.0      # 고른 버전만
     python3 eval_suite.py --quick            # 생성 지표(⑤)는 느리니 건너뛰기
 
-  · 먼저 각 버전의 `3.train/train.py` 를 돌려 학습해 두어야 목록에 나와요.
+  · 먼저 각 버전의 `1.train/train.py` 를 돌려 학습해 두어야 목록에 나와요.
   · 신경망(v0.1.x~) 버전을 포함하려면 PyTorch 가 필요해요 (`pip install torch`).
     없으면 그 버전만 자동으로 건너뜁니다.
 
 [공정한 비교를 위해]
-  · 모든 버전을 **같은 검증 데이터**로 잽니다 (기준 버전의 `1.data/valid.txt`).
+  · 모든 버전을 **같은 검증 데이터**로 잽니다 (루트 공용 `data/pretrain/valid.txt`).
   · 학습 데이터가 기준과 다른 옛 버전(v0.0.1~v0.0.7)은 사과 대 오렌지라 자동 제외해요.
 """
 
@@ -52,6 +54,7 @@ VALID_TXT = os.path.join(DATA_DIR, "valid.txt")
 REFERENCE = "v0.2.0"      # 비교의 기준이 되는 버전 (문장 읽기·토크나이즈용)
 N_CANDIDATES = 10         # ④ 답변 고르기: 진짜 1개 + 가짜 9개
 TEMPERATURES = (0.0, 0.7, 1.0)   # ⑤ 생성 다양성을 재볼 온도들
+PROMPT_TOKENS = 2         # ⑤ 이어쓰기 첫머리로 줄 토큰 수 (2토큰 문맥 모델도 바로 시작 가능)
 SEED = 1234
 
 
@@ -191,21 +194,26 @@ def response_ranking(lm, valid_sentences, n_candidates=N_CANDIDATES, seed=SEED):
 # ----------------------------------------------------------------------
 def diversity(lm, prompts, temperature, seed=SEED):
     """
-    질문들에 실제로 답을 만들어 보고, 그 답들이 얼마나 **다양한지** 잽니다.
+    첫머리(prompt)를 주고 실제로 **뒤를 이어 쓰게** 한 뒤, 그 결과가 얼마나 **다양한지** 잽니다.
 
       distinct-1 / distinct-2 : 쓰인 (단어 / 단어쌍) 중 서로 다른 것의 비율
-      unique                  : 서로 다른 답의 비율
+      unique                  : 서로 다른 이어쓰기의 비율
 
-    온도 0(greedy)에서 이 값이 바닥이면 **모든 질문에 같은 답을 하는 붕괴** 상태예요.
+    온도 0(greedy)에서 이 값이 바닥이면 **첫머리가 달라도 같은 말을 하는 붕괴** 상태예요.
     PPL 은 이걸 전혀 잡아내지 못합니다 — 그래서 따로 재요.
+
+    ※ 사전학습 데이터가 **산문**이라 `generate`(이어쓰기)로 재요. 대화용 `chat()` 은
+      `<봇>` 역할 토큰이 어휘에 없어 산문 모델에선 쓸 수 없습니다(대화는 v0.5 SFT 부터).
     """
     random.seed(seed)                       # 샘플링을 재현 가능하게
     outputs = []
     for prompt in prompts:
         try:
-            outputs.append(lm.chat(prompt, history=None, temperature=temperature))
-        except TypeError:                   # chat 시그니처가 다른 옛 버전 대비
-            outputs.append(lm.chat(prompt, history=None))
+            full = lm.generate(prompt, temperature=temperature)
+        except TypeError:                   # generate 시그니처가 다른 옛 버전 대비
+            full = lm.generate(prompt)
+        # 첫머리는 어느 버전이나 같으므로, **이어 쓴 부분만** 놓고 다양성을 봅니다.
+        outputs.append(full[len(prompt):].strip() if full.startswith(prompt) else full)
 
     tokens, bigrams = [], []
     for out in outputs:
@@ -248,7 +256,7 @@ def collect(versions, train_sentences, valid_sentences, prompts, quick):
             skipped.append((version, "PyTorch 필요 (pip install torch)"))
             continue
         except FileNotFoundError:
-            skipped.append((version, "아직 학습 안 됨 — 그 버전 3.train/train.py 실행"))
+            skipped.append((version, "아직 학습 안 됨 — 그 버전 1.train/train.py 실행"))
             continue
         if not hasattr(lm, "perplexity"):
             skipped.append((version, "평가 함수 없음 (퍼플렉서티는 v0.0.9 부터)"))
@@ -274,7 +282,7 @@ def collect(versions, train_sentences, valid_sentences, prompts, quick):
 
 def report(rows, skipped, train_sentences, valid_sentences, quick):
     if not rows:
-        print("\n비교할 모델이 없어요. 먼저 각 버전의 3.train/train.py 를 실행해 주세요.")
+        print("\n비교할 모델이 없어요. 먼저 각 버전의 1.train/train.py 를 실행해 주세요.")
         return
 
     n_scored = rows[0]["acc"]["n"]
@@ -334,7 +342,8 @@ def report(rows, skipped, train_sentences, valid_sentences, quick):
 
     # ---- 생성 다양성 ----
     if not quick and any(r["gen"] for r in rows):
-        print("\n=== 생성 다양성 — PPL 이 못 보는 것 ===\n")
+        print("\n=== 생성 다양성 — PPL 이 못 보는 것 ===")
+        print(f"  (검증 문장의 앞 {PROMPT_TOKENS}토큰을 첫머리로 주고 **이어 쓰게** 한 결과)\n")
         print(f"  {'버전':<8} {'온도':>5} {'distinct-1':>11} {'distinct-2':>11} {'서로 다른 답':>12}   예시")
         print("  " + "-" * 78)
         for r in rows:
@@ -344,10 +353,20 @@ def report(rows, skipped, train_sentences, valid_sentences, quick):
                 d = r["gen"][t]
                 print(f"  {r['v']:<8} {t:>5.1f} {d['d1']:>11.3f} {d['d2']:>11.3f} "
                       f"{d['unique'] * 100:>11.0f}%   {d['sample'][:22]}")
-        worst = min((r for r in rows if r["gen"]), key=lambda r: r["gen"][0.0]["unique"])
-        print(f"\n  → 온도 0(greedy)에서 가장 심한 건 {worst['v']} — 질문이 달라도 "
-              f"서로 다른 답이 {worst['gen'][0.0]['unique'] * 100:.0f}% 뿐이에요 "
-              f"(사실상 모든 질문에 같은 답).")
+        gens = [r for r in rows if r["gen"]]
+        uniq = {r["v"]: r["gen"][0.0]["unique"] for r in gens}
+        lo, hi = min(uniq.values()), max(uniq.values())
+        if hi - lo < 0.01:
+            # 모든 버전이 사실상 같은 값 — 특정 버전을 지목하면 없는 차이를 있다고 말하는 셈이에요.
+            print(f"\n  → 온도 0(greedy)에서는 **모든 버전이 비슷해요** "
+                  f"(서로 다른 이어쓰기 {lo * 100:.0f}~{hi * 100:.0f}%).")
+        else:
+            worst = min(gens, key=lambda r: r["gen"][0.0]["unique"])
+            print(f"\n  → 온도 0(greedy)에서 가장 심한 건 {worst['v']} — 첫머리가 달라도 "
+                  f"서로 다른 이어쓰기가 {uniq[worst['v']] * 100:.0f}% 뿐이에요.")
+        if all(u < 0.01 for u in uniq.values()):
+            print("    (0% 는 '측정이 안 됐다'는 뜻일 수도 있어요 — 첫머리가 어휘 밖이라 생성이 "
+                  "비었는지 위 '예시' 칸을 확인하세요.)")
         print("    온도를 올리면 다양해지지만 대신 엉뚱한 말이 늘어요 — 그 균형이 top-k/top-p 의 역할이에요.")
 
 
@@ -372,13 +391,20 @@ def main(argv):
                 skipped.append((v, "학습 데이터가 기준과 달라 공정 비교 불가"))
 
     if not versions:
-        raise SystemExit("학습된 버전이 하나도 없어요. 먼저 3.train/train.py 를 실행해 주세요.")
+        raise SystemExit("학습된 버전이 하나도 없어요. 먼저 1.train/train.py 를 실행해 주세요.")
 
     # 문장 읽기·토크나이즈는 어느 버전 클래스로 해도 같아서, 기준 버전 것을 씁니다.
     ruler = load_model(REFERENCE) if os.path.exists(model_path(REFERENCE)) else load_model(versions[-1])
     train_sentences = ruler.read_sentences(train_path)
     valid_sentences = ruler.read_sentences(valid_path)
-    prompts = [s.split(ruler.BOT)[0].replace(ruler.USER, "").strip() for s in valid_sentences]
+    # ⑤ 생성 다양성용 첫머리(prompt): 검증 문장의 **앞 PROMPT_TOKENS 토큰**.
+    # 산문 사전학습이라 '질문'이 아니라 '이어 쓸 첫머리'예요. 2토큰 문맥 모델도 바로
+    # 문맥을 만들 수 있게 최소 2토큰을 줍니다.
+    prompts = []
+    for s in valid_sentences:
+        toks = ruler.tokenize(s)
+        if len(toks) > PROMPT_TOKENS:                 # 이어 쓸 여지가 남는 문장만
+            prompts.append(ruler.detokenize(toks[:PROMPT_TOKENS]))
 
     print(f"기준 데이터: data/pretrain (산문 사전학습)  ·  비교 대상 {len(versions)}개  "
           f"{'(--quick: 생성 지표 생략)' if quick else ''}")

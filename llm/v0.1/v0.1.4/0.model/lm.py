@@ -103,15 +103,16 @@ class NeuralLM(_prev.NGramLM):
                 ys.append(ids[j])
         return xs2, ys
 
-    # ---------- 추론 문맥도 2토큰으로 (_context_tensor override) ----------
-    def _context_tensor(self, recent):
-        """recent 에서 (앞앞, 앞) 을 (1, 2) 텐서로. 앞이 없거나 어휘 밖이면 None."""
+    # ---------- 추론 문맥도 2토큰으로 (_context_ids override) ----------
+    def _context_ids(self, recent):
+        """recent 에서 (앞앞, 앞) 두 개를 골라요. 앞이 없거나 어휘 밖이면 None.
+        (텐서로 감싸는 일·여러 개를 한 번에 채점하는 일은 v0.1.0 이 알아서 합니다.)"""
         if not recent or recent[-1] not in self.stoi:
             return None
         pad = self.stoi[self.PAD]
         prev1 = self.stoi[recent[-1]]
         prev2 = self.stoi.get(recent[-2], pad) if len(recent) >= 2 else pad
-        return torch.tensor([[prev2, prev1]], dtype=torch.long)   # (1, 2)
+        return [prev2, prev1]                                            # 2개짜리 목록
 
 
 # web_service / 상속 사슬이 module.NGramLM 을 찾으므로 노출.

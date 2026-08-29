@@ -112,7 +112,7 @@ class NeuralLM(_prev.NGramLM):
         state = torch.load(model_path, map_location="cpu")
         self.EMBED = state["emb.weight"].shape[1]     # 임베딩 차원 복원 (V×E 의 E)
         hidden = state["fc1.weight"].shape[0]         # 은닉 크기 복원
-        self.net = self.build_net(V, hidden)
+        self.net = self.make_net(V, hidden)
         self.net.load_state_dict(state)
         self.net.eval()
         return self

@@ -140,14 +140,41 @@ class NeuralLM(_load_prev("v0.0.9")):
     PATIENCE = 20              # 학습 손실·검증 PPL 둘 다 이만큼 안 좋아지면 중단
     MIN_DELTA = 0.0            # 개선으로 인정할 최소 폭
 
+    # 계산 장치 (1.train/train.py 에서 바꿔요)
+    #   "auto" = Apple 실리콘 GPU(MPS)가 있으면 쓰고, 없으면 CPU. "cpu"/"mps" 로 못박을 수도 있어요.
+    DEVICE = "auto"
+
     def __init__(self):
         super().__init__()
+        self._device = None    # 해석된 계산 장치 (한 번만 정하고 재사용)
         self.stoi = None       # 토큰 -> 정수 인덱스
         self.itos = None       # 정수 인덱스 -> 토큰 (어휘 목록)
         self.net = None        # 학습된 신경망(nn.Module)
         self.losses = []       # 에폭별 학습 손실
         self.valid_scores = [] # 에폭별 검증 PPL (조기 종료 판단 근거)
         self.stopped_epoch = 0 # 실제로 채택된(=가장 좋았던) 에폭
+
+    # ---------- 계산 장치 (CPU / Apple 실리콘 GPU = MPS) ----------
+    def device(self):
+        """
+        계산을 어디서 할지 정해요. DEVICE="auto" 면 Apple 실리콘 GPU(MPS)를 쓸 수 있으면 쓰고,
+        아니면 CPU. 한 번 정하면 기억해 뒀다가 그대로 씁니다.
+
+        (MPS = Metal Performance Shaders. 맥의 GPU 를 PyTorch 가 쓰는 방식이에요.
+         큰 행렬 곱은 GPU 가 훨씬 빠르지만, **작은 연산을 아주 많이** 하면 매번 CPU↔GPU 로
+         오가는 비용이 더 커서 오히려 느려질 수 있어요 — 그래서 골라 쓸 수 있게 열어 뒀습니다.)
+        """
+        if self._device is None:
+            want = getattr(self, "DEVICE", "auto")
+            if want == "auto":
+                want = "mps" if torch.backends.mps.is_available() else "cpu"
+            self._device = torch.device(want)
+        return self._device
+
+    def make_net(self, vocab_size, hidden):
+        """build_net() 이 만든 신경망을 계산 장치로 올려서 돌려줘요.
+        (build_net 은 '구조'만 정의 — 버전마다 다름. 장치로 옮기는 일은 여기 한 곳에서.)"""
+        return self.build_net(vocab_size, hidden).to(self.device())
 
     # ---------- 조기 종료: 하위 버전 train() 들이 공통으로 쓰는 3개 도우미 ----------
     def start_early_stopping(self, valid_sentences):
@@ -231,12 +258,12 @@ class NeuralLM(_load_prev("v0.0.9")):
         V = len(self.itos)
 
         xs_list, ys_list = self.make_pairs(sentences)
-        xs = torch.tensor(xs_list, dtype=torch.long)
-        ys = torch.tensor(ys_list, dtype=torch.long)
+        xs = torch.tensor(xs_list, dtype=torch.long, device=self.device())
+        ys = torch.tensor(ys_list, dtype=torch.long, device=self.device())
 
         # 2) 신경망(2층) 만들기
         torch.manual_seed(self.SEED)              # 초기화 재현 가능하게
-        self.net = self.build_net(V, self.HIDDEN)
+        self.net = self.make_net(V, self.HIDDEN)
 
         self.losses = []   # 에폭별 손실 (1.train/loss.svg 곡선용)
         stopper = self.start_early_stopping(valid_sentences)
@@ -267,7 +294,10 @@ class NeuralLM(_load_prev("v0.0.9")):
     def save(self, model_path, vocab_path):
         """가중치는 state_dict(model.pt), 어휘는 vocab.json 에 저장."""
         _require_torch()
-        torch.save(self.net.state_dict(), model_path)                  # PyTorch 표준 저장
+        # 항상 **CPU 텐서로** 저장해요 — MPS 에서 학습해도 파일은 장치에 매이지 않아야
+        # 웹앱·eval_suite·다른 기계에서 그대로 열립니다.
+        cpu_state = {k: v.detach().cpu() for k, v in self.net.state_dict().items()}
+        torch.save(cpu_state, model_path)                              # PyTorch 표준 저장
         with open(vocab_path, "w", encoding="utf-8") as f:
             json.dump({"tokenizer": self.tokenizer_name(), "vocab": self.itos},
                       f, ensure_ascii=False)
@@ -284,7 +314,7 @@ class NeuralLM(_load_prev("v0.0.9")):
 
         state = torch.load(model_path, map_location="cpu")
         hidden = state["fc1.weight"].shape[0]       # 저장된 가중치에서 은닉 크기 복원
-        self.net = self.build_net(V, hidden)
+        self.net = self.make_net(V, hidden)
         self.net.load_state_dict(state)
         self.net.eval()
         return self
@@ -422,11 +452,24 @@ class NeuralLM(_load_prev("v0.0.9")):
             print(f"손실 곡선 저장 완료 -> {plot_path}")
 
     # ---------- 확률 엔진: 개수 표 대신 신경망 forward ----------
-    def _context_tensor(self, recent):
-        """recent 에서 신경망 입력 텐서를 만들어요. 앞 토큰이 없거나 어휘 밖이면 None."""
+    def _context_ids(self, recent):
+        """
+        recent 에서 **신경망 입력 하나**를 만들어요 (텐서가 아니라 파이썬 값).
+        앞 토큰이 없거나 어휘 밖이면 None.
+
+        버전마다 다른 건 사실 이것뿐이라(1토큰 / 2토큰 / 앞 N토큰), 여기만 갈아끼우면
+        아래 _context_tensor(한 개)와 perplexity(여러 개를 한 번에)가 둘 다 따라옵니다.
+        """
         if not recent or recent[-1] not in self.stoi:
             return None
-        return torch.tensor([self.stoi[recent[-1]]], dtype=torch.long)   # (1,)
+        return self.stoi[recent[-1]]                                     # 정수 하나
+
+    def _context_tensor(self, recent):
+        """입력 하나를 배치 크기 1짜리 텐서로. (모양은 _context_ids 가 정해요)"""
+        ids = self._context_ids(recent)
+        if ids is None:
+            return None
+        return torch.tensor([ids], dtype=torch.long, device=self.device())   # (1,) 또는 (1,N)
 
     def _probs(self, recent):
         """다음 토큰 확률 분포 = softmax(net(문맥))."""
@@ -435,7 +478,9 @@ class NeuralLM(_load_prev("v0.0.9")):
             return None
         with torch.no_grad():
             logits = self.net(x)[0]              # (V,)
-        return torch.softmax(logits, dim=0)
+        # 결과는 **CPU 로 한 번에** 가져와요. 부르는 쪽(next_dist)이 어휘 전체를 하나씩
+        # 꺼내 보는데, GPU 텐서를 1224번 낱개로 읽으면 그때마다 동기화가 걸려 매우 느려집니다.
+        return torch.softmax(logits, dim=0).cpu()
 
     def next_dist(self, recent):
         """
@@ -446,6 +491,56 @@ class NeuralLM(_load_prev("v0.0.9")):
         if probs is None:
             return None
         return {self.itos[j]: float(probs[j]) for j in range(len(self.itos))}
+
+    # ---------- 퍼플렉서티: 수식은 v0.0.9 그대로, 계산만 '한 번에' ----------
+    EVAL_BATCH = 4096          # 한 번에 채점할 자리 수
+
+    def perplexity(self, sentences):
+        """
+        v0.0.9 의 PPL 과 **정의도 채점 위치도 완전히 같아요** — 문장마다 i=1..len-1 에서
+        문맥 tokens[:i] 로 정답 tokens[i] 의 확률을 보고, exp(평균(-log p)).
+
+        다른 건 계산 방식뿐입니다. 물려받은 v0.0.9 판은 한 자리씩 8천 번 신경망을 부르는데,
+        그건 개수 표를 찾아보던 시절의 방식이라 신경망엔 **엄청나게 비쌉니다**
+        (특히 GPU: 매번 CPU↔GPU 왕복). 여기서는 모든 자리를 **한 번에** 통과시켜요.
+        결과 숫자는 같고, 속도만 수십 배 빨라집니다.
+        """
+        _require_torch()
+        rows, targets, n_floor = [], [], 0
+        for sentence in sentences:
+            tokens = self.prepare(self.tokenize(sentence))
+            for i in range(1, len(tokens)):
+                ids = self._context_ids(tokens[:i])
+                if tokens[i] not in self.stoi or ids is None:
+                    n_floor += 1              # token_prob 가 FLOOR 를 주는 자리와 동일
+                else:
+                    rows.append(ids)
+                    targets.append(self.stoi[tokens[i]])
+
+        total_n = n_floor + len(targets)
+        if total_n == 0:
+            return float("inf")
+        total_log = n_floor * math.log(self.FLOOR)
+
+        if rows:
+            x = torch.tensor(rows, dtype=torch.long, device=self.device())
+            y = torch.tensor(targets, dtype=torch.long, device=self.device())
+            was_training = self.net.training
+            self.net.eval()
+            with torch.no_grad():
+                for k in range(0, len(targets), self.EVAL_BATCH):
+                    logits = self.net(x[k:k + self.EVAL_BATCH])                 # (B, V)
+                    probs = torch.softmax(logits, dim=1)
+                    p = probs.gather(1, y[k:k + self.EVAL_BATCH, None]).squeeze(1)
+                    # 카운트 모델과 같은 바닥값(FLOOR)으로 눌러 log(0) 을 막아요 (token_prob 와 동일).
+                    # (합산은 CPU 배정밀도로 — MPS 는 float64 를 지원하지 않고,
+                    #  8천 개 log 를 float32 로 더하면 오차가 쌓입니다.)
+                    p = p.cpu().double().clamp(min=self.FLOOR)
+                    total_log += float(torch.log(p).sum())
+            if was_training:
+                self.net.train()
+
+        return math.exp(-total_log / total_n)
 
     def token_prob(self, recent, token):
         """퍼플렉서티(v0.0.9)가 부르는 함수. '개수 비율' 대신 '신경망이 준 확률'로 답합니다."""

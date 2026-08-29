@@ -30,6 +30,7 @@ if __name__ == "__main__":
     m.EPOCHS = 1_500             # ★ 2,180개 짝뿐이라 금방 과적합. 90~120 이 평평한 바닥
     m.BATCH_SIZE = 64
     m.SEED = 1234
+    m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능
     m.WEIGHT_DECAY = 0.0       # 실측: 1e-4 부터 이미 검증 PPL 이 나빠져요 → 0
     m.INIT = "zeros"           # "zeros" | "default"  (nn.Linear 초기화)
     m.LABEL_SMOOTHING = 0.0    # 실측: FLOOR(1e-4) 가 이미 바닥을 깔아줘 스무딩은 손해

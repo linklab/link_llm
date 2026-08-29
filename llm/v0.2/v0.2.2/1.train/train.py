@@ -31,6 +31,7 @@ if __name__ == "__main__":
     m.EPOCHS = 300             # 조기 종료가 알아서 멈춰요
     m.BATCH_SIZE = 64
     m.SEED = 1234
+    m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능
     m.WEIGHT_DECAY = 1e-4      # ★ 가벼운 L2 정규화 (1e-3 은 이 크기 모델엔 과해 underfit)
     m.INIT = "kaiming"         # ★ tanh 이득 반영 초기화 ("zeros"/"default" 로 비교 가능)
     m.USE_BN = False           # ★ BatchNorm: 이 작은 데이터엔 손해(41 vs 38) → 끔. True 로 비교해 보세요

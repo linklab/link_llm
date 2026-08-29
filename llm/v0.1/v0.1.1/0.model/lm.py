@@ -90,15 +90,15 @@ class NeuralLM(_prev.NGramLM):
         V = len(self.itos)
 
         xs_list, ys_list = self.make_pairs(sentences)
-        xs = torch.tensor(xs_list, dtype=torch.long)
-        ys = torch.tensor(ys_list, dtype=torch.long)
+        xs = torch.tensor(xs_list, dtype=torch.long, device=self.device())
+        ys = torch.tensor(ys_list, dtype=torch.long, device=self.device())
 
         # 2) 데이터로더 (data/dataloader.py 가 Dataset+DataLoader 를 한 번에 만들어 줌)
         loader = build_dataloader(xs, ys, self.BATCH_SIZE, shuffle=True)
 
         # 3) 신경망(2층) — v0.1.0 의 build_net 을 그대로 재사용.
         torch.manual_seed(self.SEED)              # 초기화 + 셔플 재현 가능하게
-        self.net = self.build_net(V, self.HIDDEN)
+        self.net = self.make_net(V, self.HIDDEN)
 
         self.losses = []   # 에폭별 평균 손실 (손실 곡선 확인용)
         stopper = self.start_early_stopping(valid_sentences)

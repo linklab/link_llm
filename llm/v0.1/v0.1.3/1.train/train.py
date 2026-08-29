@@ -29,6 +29,7 @@ if __name__ == "__main__":
     m.EPOCHS = 1_500           # 상한. 실제 종료 지점은 아래 조기 종료가 정해요
     m.BATCH_SIZE = 64
     m.SEED = 1234
+    m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능
     m.WEIGHT_DECAY = 0.0       # 실측: 1e-4 부터 이미 검증 PPL 이 나빠져요 → 0
     m.INIT = "zeros"           # "zeros" | "default"  (nn.Linear 초기화)
     m.LABEL_SMOOTHING = 0.0    # ★ 실측: 0.1 을 켜면 검증 PPL 이 39.5 → 41.1 로 나빠져요.

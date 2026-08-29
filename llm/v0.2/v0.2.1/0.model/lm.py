@@ -115,8 +115,9 @@ class NeuralLM(_prev.NGramLM):
         return xs, ys
 
     # ---------- 추론 문맥도 앞 N토큰으로 ----------
-    def _context_tensor(self, recent):
-        """recent 의 마지막 N토큰을 (1, N) 텐서로. 앞이 없거나 어휘 밖이면 None/<PAD>."""
+    def _context_ids(self, recent):
+        """recent 의 마지막 N토큰을 골라요. 앞이 없거나 어휘 밖이면 None/<PAD>.
+        (텐서로 감싸는 일·여러 개를 한 번에 채점하는 일은 v0.1.0 이 알아서 합니다.)"""
         if not recent or recent[-1] not in self.stoi:
             return None
         pad = self.stoi[self.PAD]
@@ -127,7 +128,7 @@ class NeuralLM(_prev.NGramLM):
                 ctx.append(pad)
             else:
                 ctx.append(self.stoi.get(recent[k], pad))
-        return torch.tensor([ctx], dtype=torch.long)   # (1, N)
+        return ctx                                                       # N개짜리 목록
 
     # ---------- 불러오기: 저장된 모양에서 N·E·H 복원 ----------
     def load(self, model_path):
@@ -143,7 +144,7 @@ class NeuralLM(_prev.NGramLM):
         self.EMBED = state["emb.weight"].shape[1]                 # 임베딩 차원 E
         self.BLOCK_SIZE = state["fc1.weight"].shape[1] // self.EMBED   # 문맥 길이 N = (N·E)/E
         hidden = state["fc1.weight"].shape[0]                     # 은닉 H
-        self.net = self.build_net(V, hidden)
+        self.net = self.make_net(V, hidden)
         self.net.load_state_dict(state)
         self.net.eval()
         return self

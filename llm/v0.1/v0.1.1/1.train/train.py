@@ -27,6 +27,7 @@ if __name__ == "__main__":
     m.EPOCHS = 1_500       # 전체 데이터를 몇 번 반복(에폭)
     m.BATCH_SIZE = 64    # 한 배치에 담는 (앞,다음) 짝의 수
     m.SEED = 1234        # 초기 가중치 + DataLoader 셔플을 재현 가능하게
+    m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능
     # --- 조기 종료 (early stopping) ---
     # 학습 손실(Loss)이 PATIENCE 에폭 동안 나아지지 않으면 멈추고, **가장 좋았던 가중치**로 되돌려요.
     # 그래서 EPOCHS 는 이제 '정확히 맞춰야 하는 값'이 아니라 넉넉한 **상한**이면 됩니다.

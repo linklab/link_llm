@@ -29,6 +29,7 @@ if __name__ == "__main__":
     m.EPOCHS = 1_500       # ★ 2,180개 짝뿐이라 금방 과적합. 100~160 이 평평한 바닥
     m.BATCH_SIZE = 64
     m.SEED = 1234
+    m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능
     # --- 조기 종료 (early stopping) ---
     # 학습 손실(Loss)이 PATIENCE 에폭 동안 나아지지 않으면 멈추고, **가장 좋았던 가중치**로 되돌려요.
     # 그래서 EPOCHS 는 이제 '정확히 맞춰야 하는 값'이 아니라 넉넉한 **상한**이면 됩니다.

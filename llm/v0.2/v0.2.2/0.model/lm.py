@@ -121,7 +121,7 @@ class NeuralLM(_prev.NGramLM):
         self.BLOCK_SIZE = state["fc1.weight"].shape[1] // self.EMBED
         self.USE_BN = "bn.weight" in state             # 저장 당시 BatchNorm 여부
         hidden = state["fc1.weight"].shape[0]
-        self.net = self.build_net(V, hidden)
+        self.net = self.make_net(V, hidden)
         self.net.load_state_dict(state)
         self.net.eval()
         return self

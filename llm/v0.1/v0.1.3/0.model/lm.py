@@ -93,15 +93,15 @@ class NeuralLM(_prev.NGramLM):
         V = len(self.itos)
 
         xs_list, ys_list = self.make_pairs(sentences)
-        xs = torch.tensor(xs_list, dtype=torch.long)
-        ys = torch.tensor(ys_list, dtype=torch.long)
+        xs = torch.tensor(xs_list, dtype=torch.long, device=self.device())
+        ys = torch.tensor(ys_list, dtype=torch.long, device=self.device())
 
         # 2) 데이터로더 (v0.1.1 재사용)
         loader = build_dataloader(xs, ys, self.BATCH_SIZE, shuffle=True)
 
         # 3) 신경망(2층) + 초기화 + 옵티마이저(weight_decay 포함)
         torch.manual_seed(self.SEED)
-        self.net = self.build_net(V, self.HIDDEN)
+        self.net = self.make_net(V, self.HIDDEN)
         self.init_model(self.net)                 # ← 초기화 (v0.1.3)
         optimizer = self.make_optimizer(self.net) # ← weight_decay 포함 (v0.1.3)
 

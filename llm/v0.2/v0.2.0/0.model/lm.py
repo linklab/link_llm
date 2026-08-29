@@ -93,7 +93,7 @@ class EmbeddingModel(_Module):
 class NeuralLM(_prev.NGramLM):
     # 하이퍼파라미터(EMBED / HIDDEN / OPTIMIZER / LR / EPOCHS / BATCH_SIZE / SEED /
     #  WEIGHT_DECAY / INIT / LABEL_SMOOTHING)는 1.train/train.py 에서 설정해요.
-    # (문맥 2토큰 · make_pairs · _context_tensor · <PAD> 는 v0.1.4 것을 그대로 상속)
+    # (문맥 2토큰 · make_pairs · _context_ids · <PAD> 는 v0.1.4 것을 그대로 상속)
 
     def build_net(self, vocab_size, hidden):
         """이 버전의 신경망 = 임베딩 MLP. (은닉 크기는 인자로, 임베딩 크기는 self.EMBED)"""

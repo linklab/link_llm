@@ -38,7 +38,7 @@ def main():
     print(f"학습 데이터({len(train_sents)}문장) PPL : {ppl_train:6.2f}")
     print(f"검증 데이터({len(valid_sents)}문장) PPL : {ppl_valid:6.2f}")
     print("→ v0.1.5(one-hot 2토큰) 검증 PPL 보다 내려가면 '임베딩의 공유 표현이 일반화에 도움'.")
-    print("  더 내려가면 카운트(v0.0.9 = 34.39)도 넘볼 수 있어요.\n")
+    print("  카운트(v0.0.9 = 2.96)도 넘어서야 해요. (실측 2.94 ✅)\n")
 
     # --- 순위로 재는 평가 (v0.0.9 의 accuracy) — PPL 과 '다른 것'을 봅니다 ---
     acc = lm.accuracy(valid_sents)
@@ -46,8 +46,8 @@ def main():
     print(f"검증 top-5 정확도  : {acc['topk'] * 100:5.1f}%")
     print(f"정답이 후보에 있음 : {acc['coverage'] * 100:5.1f}%   ← 신경망은 어휘 전체에 확률을 주므로 높아요")
     print("→ PPL 은 '확률을 얼마나 잘 배분했나', 정확도는 '1등을 얼마나 맞혔나' — 순위가 뒤바뀌기도 해요.")
-    print("  임베딩은 아직 one-hot(v0.1.5, PPL 31.81)을 못 이겨요 — 데이터가 282문장뿐이라")
-    print("  '압축·공유'보다 one-hot 의 '구별력'이 아직 큽니다. 대신 파라미터는 12% 적어요.\n")
+    print("  임베딩(2.94)은 아직 one-hot(v0.1.5, 2.90)을 못 이겨요 — 학습 3,600문장으로는")
+    print("  '압축·공유'보다 one-hot 의 '구별력'이 아직 큽니다. 대신 파라미터는 19% 적어요.\n")
 
     print("--- 이어쓰기(completion) 예시 (greedy, temperature=0.0) ---")
     print("    산문으로 '사전학습'한 모델이라 문장 이어쓰기를 봅니다. (대화 능력은 v0.5 SFT에서)")

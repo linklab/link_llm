@@ -39,7 +39,7 @@ N토큰이 다 안 차는 문장 앞부분은 `<PAD>`(어휘 0번)로 채워요.
 
 ## 구현 — 최소 override
 
-`build_net`(BlockModel) · `make_pairs`(N토큰) · `_context_ids`(1×N) · `load`(저장된
+`build_net`(BlockModel) · `make_pairs`(N토큰) · `_context_ids`(앞 N토큰 인덱스 목록) · `load`(저장된
 모양에서 **N·E·H 복원**) 만 새로 정의. 임베딩·정규화·저장·대화·PPL 은 v0.2.0 상속.
 새 하이퍼파라미터 **`BLOCK_SIZE`**(기본 3).
 

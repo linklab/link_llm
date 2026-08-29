@@ -3,7 +3,7 @@
 test.py  (v0.1.2)  -  torch.optim 으로 학습한 신경망 bigram 평가
 
 - 퍼플렉서티(PPL): 학습/검증 (v0.0.9 와 같은 자로) → v0.1.0/v0.1.1 과 비슷하면 성공
-- 대화(chat): 실제로 답을 만들어 보기
+- 이어쓰기(completion): 첫머리를 주고 뒤를 이어 써 보기
 (옵티마이저는 1.train/train.py 의 OPTIMIZER = "sgd"|"momentum"|"adam" 로 바꿔가며 비교해 보세요.)
 
 ※ PyTorch 필요:  pip install torch

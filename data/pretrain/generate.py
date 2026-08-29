@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-generate_pretrain.py  -  '사전학습(Pretraining)'용 산문 코퍼스 생성기 (재현 가능)
+generate.py  -  '사전학습(Pretraining)'용 산문 코퍼스 생성기 (재현 가능)
 
 실제 LLM 파이프라인을 따라 데이터를 이원화합니다.
-  · pretrain.txt (이 파일)  : 산문 — 설명문·이야기·시·상식.  대화 형식/역할 토큰 없음.
-                              목적 = 일반 '언어 모델링'(다음 토큰 예측)으로 어휘·문장·지식 습득.
-  · data.txt / valid.txt    : 대화 `<사용자>…<봇>…`.  v0.5(SFT)에서 '어시스턴트 말투'를 입힐 때 사용.
+  · data/pretrain/ (이 파일) : 산문 — 설명문·이야기·시·상식.  대화 형식/역할 토큰 없음.
+                               목적 = 일반 '언어 모델링'(다음 토큰 예측)으로 어휘·문장·지식 습득.
+  · data/sft/                : 대화 `<사용자>…<봇>…`.  v0.5(SFT)에서 '어시스턴트 말투'를 입힐 때 사용.
 
 핵심 설계: 산문과 대화가 **같은 어휘/속성**(사과=새콤달콤·비타민, 강아지=멍멍…)을 공유.
 → 나중에 "산문만 알던 모델이 대화를 배우는" SFT 전환이 자연스럽고 극적으로 드러남.
 
-실행:  python3 data/pretrain/generate.py   → data/pretrain.txt · data/pretrain_valid.txt + 리포트
+실행:  python3 data/pretrain/generate.py   → data/pretrain/train.txt · data/pretrain/valid.txt + 리포트
 """
 import os
 import random

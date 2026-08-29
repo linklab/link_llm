@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-generate.py  -  공용 학습/검증 데이터 생성기 (재현 가능)
+generate.py  -  '지시학습(SFT)'용 대화 코퍼스 생성기 (재현 가능)
 
 '템플릿이라 예측이 너무 쉬운' 문제를 세 가지로 개선한 버전:
   ① 답변 다양화   : 한 의도에 봇 답을 여러 개 두고(1:다), 감탄사 변주 + 개방형 프롬프트로 분기↑.
@@ -12,7 +12,7 @@ generate.py  -  공용 학습/검증 데이터 생성기 (재현 가능)
   + 문장 길이를 5단계(아주 짧음~아주 긺, 멀티턴)로 다양화.
 
 형식: 한 줄 = "<사용자> [사용자 말] <봇> [봇 답]".  시드 고정 → 항상 같은 결과.
-실행:  python3 data/sft/generate.py     (data/data.txt · data/valid.txt 를 새로 쓰고, 난이도 리포트 출력)
+실행:  python3 data/sft/generate.py     (data/sft/train.txt · data/sft/valid.txt 를 새로 쓰고, 난이도 리포트 출력)
 """
 import re
 import math

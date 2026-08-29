@@ -2,7 +2,7 @@
 """
 train.py  (v0.1.4)  -  학습 실행기 (+ 하이퍼파라미터)  · 2토큰 문맥 신경망
 
-하이퍼파라미터를 여기서 정해 모델에 넘기고, 공용 data/data.txt 를 학습해
+하이퍼파라미터를 여기서 정해 모델에 넘기고, 공용 data/pretrain/train.txt 를 학습해
 0.model/model.json (2토큰 문맥 가중치 W2) 을 만듭니다.
 
 ※ PyTorch 필요:  pip install torch

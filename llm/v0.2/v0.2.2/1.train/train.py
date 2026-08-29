@@ -2,7 +2,7 @@
 """
 train.py  (v0.2.2)  -  학습 실행기 (+ 하이퍼파라미터)  · 초기화·정규화(BatchNorm)
 
-공용 data/data.txt 를 학습해 0.model/model.pt + vocab.json 을 만듭니다.
+공용 data/pretrain/train.txt 를 학습해 0.model/model.pt + vocab.json 을 만듭니다.
 v0.2.1 대비: INIT="kaiming"(올바른 초기화) + BatchNorm(모델) + weight_decay + 조기 종료로
 v0.2.1(학습 3.00 vs 검증 3.37)과 같은 조건에서 초기화·정규화의 효과를 봅니다.
 

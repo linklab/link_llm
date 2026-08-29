@@ -19,7 +19,7 @@ one-hot 은 토큰마다 독립된 칸이라 문맥끼리 정보를 못 나눠�
 
 `build_net` 과 `load` 만 override 하고, **나머지는 전부 상속**해요:
 
-- 2토큰 문맥(`make_pairs`·`_context_tensor`·`<PAD>`) — v0.1.4
+- 2토큰 문맥(`make_pairs`·`_context_ids`·`<PAD>`) — v0.1.4
 - 정규화·초기화(`make_optimizer`·`init_model`·label smoothing) — v0.1.3
 - 옵티마이저 — v0.1.2 · DataLoader — v0.1.1
 - 학습 루프·저장/로드·대화·퍼플렉서티 — v0.1.0

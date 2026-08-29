@@ -5,14 +5,14 @@
 
 ## 이 버전 모델의 특징
 
-- **모델/확률 엔진:** v0.1.0 과 **동일** — `nn.Module` 모델 `BigramModel`(`nn.Linear` 한 층)을 그대로 재사용해 `model(x)` 로 순전파.
+- **모델/확률 엔진:** v0.1.0 과 **동일** — 2층 MLP `BigramModel`(`fc1`→`tanh`→`fc2`)을 그대로 재사용.
 - **바뀐 것 — 데이터 공급 방식:**
   - v0.1.0: 전체 데이터를 한 번에(full-batch).
   - v0.1.1: **`Dataset` + `DataLoader`** 로 감싸 DataLoader 가 **셔플 + 미니배치**를 대신.
-- **하이퍼파라미터:** `LR=10.0`, `EPOCHS=25`, `BATCH_SIZE=64`.
+- **하이퍼파라미터:** `HIDDEN=128`, `LR=1.0`, `EPOCHS=1500`(상한), `BATCH_SIZE=64`.
 - **손실 곡선:** 에폭별 평균 손실을 `self.losses` 에 기록.
 
-## 강의 자료(03.real_world_data_to_tensors) 관례를 그대로
+## 데이터 파이프라인
 
 ```python
 # data/dataloader.py — 데이터셋 + 로더 생성을 모아둠

@@ -26,7 +26,7 @@ if __name__ == "__main__":
     m.OPTIMIZER = "adam"   # "sgd" | "momentum" | "adam"  (골라 쓰기)
     m.HIDDEN = 256         # 은닉층 크기 (2층 MLP)
     m.LR = 0.0003          # ★ Adam 은 1e-4~1e-3 대. 0.05 는 50배 이상 커서 발산해요
-    m.EPOCHS = 1_500       # ★ 2,180개 짝뿐이라 금방 과적합. 100~160 이 평평한 바닥
+    m.EPOCHS = 1_500       # ★ 짝이 72,743개. 100~160 이 평평한 바닥
     m.BATCH_SIZE = 64
     m.SEED = 1234
     m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능

@@ -12,7 +12,6 @@
   - `forward(x)`: 앞 토큰 인덱스 → `F.one_hot` → `fc1` → `tanh` → `fc2` → logits `(B, V)`
   - 손실: `F.cross_entropy(model(x), y)` (softmax + NLL 을 수치적으로 안정하게 한 번에)
   - 갱신: `for p in model.parameters(): p -= LR * p.grad` (**수동** 경사하강 — 옵티마이저는 v0.1.2에서)
-  - 저장/추론용 `self.W` 는 `model.linear.weight.t()` (그래야 `self.W[prev]` = 그 토큰의 logits → v0.0.x 인터페이스 그대로)
 - **문맥 길이:** 앞 1토큰 (bigram)
 - **인터페이스 재사용(v0.0.x 그대로):** 토크나이저(`punct`) · `<END>` · 대화(`chat`) · 온도/top-k·top-p 샘플링 · 퍼플렉서티.
   → 딱 하나 `token_prob`/`next_token` 이 "개수 비율" 대신 **신경망 softmax 확률**을 돌려주도록만 바꿨어요.
@@ -32,8 +31,9 @@
 
 - 개수 세기(v0.0.x)의 `model.json`(개수 표) 과 다릅니다.
 - 불러올 때 저장된 가중치 **모양에서 은닉 크기를 복원**해 신경망을 다시 만들고 `load_state_dict` 로 채워요.
+
 ## 왜 PPL 로 v0.0.9 와 비교하나
 
 `perplexity()` 는 v0.0.9 것을 **그대로** 물려받고, `token_prob` 만 신경망 버전으로 바꿨어요.
 그래서 **똑같은 자(尺)** 로 재게 되어, "학습이 개수 비율을 잘 재현했는지"를 공정하게 볼 수 있어요.
-(본격적인 나란히 비교는 캡스톤 **v0.1.4**.)
+(본격적인 나란히 비교는 캡스톤 **v0.1.5**.)

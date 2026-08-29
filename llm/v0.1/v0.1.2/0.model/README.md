@@ -5,7 +5,7 @@
 
 ## 이 버전 모델의 특징
 
-- **모델/데이터/확률 엔진:** v0.1.1 과 **동일** — `BigramModel`(nn.Linear 한 층) + `build_dataloader`(Dataset/DataLoader) 재사용.
+- **모델/데이터/확률 엔진:** v0.1.1 과 **동일** — 2층 MLP `BigramModel` + `build_dataloader`(Dataset/DataLoader) 재사용.
 - **바뀐 것 — '갱신'만 옵티마이저로:**
   - v0.1.1: `for p in model.parameters(): p -= LR * p.grad` (손으로)
   - v0.1.2: `optimizer.step()` (`torch.optim`)
@@ -31,7 +31,7 @@ for batch in loader:
 | `"momentum"` | `SGD(params, lr, momentum=0.9)` | 관성 → 지그재그↓, 더 빨리 수렴 |
 | `"adam"` | `torch.optim.Adam(params, lr)` | 파라미터마다 학습률 자동 (기본값) |
 
-- **하이퍼파라미터:** `OPTIMIZER="adam"`, `LR=0.05`, `EPOCHS=100`, `BATCH_SIZE=64`.
+- **하이퍼파라미터:** `OPTIMIZER="adam"`, `HIDDEN=256`, `LR=0.0003`, `EPOCHS=1500`(상한), `BATCH_SIZE=64`.
   - ⚠️ **lr 은 옵티마이저마다 크게 달라요.** Adam 은 작게(0.01~0.1), SGD/momentum 은 크게(1~10).
   - **하이퍼파라미터는 `1.train/train.py` 에서 설정**해요. `OPTIMIZER` 를 바꿔가며 `2.test/test.py`(또는 학습 로그의 손실 곡선)로 수렴을 비교해 보세요.
 

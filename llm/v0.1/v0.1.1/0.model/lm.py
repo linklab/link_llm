@@ -9,7 +9,7 @@ lm.py  (v0.1.1)  -  PyTorch Dataset + DataLoader 로 미니배치 학습  (Neura
     - v0.1.1: **PyTorch 의 `Dataset` + `DataLoader`** 로 데이터를 감싸,
               DataLoader 가 **섞기(shuffle) + 미니배치(mini-batch)** 를 대신 해줘요.
 
-[강의 자료의 관례를 그대로 따릅니다]  (03.real_world_data_to_tensors)
+[PyTorch 표준 관례를 그대로 따릅니다]
   1) `Dataset` 을 상속해 세 가지만 정의:
        __init__     : data / target 을 준비(읽기·전처리)
        __len__      : 샘플 개수

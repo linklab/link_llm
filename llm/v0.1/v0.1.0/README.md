@@ -21,21 +21,23 @@ v0.1.0 은 그 확률을 **학습**합니다. (PyTorch autograd 사용)
 
 ### 신경망 모델 (nn.Module) + 한 스텝의 학습
 
-강의 자료 **06.fcn** 의 `nn.Module` 스타일로, 앞 토큰(one-hot) → `nn.Linear` → 다음 토큰 점수(logits):
+앞 토큰(one-hot) → `fc1` → `tanh` → `fc2` → 다음 토큰 점수(logits) 인 **2층 MLP** 예요:
 
 ```python
 import torch.nn as nn
 
-class BigramModel(nn.Module):                  # 06.fcn 의 MyFirstModel 처럼
-    def __init__(self, vocab_size):
+class BigramModel(nn.Module):
+    def __init__(self, vocab_size, hidden):
         super().__init__()
         self.vocab_size = vocab_size
-        self.linear = nn.Linear(vocab_size, vocab_size, bias=False)   # W: V -> V
+        self.fc1 = nn.Linear(vocab_size, hidden)    # 1층: 입력(one-hot V) -> 은닉 H
+        self.fc2 = nn.Linear(hidden, vocab_size)    # 2층: 은닉 H -> 출력 logits V
     def forward(self, x):                      # x: 앞 토큰 인덱스 (B,)
         onehot = F.one_hot(x, num_classes=self.vocab_size).float()
-        return self.linear(onehot)             # logits (B, V)
+        hidden = torch.tanh(self.fc1(onehot))  # 은닉층 + 비선형
+        return self.fc2(hidden)                # logits (B, V)
 
-model  = BigramModel(V)
+model  = BigramModel(V, HIDDEN)
 logits = model(xs)                      # 순전파 (forward)
 loss   = F.cross_entropy(logits, ys)    # softmax + NLL 을 한 번에
 for p in model.parameters(): p.grad = None
@@ -59,8 +61,8 @@ python3 1.train/train.py     # 학습 → 0.model/model.pt + 1.train/loss.svg (�
 python3 2.test/test.py       # 평가 (학습/검증 PPL + 이어쓰기 예시)
 ```
 
-학습으로 `model.json` 이 생기면, 루트의 웹앱(`web_service`)에서도 v0.1.0 을 골라
-**이어쓰기(문장 완성)로 직접 평가**할 수 있어요. (모든 버전이 같은 구조라 웹앱이 수정 없이 로드해요.)
+학습으로 `model.pt` 가 생기면, 루트의 웹앱(`web_service`)에서도 v0.1.0 을 골라
+**이어쓰기(completion)로 직접 평가**할 수 있어요. (모든 버전이 같은 구조라 웹앱이 수정 없이 로드해요.)
 
 ## 완결성 — 웹앱에서 바로 평가
 

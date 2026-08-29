@@ -49,7 +49,7 @@ N토큰이 다 안 차는 문장 앞부분은 `<PAD>`(어휘 0번)로 채워요.
 
 ```bash
 python3 1.train/train.py     # N토큰 문맥 학습 → 0.model/model.pt (+ vocab.json)
-python3 2.test/test.py       # 학습/검증 PPL + 문장 완성 예시
+python3 2.test/test.py       # 학습/검증 PPL + 이어쓰기 예시
 ```
 
 기본 설정(N=3)의 검증 PPL 은 **3.37** 입니다.

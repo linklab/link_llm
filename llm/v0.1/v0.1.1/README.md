@@ -58,16 +58,16 @@ for batch in loader:
 > ```
 
 ```bash
-python3 1.train/train.py     # Dataset/DataLoader 로 학습 → 0.model/model.json
+python3 1.train/train.py     # Dataset/DataLoader 로 학습 → 0.model/model.pt (+ vocab.json)
 python3 2.test/test.py       # 학습/검증 PPL + 이어쓰기 예시
 ```
 
-`model.json` 이 생기면 웹앱(`web_service`)에서 v0.1.1 을 골라 **이어쓰기로 바로 평가**할 수 있어요.
+`model.pt` 가 생기면 웹앱(`web_service`)에서 v0.1.1 을 골라 **이어쓰기로 바로 평가**할 수 있어요.
 (저장 형식이 v0.1.0 과 같아 웹앱이 수정 없이 로드합니다.)
 
 ## 완결성 — 웹앱에서 바로 평가
 
-**학습 → 생성/이어쓰기 → PPL 측정**까지 한 버전에 완결돼요. 프로즈 검증 PPL 은
+**학습 → 생성/이어쓰기 → PPL 측정**까지 한 버전에 완결돼요. 산문 검증 PPL 은
 v0.1.1(미니배치) **4.08** 로, v0.1.0(풀배치) **8.42** 보다 훨씬 낮아요 — 같은 모델이라도
 **미니배치·셔플로 데이터를 공급하면 훨씬 잘 수렴한다**가 눈에 보입니다.
 

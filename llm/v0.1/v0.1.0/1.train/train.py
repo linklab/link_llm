@@ -3,7 +3,7 @@
 train.py  (v0.1.0)  -  학습 실행기 (+ 하이퍼파라미터)
 
 하이퍼파라미터를 여기서 정해 모델에 넘기고, 공용 data/pretrain/train.txt 를 학습해
-0.model/model.json 을 만듭니다.
+0.model/model.pt(가중치) + vocab.json(어휘) 을 만듭니다.
 
 ※ 이 버전부터 PyTorch 가 필요합니다:  pip install torch
 """

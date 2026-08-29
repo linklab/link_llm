@@ -45,13 +45,13 @@ nn.Embedding(V, E)(idx)  ==  F.one_hot(idx, V).float() @ C     # C: V×E
 
 ```bash
 python3 1.train/train.py     # 임베딩 MLP 학습 → 0.model/model.pt (+ vocab.json)
-python3 2.test/test.py       # 학습/검증 PPL + 문장 완성 예시
+python3 2.test/test.py       # 학습/검증 PPL + 이어쓰기 예시
 ```
 
 검증 PPL 이 **v0.1.5(one-hot 2토큰) 보다 내려가면** "임베딩의 공유 표현이 일반화에 도움",
 더 내려가 **v0.0.9(카운트) 2.96** 아래면 드디어 신경망이 카운트를 넘어선 거예요.
 
-## 측정된 결과 (프로즈 검증 PPL, 낮을수록 좋음)
+## 측정된 결과 (산문 검증 PPL, 낮을수록 좋음)
 
 | 모델 | 검증 PPL |
 |---|---|

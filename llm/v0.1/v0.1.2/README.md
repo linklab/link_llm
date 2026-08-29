@@ -45,16 +45,16 @@ for batch in loader:
 > ```
 
 ```bash
-python3 1.train/train.py     # torch.optim 으로 학습 → 0.model/model.json
+python3 1.train/train.py     # torch.optim 으로 학습 → 0.model/model.pt (+ vocab.json)
 python3 2.test/test.py       # 학습/검증 PPL + 이어쓰기 예시
 ```
 
-`model.json` 이 생기면 웹앱(`web_service`)에서 v0.1.2 를 골라 **이어쓰기로 바로 평가**할 수 있어요.
+`model.pt` 가 생기면 웹앱(`web_service`)에서 v0.1.2 를 골라 **이어쓰기로 바로 평가**할 수 있어요.
 (저장 형식이 이전과 같아 웹앱이 수정 없이 로드합니다.)
 
 ## 완결성 — 웹앱에서 바로 평가
 
-**학습 → 생성/이어쓰기 → PPL 측정**까지 한 버전에 완결돼요. 프로즈 검증 PPL 이
+**학습 → 생성/이어쓰기 → PPL 측정**까지 한 버전에 완결돼요. 산문 검증 PPL 이
 v0.1.1(4.08)과 비슷한 **4.04** 로 나오면 "갱신 방법만 바꿔도 결과(모델)는 같다",
 손실 곡선으로는 "옵티마이저가 수렴을 어떻게 바꾸나"를 봅니다.
 

@@ -12,8 +12,8 @@
 |---|---|---|
 | 문맥 | 앞 1토큰 `W[prev]` | 앞 2토큰 `(prev2, prev1)` |
 | 입력 | one-hot (V) | one-hot 2개 이어붙임 (2V) |
-| 모델 | `nn.Linear(V, V)` | `nn.Linear(2V, V)` |
-| 저장 | `W` (V×V) | `W2` (V×2V) |
+| 모델 | `Linear(V, H)`→tanh→`Linear(H, V)` | `Linear(2V, H)`→tanh→`Linear(H, V)` |
+| 저장 | `model.pt` (state_dict) | 동일 — 입력 폭만 2V 로 |
 | 상대 v0.0.9 와 | 문맥이 짧아 불리 | **같은 2토큰 = 공정** |
 
 ## 왜 이제 이길 수 있나
@@ -37,8 +37,8 @@
 > ```
 
 ```bash
-python3 1.train/train.py     # 2토큰 문맥 학습 → 0.model/model.json (W2)
-python3 2.test/test.py       # 학습/검증 PPL + 문장 완성 예시
+python3 1.train/train.py     # 2토큰 문맥 학습 → 0.model/model.pt (+ vocab.json)
+python3 2.test/test.py       # 학습/검증 PPL + 이어쓰기 예시
 ```
 
 검증 PPL 이 **v0.0.9 의 2.96 아래**로 내려가면, "같은 문맥에서 신경망이 카운트를 이겼다".
@@ -50,8 +50,8 @@ python3 2.test/test.py       # 학습/검증 PPL + 문장 완성 예시
 
 ## 완결성 — 웹앱에서 바로 평가
 
-`model.json` 이 생기면 웹앱(`web_service`)에서 v0.1.4 를 골라 **문장 완성으로 바로 평가**할 수 있어요.
-저장 형식이 `W2` 로 넓어졌지만 `type` 으로 구분해 로드합니다.
+`model.pt` 가 생기면 웹앱(`web_service`)에서 v0.1.4 를 골라 **이어쓰기로 바로 평가**할 수 있어요.
+저장 형식은 v0.1.0~ 과 같은 `model.pt` + `vocab.json` 이고, 가중치 모양에서 구조를 복원해 로드합니다.
 
 ## 신경망 시대 진행 (v0.1.x, 6단계)
 

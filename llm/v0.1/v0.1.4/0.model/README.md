@@ -1,7 +1,7 @@
 # 0.model 폴더 (v0.1.4)
 
 - `lm.py` : 이 버전 코드. v0.1.3 을 상속해 **문맥을 1토큰 → 2토큰**으로 넓혔어요.
-- `model.json` : 학습 결과 (`1.train/train.py` 실행 시 생성). **torch 환경에서 학습해야 생겨요.**
+- `model.pt` · `vocab.json` : 학습 결과 (`1.train/train.py` 실행 시 생성). **torch 환경에서 학습해야 생겨요.**
 
 ## 이 버전의 목표 — 카운트와 '같은 문맥'으로 공정한 대결
 
@@ -13,11 +13,11 @@ v0.1.4 는 신경망도 앞 2토큰을 보게 해 문맥 길이를 맞춥니다.
 
 | # | 항목 | v0.1.3 | v0.1.4 |
 |---|------|--------|--------|
-| ① | 모델 | `BigramModel` `nn.Linear(V, V)` | `ContextModel` `nn.Linear(2V, V)` |
+| ① | 모델 | `BigramModel` (fc1 입력 V) | `ContextModel` (fc1 입력 2V) — 층 수는 같음 |
 | ② | forward | one-hot(prev) | `cat[one-hot(prev2), one-hot(prev1)]` |
 | ③ | 데이터 | `(prev) → next` | `(prev2, prev1) → next` (`make_pairs` 재정의) |
 | ④ | 어휘 | 그대로 | 맨 앞에 `<PAD>` 추가(0번) |
-| ⑤ | 저장 | `W` (V×V) | `W2` (V×2V), `type="neural_context2"` |
+| ⑤ | 저장 | `model.pt` (state_dict) | 동일 — `fc1` 입력 폭만 2V |
 
 ## logits 를 어떻게 얻나
 

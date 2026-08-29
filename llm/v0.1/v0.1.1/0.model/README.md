@@ -1,7 +1,7 @@
 # 0.model 폴더 (v0.1.1)
 
 - `lm.py` : 이 버전 코드. v0.1.0(신경망 bigram)을 상속해 **학습 파이프라인을 PyTorch `Dataset` + `DataLoader`** 로 바꿨어요.
-- `model.json` : 학습 결과 (`1.train/train.py` 실행 시 생성). **torch 환경에서 학습해야 생겨요.**
+- `model.pt` · `vocab.json` : 학습 결과 (`1.train/train.py` 실행 시 생성). **torch 환경에서 학습해야 생겨요.**
 
 ## 이 버전 모델의 특징
 
@@ -43,8 +43,12 @@ for batch in loader:
 - `DataLoader` 가 매 에폭 **셔플**하고 **배치 크기**로 묶어 줘요 (v0.1.0 의 수동 `randperm`/슬라이싱을 대체).
 - 학습 시작에 `torch.manual_seed(SEED)` 를 한 번 불러 초기화·셔플을 **재현 가능**하게.
 
-## model.json 형식
+## 저장 형식 — PyTorch 표준
 
-v0.1.0 과 **똑같아요** — `{ type: "neural_bigram", tokenizer, vocab, W }`.
-데이터 공급 방식이 달라도 저장되는 건 학습된 `W` + 어휘라, 웹앱/평가가 그대로 로드합니다.
-`2.test/test.py` 의 PPL 이 v0.1.0 과 비슷하게 나오면 "파이프라인만 바꿔도 결과는 같다"가 확인돼요.
+| 파일 | 내용 |
+|---|---|
+| `model.pt` | 가중치 `state_dict` (`torch.save`). 항상 **CPU 텐서**로 저장 |
+| `vocab.json` | `{ tokenizer, vocab }` — 어휘 목록 (위치 = 정수 인덱스) |
+
+- 개수 세기(v0.0.x)의 `model.json`(개수 표) 과 다릅니다.
+- 불러올 때 저장된 가중치 **모양에서 은닉 크기를 복원**해 신경망을 다시 만들고 `load_state_dict` 로 채워요.

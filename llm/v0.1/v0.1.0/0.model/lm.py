@@ -67,7 +67,7 @@ _Module = nn.Module if torch is not None else object   # torch 없이도 이 파
 class BigramModel(_Module):
     """
     앞 토큰(one-hot) → 은닉층(tanh) → 다음 토큰 점수(logits) 를 내는 작은 신경망(MLP).
-    은닉층 없는 한 층이던 것을 **2개 층**으로 늘렸어요 (fc1: V→H, fc2: H→V, 사이에 tanh).
+    **2개 층**으로 이뤄져요 — fc1: V→H, 사이에 tanh, fc2: H→V.
       - __init__ : 두 개의 nn.Linear 층을 정의
       - forward  : x(앞 토큰 인덱스) → one-hot → fc1 → tanh → fc2 → logits
     (문맥 확장·임베딩은 v0.1.4 / v0.2.x 에서.)

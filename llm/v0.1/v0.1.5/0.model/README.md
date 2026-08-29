@@ -1,7 +1,7 @@
 # 0.model 폴더 (v0.1.5)
 
 - `lm.py` : 이 버전 코드. v0.1.4(2토큰 문맥) 를 **그대로** 물려받고, **버전 비교 도구**를 더했어요.
-- `model.json` : 학습 결과 (`1.train/train.py` 실행 시 생성). **torch 환경에서 학습해야 생겨요.**
+- `model.pt` · `vocab.json` : 학습 결과 (`1.train/train.py` 실행 시 생성). **torch 환경에서 학습해야 생겨요.**
 
 ## 이 버전의 새 개념 = '대결' (캡스톤)
 
@@ -18,11 +18,11 @@
 ## 도구
 
 ```python
-load_version_model("v0.0.9")   # 다른 버전의 model.json 을 그 버전 클래스로 로드
+load_version_model("v0.0.9")   # 다른 버전의 학습 결과를 그 버전 클래스로 로드
 compare(train_sents, valid_sents, versions)   # 각 버전의 학습/검증 PPL 을 재서 (rows, skipped)
 ```
 
-- `compare` 는 아직 학습 안 된 버전(model.json 없음)이나 torch 없는 신경망 버전은 **건너뛰고** 이유를 알려줘요.
+- `compare` 는 아직 학습 안 된 버전이나 torch 없는 신경망 버전은 **건너뛰고** 이유를 알려줘요.
 - 대결표는 `2.test/test.py` 가 출력합니다:
   ```
   버전     종류   학습PPL  검증PPL   격차
@@ -32,9 +32,9 @@ compare(train_sents, valid_sents, versions)   # 각 버전의 학습/검증 PPL 
   → 검증 PPL 최저: v0.1.4(신경망, 2토큰) = 2.90 — 카운트(2.96)를 넘어섬
   ```
 
-## model.json / 웹앱
+## 저장 형식 / 웹앱
 
-- `model.json` 은 `type` 으로 구분해 로드(신경망 2토큰은 `neural_context2`, `W2` 저장).
-  웹앱에서 v0.1.5 를 골라 **문장 완성**으로도 평가할 수 있어요.
+- 카운트는 `model.json`(개수 표), 신경망은 `model.pt`(state_dict) + `vocab.json`(어휘).
+  웹앱에서 v0.1.5 를 골라 **이어쓰기**으로도 평가할 수 있어요.
 - 대결에 신경망 버전을 넣으려면 그 버전들을 각각 `1.train/train.py` 로 먼저 학습해 두세요
   (v0.0.9 카운트 모델은 이미 학습돼 있음).

@@ -1,14 +1,15 @@
 # 0.model 폴더 (v0.1.0)
 
 - `lm.py` : 이 버전 코드. v0.0.9 를 상속해 **확률 엔진만 신경망으로 교체**했어요.
-- `model.json` : 학습 결과 (`1.train/train.py` 실행 시 자동 생성). **torch 환경에서 학습해야 생겨요.**
+- `model.pt` · `vocab.json` : 학습 결과 (`1.train/train.py` 실행 시 자동 생성). **torch 환경에서 학습해야 생겨요.**
 
 ## 이 버전 모델의 특징
 
 - **방식:** 개수 세기 → **신경망 학습**(경사하강). 미분은 PyTorch **autograd**(`loss.backward()`)가 담당.
-- **모델(`BigramModel`):** 강의 자료 **06.fcn** 의 `nn.Module` 스타일 — 은닉층 없는 **완전연결망 한 층**.
-  - `__init__`: `self.linear = nn.Linear(V, V, bias=False)`
-  - `forward(x)`: 앞 토큰 인덱스 → `F.one_hot` → `self.linear` → logits `(B, V)`
+- **모델(`BigramModel`):** `nn.Module` 스타일 **2층 MLP**.
+  - `fc1 = nn.Linear(V, H)` → `tanh` → `fc2 = nn.Linear(H, V)`
+  - 입력 = 앞 토큰 one-hot(V), 출력 = 다음 토큰 logits(V)
+  - `forward(x)`: 앞 토큰 인덱스 → `F.one_hot` → `fc1` → `tanh` → `fc2` → logits `(B, V)`
   - 손실: `F.cross_entropy(model(x), y)` (softmax + NLL 을 수치적으로 안정하게 한 번에)
   - 갱신: `for p in model.parameters(): p -= LR * p.grad` (**수동** 경사하강 — 옵티마이저는 v0.1.2에서)
   - 저장/추론용 `self.W` 는 `model.linear.weight.t()` (그래야 `self.W[prev]` = 그 토큰의 logits → v0.0.x 인터페이스 그대로)
@@ -22,20 +23,15 @@
 - 다만 `web_service` 와 상속 사슬이 `module.NGramLM` 을 찾으므로, 파일 끝에서
   `NGramLM = NeuralLM` 으로 **같은 클래스를 두 이름으로** 노출해 기존 인프라와 호환시켜요.
 
-## model.json 형식 (v0.0.x 와 다름)
+## 저장 형식 — PyTorch 표준
 
-```json
-{
-  "type": "neural_bigram",
-  "tokenizer": "punct",
-  "vocab": ["봄", "이", "오", "면", "...", "<END>"],
-  "W": [[...], [...], "... (V x V 실수)"]
-}
-```
+| 파일 | 내용 |
+|---|---|
+| `model.pt` | 가중치 `state_dict` (`torch.save`). 항상 **CPU 텐서**로 저장 |
+| `vocab.json` | `{ tokenizer, vocab }` — 어휘 목록 (위치 = 정수 인덱스) |
 
-- 개수 표(`tables`) 대신 **어휘(`vocab`) + 가중치(`W`)** 를 저장해요.
-- 불러올 때 `W` 를 다시 텐서로 만들어, `softmax(W[prev])` 로 다음 토큰 확률을 계산합니다.
-
+- 개수 세기(v0.0.x)의 `model.json`(개수 표) 과 다릅니다.
+- 불러올 때 저장된 가중치 **모양에서 은닉 크기를 복원**해 신경망을 다시 만들고 `load_state_dict` 로 채워요.
 ## 왜 PPL 로 v0.0.9 와 비교하나
 
 `perplexity()` 는 v0.0.9 것을 **그대로** 물려받고, `token_prob` 만 신경망 버전으로 바꿨어요.

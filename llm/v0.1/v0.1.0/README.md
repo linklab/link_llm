@@ -1,107 +1,92 @@
 # link_llm — 나만의 작은 언어 모델 (v0.1.0)
 
-**신경망 시대의 첫 버전.** 지금까지는 단어(토큰)를 **세어서** 확률을 만들었다면,
-v0.1.0 은 그 확률을 **학습**합니다. (PyTorch autograd 사용)
+**신경망 시대의 첫 버전.** 토큰을 **세어서** 확률을 만들던 것을, 확률을 **학습**하는 방식으로 바꿔요.
+(PyTorch autograd 사용)
 
-## v0.0.9 → v0.1.0, 무엇이 바뀌었나요?
+## 한 걸음 — '확률 엔진'만 교체
 
-> **개수 세기 → 경사하강 학습.** "다음 토큰 확률"을 표에서 세는 대신, 가중치 `W` 를 두고
-> 데이터를 잘 맞히도록 조금씩 고쳐요. 미분은 PyTorch **autograd** 가 대신 계산합니다.
-
-### 딱 한 가지만 바뀌었어요 — '확률 엔진'
-
-토크나이저 · `<END>` · 대화(`chat`) · 온도/top-k·top-p 샘플링 · 퍼플렉서티(PPL) 는
-**v0.0.x 것을 그대로 물려받아요.** 바뀐 건 오직:
+바뀐 건 "다음 토큰 확률을 어디서 얻느냐" 하나뿐이에요.
 
 | | v0.0.9 (개수 세기) | v0.1.0 (신경망) |
 |---|---|---|
-| 다음 토큰 확률 | 표에서 `count / total` | `softmax(W[앞 토큰])` |
-| 학습 | 개수를 셈 | `W` 를 경사하강으로 학습 |
+| 다음 토큰 확률 | 표에서 `count / total` | `softmax(net(앞 토큰))` |
+| 학습 | 개수를 셈 | 가중치를 경사하강으로 학습 |
 | 미분 | 없음 | PyTorch `loss.backward()` |
 
-### 신경망 모델 (nn.Module) + 한 스텝의 학습
+그대로 물려받는 것: 토크나이저 · `<END>` · 대화(`chat`) · 온도/top-k·top-p 샘플링 · 퍼플렉서티(PPL).
 
-앞 토큰(one-hot) → `fc1` → `tanh` → `fc2` → 다음 토큰 점수(logits) 인 **2층 MLP** 예요:
+## 모델 — 2층 MLP
+
+- 입력: 앞 토큰 one-hot (V차원)
+- 흐름: `fc1(V→H)` → `tanh` → `fc2(H→V)` → logits
+- 하이퍼파라미터 `HIDDEN`(H)은 `1.train/train.py` 에서 설정
 
 ```python
-import torch.nn as nn
-
 class BigramModel(nn.Module):
     def __init__(self, vocab_size, hidden):
         super().__init__()
         self.vocab_size = vocab_size
-        self.fc1 = nn.Linear(vocab_size, hidden)    # 1층: 입력(one-hot V) -> 은닉 H
-        self.fc2 = nn.Linear(hidden, vocab_size)    # 2층: 은닉 H -> 출력 logits V
-    def forward(self, x):                      # x: 앞 토큰 인덱스 (B,)
+        self.fc1 = nn.Linear(vocab_size, hidden)    # 1층: one-hot(V) -> 은닉 H
+        self.fc2 = nn.Linear(hidden, vocab_size)    # 2층: 은닉 H -> logits V
+    def forward(self, x):                           # x: 앞 토큰 인덱스 (B,)
         onehot = F.one_hot(x, num_classes=self.vocab_size).float()
-        hidden = torch.tanh(self.fc1(onehot))  # 은닉층 + 비선형
-        return self.fc2(hidden)                # logits (B, V)
-
-model  = BigramModel(V, HIDDEN)
-logits = model(xs)                      # 순전파 (forward)
-loss   = F.cross_entropy(logits, ys)    # softmax + NLL 을 한 번에
-for p in model.parameters(): p.grad = None
-loss.backward()                         # autograd 가 기울기 계산
-with torch.no_grad():
-    for p in model.parameters(): p -= LR * p.grad   # 경사하강 1스텝 (수동 갱신)
+        hidden = torch.tanh(self.fc1(onehot))
+        return self.fc2(hidden)                     # logits (B, V)
 ```
 
-> **핵심 통찰:** 학습이 끝난 신경망 bigram 은 **개수 bigram 과 사실상 같아져요.**
-> 경사하강이 결국 "그 문맥에서의 다음 토큰 등장 비율"을 재현하거든요.
+## 학습 한 스텝 (수동 갱신 — 옵티마이저는 v0.1.2)
 
-## 실행 방법
+```python
+logits = model(xs)                      # ① 순전파
+loss   = F.cross_entropy(logits, ys)    # ② 손실 (softmax + NLL 을 한 번에)
+for p in model.parameters(): p.grad = None   # ③ 이전 기울기 비우기 (backward 는 누적됨)
+loss.backward()                         # ④ autograd 가 기울기 계산
+with torch.no_grad():
+    for p in model.parameters(): p -= LR * p.grad   # ⑤ 경사하강 1스텝
+```
 
-> ⚠️ 이 버전부터 **PyTorch** 가 필요해요. torch 를 설치할 수 있는 파이썬 환경에서 실행하세요.
-> ```bash
-> pip install torch
-> ```
+## 실행
+
+> ⚠️ 이 버전부터 **PyTorch** 필요: `pip install torch`
 
 ```bash
-python3 1.train/train.py     # 학습 → 0.model/model.pt + 1.train/loss.svg (손실 곡선)
-python3 2.test/test.py       # 평가 (학습/검증 PPL + 이어쓰기 예시)
+python3 1.train/train.py     # 학습 → 0.model/model.pt + vocab.json + 1.train/loss.svg
+python3 2.test/test.py       # 학습/검증 PPL + 이어쓰기 예시
 ```
 
-학습으로 `model.pt` 가 생기면, 루트의 웹앱(`web_service`)에서도 v0.1.0 을 골라
-**이어쓰기(completion)로 직접 평가**할 수 있어요. (모든 버전이 같은 구조라 웹앱이 수정 없이 로드해요.)
+- 학습 결과가 생기면 웹앱(`web_service`)에서 v0.1.0 을 골라 **이어쓰기**로 평가할 수 있어요.
+- `0.model / 1.train / 2.test` 구조가 v0.0.x 와 같아 웹앱이 수정 없이 로드합니다.
 
-## 완결성 — 웹앱에서 바로 평가
+## 성적 (산문 사전학습)
 
-이 버전은 **학습 → 생성/이어쓰기 → PPL 측정**까지 한 버전에 완결돼요.
-`0.model / 1.train / 2.test` 구조(+ 루트 공용 `data/`)도 v0.0.x 와 똑같아서 `web_service` 가 그대로 불러옵니다.
+| | 값 |
+|---|---|
+| 학습 PPL | 7.87 |
+| 검증 PPL | **8.42** |
+| top-1 정확도 | 60.7% |
+| 파라미터 | 314,696 |
 
-## 여기서부터 신경망 (v0.1.x, 5단계)
-
-- **v0.1.0 신경망 bigram + autograd ← 현재** (첫 신경망 모델, 완결)
-- v0.1.1 미니배치·벡터화 학습 → v0.1.2 옵티마이저(`torch.optim`) → v0.1.3 정규화·초기화
-- v0.1.4 **기준선 대결(캡스톤)** — 웹앱에서 v0.0.9(카운트) vs 신경망 bigram 을 PPL 로 나란히
-
-> 다음 v0.2.x 에서는 one-hot 을 **임베딩 벡터**로 바꾸고 은닉층을 얹어 **MLP(Bengio)** 로 갑니다.
+- 카운트(2.96)에 **크게 뒤집니다** — 앞 1토큰만 보기 때문이에요.
+- 문맥을 2토큰으로 맞추는 **v0.1.4** 에서 비로소 카운트를 넘어섭니다(2.90).
+- 이 버전의 목적은 순위가 아니라 **'세기'에서 '학습'으로 원리를 바꾸는 것**입니다.
 
 ## 손실 곡선 — `1.train/loss.svg`
 
-학습이 끝나면 **에폭별 손실**을 SVG 그래프로 남겨요. 숫자만 흘려보내지 말고
-"정말 내려가고 있나"를 눈으로 확인하는 게 신경망 학습의 첫 습관이에요.
-
-- matplotlib 을 쓰지 않아요. 선 하나 그리는 데 필요한 건 좌표 계산이 전부라
-  `save_loss_plot()` 이 SVG 를 직접 씁니다 (의존성은 여전히 torch 하나).
-- 파란 실선이 **학습 손실**(왼쪽 축), 빨간 점선이 **검증 PPL**(오른쪽 축, 로그 눈금)이에요.
-  세로 점선은 조기 종료가 **채택한 에폭**입니다.
-- 이 버전은 **full-batch 수동 SGD** 라 곡선이 완만하고, 1,000 에폭에서도
-  **아직 내려가는 중**이에요 — 덜 수렴했다는 뜻이고, v0.1.1(미니배치)·v0.1.2(Adam)에서
-  같은 에폭 수로 훨씬 낮은 지점에 도달하는 걸 곡선끼리 비교하면 바로 보입니다.
-- `save_loss_plot()` 은 v0.1.0 에 있어서 **이후 모든 신경망 버전이 그대로 물려받아요.**
-- `loss.svg` 는 model.pt 처럼 **학습 산출물이라 커밋하지 않아요**(`.gitignore`).
-  클론 직후에는 없고, `1.train/train.py` 를 한 번 돌리면 생깁니다.
+- 파란 실선 = **학습 손실**(왼쪽 축), 빨간 점선 = **검증 PPL**(오른쪽 축, 로그 눈금).
+- 세로 점선 = 조기 종료가 **채택한 에폭**.
+- 이 버전은 **full-batch 수동 SGD** 라 곡선이 완만하고, 상한(1,500 에폭)에서도 **아직 내려가는 중**이에요.
+  → v0.1.1(미니배치)·v0.1.2(Adam)의 곡선과 비교하면 수렴 속도 차이가 바로 보입니다.
+- matplotlib 없이 `save_loss_plot()` 이 SVG 를 직접 씁니다 (의존성은 torch 하나).
+- 이후 모든 신경망 버전이 이 함수를 물려받아요.
+- 학습 산출물이라 **커밋하지 않아요**(`.gitignore`) — `1.train/train.py` 를 돌리면 생깁니다.
 
 ## 조기 종료 (early stopping)
 
-에폭 수를 손으로 맞추는 일을 없앱니다. 매 에폭 **학습 손실(Loss)**을 재서
+에폭 수를 손으로 맞추는 일을 없앱니다. 매 에폭 **학습 손실**과 **검증 PPL** 을 함께 재요.
 
-- 좋아지면 → 그때의 가중치를 통째로 기억해 두고,
-- `PATIENCE` 에폭 동안 나아지지 않으면 → 멈춘 뒤 **가장 좋았던 가중치로 되돌려** 저장해요.
-
-그래서 `EPOCHS` 는 이제 '정확히 맞춰야 하는 값'이 아니라 넉넉한 **상한**이면 됩니다.
-마지막 에폭이 아니라 최고점이 저장되므로, 상한을 크게 잡아도 손해가 없어요.
+- **멈출 때** — 둘 중 **하나라도** 최저를 갱신하면 계속, 둘 다 `PATIENCE` 에폭 정체하면 중단.
+- **저장할 때** — **검증 PPL 이 가장 낮았던 에폭**의 가중치로 되돌려 저장 (= 일반화 최적점).
+- 그래서 `EPOCHS` 는 맞춰야 하는 값이 아니라 넉넉한 **상한**이면 됩니다.
 
 ```python
 m.EARLY_STOPPING = True    # False 면 EPOCHS 를 끝까지
@@ -109,18 +94,28 @@ m.PATIENCE = 20            # 몇 에폭까지 참을지 (전 버전 통일)
 m.MIN_DELTA = 0.0          # 이만큼은 좋아져야 '개선'
 ```
 
-> ⚠️ **PyTorch 본체에는 early stopping 이 없어요.** PyTorch Lightning 의
-> `EarlyStopping` 콜백이나 Ignite 의 `EarlyStopping` 핸들러는 **별도 패키지**입니다.
-> 이 저장소는 의존성을 torch 하나로 유지하려고, 표준 동작(patience + best 가중치 복원)을
-> `lm.py` 안에 15줄짜리 `EarlyStopping` 클래스로 직접 구현했어요.
-> `torch.optim.lr_scheduler.ReduceLROnPlateau` 가 쓰는 patience 개념과 같은 방식입니다.
-
-**기준은 두 지표, 저장은 검증 최저** — 매 에폭 **학습 손실**과 **검증 PPL** 을 함께 재요.
-
-- **멈출 때** — 둘 중 **하나라도** 최저를 갱신하면 계속 학습하고, 둘 다 `PATIENCE`(20) 에폭 정체하면 중단.
-- **저장할 때** — **검증 PPL 이 가장 낮았던 에폭**의 가중치로 되돌려 저장 (= 일반화 최적점).
-- `PATIENCE=20` · `MIN_DELTA=0.0` 은 모든 신경망 버전이 동일.
-
-> 💡 **왜 저장 기준을 검증으로 두나.** 학습 손실은 계속 내려가지만 검증 PPL 은 어느 지점에서 바닥을 찍고
+> 💡 **왜 저장 기준이 검증인가.** 학습 손실은 계속 내려가지만 검증 PPL 은 어느 지점에서 바닥을 찍고
 > 다시 올라가요 — 그 뒤는 과적합입니다. 마지막 에폭을 저장하면 그 과적합된 가중치를 배포하게 돼요.
-> (두 곡선은 `loss.svg` 에 파랑/빨강으로 함께 그려집니다.)
+
+> ⚠️ **PyTorch 본체에는 early stopping 이 없어요.** Lightning 의 콜백이나 Ignite 의 핸들러는 별도 패키지입니다.
+> 의존성을 torch 하나로 유지하려고 `lm.py` 안에 15줄짜리 `EarlyStopping` 클래스로 직접 구현했어요
+> (`ReduceLROnPlateau` 가 쓰는 patience 개념과 같은 방식).
+
+## 계산 장치 (MPS / CPU)
+
+```python
+m.DEVICE = "auto"    # "auto" = MPS 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능
+```
+
+## 다음 단계 — 신경망 시대 (v0.1.x, 6단계)
+
+| 버전 | 한 걸음 |
+|---|---|
+| **v0.1.0 ← 현재** | 신경망 2층 MLP + autograd |
+| v0.1.1 | 미니배치 학습 (`Dataset`/`DataLoader`) |
+| v0.1.2 | 옵티마이저 (`torch.optim`) |
+| v0.1.3 | 정규화·초기화 |
+| v0.1.4 | 2토큰 문맥 (카운트와 같은 조건) |
+| v0.1.5 | 기준선 대결 (캡스톤) |
+
+> 이후 v0.2.x 에서 one-hot 을 **임베딩 벡터**로 바꿉니다 (Bengio 입력층).

@@ -88,29 +88,44 @@ class BigramModel(_Module):
 # ---------- 조기 종료 (early stopping) ----------
 # PyTorch 본체에는 early stopping 이 없어요 (Lightning·Ignite 같은 별도 패키지에 있어요).
 # 이 저장소는 의존성을 torch 하나로 유지하려고, 표준 동작을 그대로 15줄로 직접 구현합니다.
-#   · 검증 점수가 좋아지면 그때의 가중치를 통째로 기억해 두고,
-#   · patience 에폭 동안 나아지지 않으면 멈춘 뒤 **가장 좋았던 가중치로 되돌려요.**
+#   · **두 지표(학습 손실 · 검증 PPL) 중 하나라도** 최저를 갱신하면 계속 학습하고,
+#   · 둘 다 patience 에폭 동안 나아지지 않으면 멈춰요. → 훈련 기회를 넉넉히 주되,
+#   · 저장(복원)하는 가중치는 **검증 PPL 이 최저였던 시점** = 일반화 최적점.
+#     (더 오래 탐색하면서도, 배포되는 건 과적합 전의 가장 좋은 체크포인트)
 # (torch.optim.lr_scheduler.ReduceLROnPlateau 가 쓰는 patience 개념과 같아요.)
 class EarlyStopping:
-    def __init__(self, patience=10, min_delta=0.0):
+    def __init__(self, patience=20, min_delta=0.0):
         self.patience = patience        # 몇 에폭까지 참을지
         self.min_delta = min_delta      # 이만큼은 좋아져야 '개선'으로 인정
-        self.best = float("inf")        # 지금까지 가장 좋은(=낮은) 검증 점수
-        self.best_epoch = 0
-        self.best_state = None          # 그때의 가중치 사본
+        self.best_loss = float("inf")   # 지금까지 최저 '학습 손실'
+        self.best_ppl = float("inf")    # 지금까지 최저 '검증 PPL'
+        self.best_epoch = 0             # 저장한 가중치의 에폭
+        self.best_state = None          # 복원용 가중치 사본
         self.bad_epochs = 0
 
-    def step(self, score, epoch, model):
-        """이번 에폭 점수를 넣어요. 멈춰야 하면 True."""
-        if score < self.best - self.min_delta:
-            self.best, self.best_epoch, self.bad_epochs = score, epoch, 0
-            self.best_state = {k: v.detach().clone() for k, v in model.state_dict().items()}
+    def step(self, loss, ppl, epoch, model):
+        """이번 에폭의 (학습 손실, 검증 PPL). 둘 중 하나라도 최저를 갱신하면 patience 리셋.
+        저장 가중치는 '검증 PPL 최저' 시점(검증이 없으면 '학습 손실 최저')."""
+        def snap():
+            return {k: v.detach().clone() for k, v in model.state_dict().items()}
+        improved = False
+        if loss < self.best_loss - self.min_delta:
+            self.best_loss = loss
+            improved = True
+            if ppl is None:                         # 검증이 없으면 손실 최저를 저장 기준으로
+                self.best_epoch, self.best_state = epoch, snap()
+        if ppl is not None and ppl < self.best_ppl - self.min_delta:
+            self.best_ppl = ppl
+            self.best_epoch, self.best_state = epoch, snap()   # 배포 모델 = 일반화 최적점
+            improved = True
+        if improved:
+            self.bad_epochs = 0
             return False
         self.bad_epochs += 1
         return self.bad_epochs >= self.patience
 
     def restore(self, model):
-        """가장 좋았던 가중치로 되돌려요 (마지막 에폭이 아니라 최고점을 저장하려고)."""
+        """저장해 둔(검증 PPL 최저) 가중치로 되돌려요 — 마지막 에폭이 아니라 일반화 최적점."""
         if self.best_state is not None:
             model.load_state_dict(self.best_state)
 
@@ -122,7 +137,7 @@ class NeuralLM(_load_prev("v0.0.9")):
 
     # 조기 종료 기본값 (1.train/train.py 에서 바꿔요)
     EARLY_STOPPING = True      # False 면 EPOCHS 를 끝까지 돕니다
-    PATIENCE = 20              # 학습 손실(Loss)이 이만큼 안 좋아지면 중단
+    PATIENCE = 20              # 학습 손실·검증 PPL 둘 다 이만큼 안 좋아지면 중단
     MIN_DELTA = 0.0            # 개선으로 인정할 최소 폭
 
     def __init__(self):
@@ -136,37 +151,47 @@ class NeuralLM(_load_prev("v0.0.9")):
 
     # ---------- 조기 종료: 하위 버전 train() 들이 공통으로 쓰는 3개 도우미 ----------
     def start_early_stopping(self, valid_sentences):
-        """EARLY_STOPPING 이 켜져 있으면 감시자를 만들어요. (기준 = 학습 손실 Loss)"""
+        """EARLY_STOPPING 이 켜져 있으면 감시자를 만들어요.
+        기준 = 학습 손실 '또는' 검증 PPL 개선 시 지속(둘 다 정체 시 종료)."""
         self.valid_scores = []
         self._valid_sentences = valid_sentences
         if not self.EARLY_STOPPING:
             return None
-        print(f"  조기 종료 켬: 학습 손실(Loss) 기준, patience={self.PATIENCE}, min_delta={self.MIN_DELTA}")
+        print(f"  조기 종료 켬: 학습 손실 또는 검증 PPL 개선 시 지속(둘 다 정체 시 종료), "
+              f"patience={self.PATIENCE}, min_delta={self.MIN_DELTA}")
         return EarlyStopping(self.PATIENCE, self.MIN_DELTA)
 
     def should_stop_early(self, stopper, epoch):
-        """에폭 끝에서 '학습 손실(Loss)'로 멈출 때인가를 판단해요. (검증 PPL 은 곡선용으로만 기록)"""
+        """에폭 끝에서 '학습 손실'과 '검증 PPL'을 함께 재서 멈출 때인가를 판단해요.
+        둘 중 하나라도 최저를 갱신하면 계속, 둘 다 patience 만큼 정체하면 종료.
+        저장(복원) 가중치는 stopper 가 '검증 PPL 최저' 시점으로 잡아요(일반화 최적점)."""
         if stopper is None:
             return False
-        score = self.losses[-1]                           # ★ 조기 종료 기준 = 이번 에폭 '학습 손실(Loss)'
-        if self._valid_sentences:                         # 검증 PPL 은 loss.svg 빨강 곡선용으로만 계속 기록
+        loss = self.losses[-1]                            # 이번 에폭 학습 손실
+        ppl = None
+        if self._valid_sentences:                         # 검증 PPL (loss.svg 빨강 곡선 + 복원 기준)
             self.net.eval()
-            self.valid_scores.append(self.perplexity(self._valid_sentences))
+            ppl = self.perplexity(self._valid_sentences)
             self.net.train()
-        if stopper.step(score, epoch, self.net):
-            print(f"  ⏹ 조기 종료: {self.PATIENCE}에폭 동안 학습 손실 개선 없음 "
+            self.valid_scores.append(ppl)
+        if stopper.step(loss, ppl, epoch, self.net):
+            print(f"  ⏹ 조기 종료: {self.PATIENCE}에폭 동안 학습 손실·검증 PPL 둘 다 개선 없음 "
                   f"(epoch {epoch} 에서 중단)")
             return True
         return False
 
     def finish_early_stopping(self, stopper):
-        """가장 낮았던 학습 손실의 가중치로 되돌리고, 그 에폭을 기록해요."""
+        """검증 PPL 이 최저였던 가중치로 되돌리고(일반화 최적점), 그 에폭을 기록해요."""
         if stopper is None:
             return
         stopper.restore(self.net)
         self.stopped_epoch = stopper.best_epoch
-        print(f"  ✔ 최저 학습 손실 {stopper.best:.4f} (epoch {stopper.best_epoch}) "
-              f"가중치로 되돌려 저장합니다")
+        if stopper.best_ppl < float("inf"):
+            print(f"  ✔ 최저 검증 PPL {stopper.best_ppl:.4f} (epoch {stopper.best_epoch}) "
+                  f"가중치로 되돌려 저장합니다  [최저 학습 손실 {stopper.best_loss:.4f}]")
+        else:
+            print(f"  ✔ 최저 학습 손실 {stopper.best_loss:.4f} (epoch {stopper.best_epoch}) "
+                  f"가중치로 되돌려 저장합니다")
 
     # ---------- 어휘 / 데이터 준비 ----------
     def build_vocab(self, sentences):

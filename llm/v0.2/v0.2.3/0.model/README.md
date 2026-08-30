@@ -1,0 +1,84 @@
+# 0.model 폴더 (v0.2.3)
+
+- `lm.py` : 이 버전 코드. v0.2.2 를 상속해 **일반화·튜닝 도구 3개**를 더했어요.
+- `model.pt` · `vocab.json` : 학습 결과 (`1.train/train.py` 실행 시 생성). **torch 환경에서 학습해야 생겨요.**
+
+## 이 버전 모델의 특징
+
+**목표:** 검증 PPL 을 더 낮추는 것보다 **학습 vs 검증 격차를 줄이는 것**(= 일반화).
+
+| # | 더한 것 | 코드 | 무엇을 하나 |
+|---|---|---|---|
+| ① | **dropout** | `nn.Dropout(p)` (tanh 뒤) | 학습 중 은닉 뉴런 일부를 껐다 켜 특정 경로 의존을 막음 |
+| ② | **weight tying** | `fc2.weight = emb.weight` | 출력층과 임베딩이 **한 텐서를 공유** → 파라미터 V×H 절약 |
+| ③ | **LR 스케줄** | `torch.optim.lr_scheduler` | 학습이 진행될수록 학습률을 줄여 곱게 수렴 |
+
+## 구조
+
+```
+(앞 N토큰) → 임베딩 concat(N·E) → fc1 → [BatchNorm(선택)] → tanh → [Dropout] → fc2 → logits(V)
+                                                                                ↑ (선택) emb.weight 공유
+```
+
+- `DROPOUT=0.0` 이면 Dropout 층이 항등이라 **v0.2.2 와 완전히 같아져요** — 비교 기준으로 쓰기 좋아요.
+- `net.train()` / `net.eval()` 이 dropout 을 켜고 끕니다. 평가·생성 때는 자동으로 꺼져요.
+
+## weight tying — 왜 모양이 맞아야 하나
+
+| 텐서 | 모양 |
+|---|---|
+| `emb.weight` | (V, **E**) |
+| `fc2.weight` | (V, **H**) |
+
+두 텐서를 같은 것으로 쓰려면 **`HIDDEN == EMBED`** 여야 해요. 다르면 `lm.py` 가 설명과 함께 멈춥니다.
+
+- **효과 ①** 파라미터가 `V×H` 만큼 줄어요 (여기선 1,225×128 ≈ 15.7만 개).
+- **효과 ②** "같은 토큰은 입력에서도 출력에서도 같은 벡터" — 표현이 한 곳에 모여 일반화에 유리해요.
+- 실제 GPT-2 · LLaMA 계열도 쓰는 표준 기법입니다. (v0.4.2 에서 다시 나와요)
+
+## LR 스케줄 — 4가지
+
+| `LR_SCHEDULE` | 동작 | 언제 |
+|---|---|---|
+| `"none"` | 고정 | 기준선 |
+| `"cosine"` | 코사인 곡선으로 `LR → LR_MIN` | 가장 무난 **(기본값)** |
+| `"step"` | `LR_STEP` 에폭마다 `LR_GAMMA` 배 | 단순·예측 가능 |
+| `"plateau"` | **검증 PPL 이 정체할 때만** 감소 | 조기 종료와 같은 신호를 봄 |
+
+`plateau` 는 `should_stop_early()` 가 매 에폭 재는 검증 PPL 을 그대로 받아 씁니다
+(`step_scheduler()` 가 `self.valid_scores[-1]` 를 넘겨요).
+
+## 상속 / override
+
+- **새로 정의**: `build_net`(TuneModel) · `make_scheduler` · `step_scheduler` · `train`(스케줄러 추가) · `load`
+- **그대로 상속**: 임베딩 · 문맥(`block_size`) · `make_pairs` · `_context_ids` · 옵티마이저 · 초기화 · 조기 종료 · 대화 · PPL
+
+## 저장 형식 — PyTorch 표준
+
+| 파일 | 내용 |
+|---|---|
+| `model.pt` | 가중치 `state_dict` (`torch.save`). 항상 **CPU 텐서**로 저장 |
+| `vocab.json` | `{ tokenizer, vocab }` — 어휘 목록 (0번 = `<PAD>`) |
+
+불러올 때 저장된 모양에서 되살리는 것:
+
+- **E** ← `emb.weight` 의 열 수, **N** ← `fc1.weight` 폭 ÷ E, **H** ← `fc1.weight` 행 수
+- **BatchNorm 유무** ← `bn.weight` 키 존재 여부
+- **weight tying 여부** ← `emb.weight` 와 `fc2.weight` 가 같은 값인지
+- **dropout** 은 복원하지 않아요 — 평가 모드에선 어차피 꺼지므로 무의미합니다.
+
+## 실측 — 도구별 몫
+
+`E=H=128 · N=3` 고정, 한 번에 하나만 켠 결과 (`1.train/sweep.py`):
+
+| 실험 | 검증 PPL | 파라미터 | 기준선 대비 |
+|---|---|---|---|
+| none | 3.5380 | 364,105 | (기준) |
+| dropout | 3.5406 | 364,105 | +0.003 (무효과) |
+| tying | 3.6089 | **207,305** | +0.071 (단독은 손해, 크기 −43%) |
+| cosine | 3.2920 | 364,105 | **−0.246** |
+| **all** | **3.2537** | **207,305** | **−0.284** |
+
+- 개선분은 거의 전부 **LR 스케줄**.
+- **tying 은 단독으론 손해지만 조합에선 이득** — `cosine`(3.2920) → `all`(3.2537) 로
+  더 좋아지면서 파라미터는 43% 적어요.

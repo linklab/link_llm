@@ -229,3 +229,4 @@ llm/**/0.model/vocab.json
 
 # 학습 산출물: 손실 곡선 SVG (1.train/train.py 를 돌리면 다시 생겨요)
 llm/**/1.train/loss.svg
+llm/**/2.test/*.svg

@@ -19,7 +19,7 @@ v0.2.3 은 도구를 세 개 한꺼번에 켰어요. 그 상태로 v0.2.2 와 �
   PPL 만 보고 "좋아졌다" 하면 크기가 달라진 걸 놓치게 되거든요.
 
 [실행]
-    python3 1.train/sweep.py                # 5개 전부 (MPS 로 약 35분)
+    python3 1.train/sweep.py                # 5개 전부 (MPS 로 20~40분)
     python3 1.train/sweep.py --runs all none  # 고른 것만
     python3 1.train/sweep.py --json out.json
 
@@ -39,7 +39,7 @@ _spec.loader.exec_module(_model)
 
 # 모든 실행이 공유하는 고정 설정 (v0.2.2 와 같은 조건 + E=H 로 맞춤)
 BASE = dict(BLOCK_SIZE=3, EMBED=128, HIDDEN=128, OPTIMIZER="adam", LR=0.01,
-            EPOCHS=300, BATCH_SIZE=64, SEED=1234, DEVICE="auto",
+            EPOCHS=1500, BATCH_SIZE=64, SEED=1234, DEVICE="auto",
             WEIGHT_DECAY=1e-4, INIT="kaiming", USE_BN=False, LABEL_SMOOTHING=0.1,
             EARLY_STOPPING=True, PATIENCE=20, MIN_DELTA=0.0)
 

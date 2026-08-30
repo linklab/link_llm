@@ -28,7 +28,7 @@ if __name__ == "__main__":
     m.HIDDEN = 128             # 은닉층 크기
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
     m.LR = 0.01                # 이 작은 데이터엔 0.05 는 진동 → 0.01 이 안정적
-    m.EPOCHS = 300             # 조기 종료가 알아서 멈춰요
+    m.EPOCHS = 1_500           # 상한. 실제 종료 지점은 조기 종료가 정해요
     m.BATCH_SIZE = 64
     m.SEED = 1234
     m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능

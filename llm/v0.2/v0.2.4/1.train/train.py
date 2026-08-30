@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-train.py  (v0.2.3)  -  학습 실행기 (+ 하이퍼파라미터)  · 일반화·튜닝
+train.py  (v0.2.4)  -  학습 실행기 (+ 하이퍼파라미터)  · 임베딩 시각화
 
 공용 data/pretrain/train.txt 를 학습해 0.model/model.pt + vocab.json 을 만듭니다.
-v0.2.2 대비 더한 것: dropout · weight tying · LR 스케줄.
+※ 이 버전은 **모델을 바꾸지 않아요** — 설정도 v0.2.3 과 똑같습니다.
+   v0.2.4 가 더한 건 학습된 임베딩을 들여다보는 **분석 도구**뿐이라,
+   학습 결과(검증 PPL 3.26)도 v0.2.3 과 같아야 정상이에요. 분석은 2.test/test.py 에서 합니다.
 
 ※ PyTorch 필요:  pip install torch
 """
@@ -38,7 +40,7 @@ if __name__ == "__main__":
     m.USE_BN = False           # 이 데이터엔 손해 → 끔
     m.LABEL_SMOOTHING = 0.1
 
-    # --- ★ v0.2.3 이 더한 세 가지 ---
+    # --- ★ v0.2.4 이 더한 세 가지 ---
     m.DROPOUT = 0.1            # 은닉층 뒤 dropout (0.0 = 끔). 0.1~0.3 을 바꿔가며 비교해 보세요
     m.TIE_WEIGHTS = True       # 출력층 ↔ 임베딩 가중치 공유 (HIDDEN == EMBED 필요)
     m.LR_SCHEDULE = "cosine"   # "none" | "cosine" | "step" | "plateau"

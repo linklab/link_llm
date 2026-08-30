@@ -40,7 +40,7 @@ if __name__ == "__main__":
     m.USE_BN = False           # 이 데이터엔 손해 → 끔
     m.LABEL_SMOOTHING = 0.1
 
-    # --- ★ v0.2.4 이 더한 세 가지 ---
+    # --- v0.2.3 이 더한 튜닝 3종 (v0.2.4 는 모델을 안 바꿔요) ---
     m.DROPOUT = 0.1            # 은닉층 뒤 dropout (0.0 = 끔). 0.1~0.3 을 바꿔가며 비교해 보세요
     m.TIE_WEIGHTS = True       # 출력층 ↔ 임베딩 가중치 공유 (HIDDEN == EMBED 필요)
     m.LR_SCHEDULE = "cosine"   # "none" | "cosine" | "step" | "plateau"

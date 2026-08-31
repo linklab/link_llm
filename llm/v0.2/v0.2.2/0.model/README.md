@@ -38,6 +38,6 @@ class NormModel(nn.Module):
 - 학습 루프·**조기 종료**·저장·대화·PPL — v0.1.0
 
 ## 평가 포인트
-`2.test/test.py` 검증 PPL 이 v0.2.1(3.37)과 비슷한 **~3.5**로 나오면 정상이에요 —
+`2.test/test.py` 검증 PPL 이 v0.2.1(2.74)과 비슷한 **~2.8**로 나오면 정상이에요 —
 쉬운 산문에선 이 도구들의 이득이 작거든요(진가는 더 깊고 큰 모델에서).
 `USE_BN=True/False`, `INIT=kaiming/default/zeros` 를 바꿔가며 각 도구의 효과를 관찰해 보세요.

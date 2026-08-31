@@ -18,7 +18,7 @@
 ```json
 {
   "max_order": 2,
-  "tokenizer": "punct",
+  "tokenizer": "punct+josa",
   "tables": {
     "2": {
       "나는 오늘": {

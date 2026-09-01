@@ -7,7 +7,7 @@ v0.2.3 은 도구를 세 개 한꺼번에 켰어요. 그 상태로 v0.2.2 와 �
 (루트 `ablation_block_size.py` 가 v0.2.1 에서 같은 함정을 보여줬죠.)
 그래서 여기서는 나머지를 고정한 채 **한 번에 하나만** 켜서 각 도구의 몫을 따로 잽니다.
 
-[실험]  E=H=128 · N=3 고정, 조기 종료·weight_decay·label smoothing 은 v0.2.2 와 동일
+[실험]  E=H=256 · N=3 고정 (v0.2.3 본체와 같은 용량), 조기 종료·weight_decay·label smoothing 은 v0.2.2 와 동일
 
     ① none      : 도구 셋 다 끔                    ← 기준선
     ② dropout   : dropout 만 켬
@@ -38,7 +38,7 @@ _model = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_model)
 
 # 모든 실행이 공유하는 고정 설정 (v0.2.2 와 같은 조건 + E=H 로 맞춤)
-BASE = dict(BLOCK_SIZE=3, EMBED=128, HIDDEN=128, OPTIMIZER="adam", LR=0.01,
+BASE = dict(BLOCK_SIZE=3, EMBED=256, HIDDEN=256, OPTIMIZER="adam", LR=0.0003,
             EPOCHS=1500, BATCH_SIZE=64, SEED=1234, DEVICE="auto",
             WEIGHT_DECAY=1e-4, INIT="kaiming", USE_BN=False, LABEL_SMOOTHING=0.1,
             EARLY_STOPPING=True, PATIENCE=20, MIN_DELTA=0.0)
@@ -83,7 +83,7 @@ def run_one(tag, tools, note):
 
 def report(results):
     print(f"\n{'=' * 72}")
-    print("=== 도구별 몫 (E=H=128 · N=3 고정) ===\n")
+    print(f"=== 도구별 몫 (E=H={BASE['EMBED']} · N={BASE['BLOCK_SIZE']} 고정) ===\n")
     print(f"  {'실험':<9} {'dropout':>8} {'tying':>6} {'schedule':>9} "
           f"{'학습PPL':>9} {'검증PPL':>9} {'격차':>7} {'파라미터':>10}")
     print("  " + "-" * 76)

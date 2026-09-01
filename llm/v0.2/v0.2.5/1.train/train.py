@@ -26,10 +26,10 @@ if __name__ == "__main__":
 
     # ====== 하이퍼파라미터 (EPOCHS 만 빼고 v0.2.4 와 동일 — 바꾸면 비교가 깨져요) ======
     m.BLOCK_SIZE = 3           # 문맥 길이 N
-    m.EMBED = 128              # 임베딩 차원 E — weight tying 을 쓰려면 HIDDEN 과 같아야 해요
-    m.HIDDEN = 128             # 은닉층 크기 H
+    m.EMBED = 256              # 임베딩 차원 E — weight tying 을 쓰려면 HIDDEN 과 같아야 해요
+    m.HIDDEN = 256             # 은닉층 크기 H
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
-    m.LR = 0.01
+    m.LR = 0.0003
     # ★ 여기만 v0.2.4(1500)와 달라요 — v0.2.3 이 진단한 결함을 실제로 고치는 자리입니다.
     #   EPOCHS 는 cosine 의 T_max 를 겸해서 '상한' 이자 '감쇠 기간' 이에요. 1500 으로 두면
     #   학습률이 한참 안 줄어 조기 종료가 언제 걸리느냐가 우연이 되고, 같은 설정 3회가

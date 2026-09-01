@@ -21,19 +21,23 @@ _spec.loader.exec_module(model)
 if __name__ == "__main__":
     m = model.Model()
 
-    # ================= 하이퍼파라미터 (여기서 조정) =================
-    m.BLOCK_SIZE = 3           # ★ 문맥 길이 N = 앞 몇 토큰을 볼지 (2면 v0.2.0 과 동일)
-    m.EMBED = 32               # 임베딩 차원 E
-    m.HIDDEN = 128             # 은닉층 크기 (2층 MLP)
+    # ============ 하이퍼파라미터 — v0.2.0 과 BLOCK_SIZE 하나만 다릅니다 ============
+    # 이 버전의 개념은 '문맥 확장' 이에요. 그래서 나머지 값은 **v0.2.0 과 글자 하나까지 동일**하게
+    # 둡니다. 하나라도 같이 바꾸면 "문맥을 넓혀서 좋아졌다/나빠졌다" 를 말할 수 없어요.
+    m.BLOCK_SIZE = 3           # ★ 이 버전이 바꾸는 유일한 값 (2 면 v0.2.0 과 완전히 동일)
+    m.EMBED = 256              # v0.2.0 과 동일 — 용량을 건드리면 문맥 효과와 섞여요
+    m.HIDDEN = 256             # v0.2.0 과 동일
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
-    m.LR = 0.01                # ★ 0.05 는 이 깊이(emb→fc1→fc2)에 과해 진동 → 0.01 로 안정화
-    m.EPOCHS = 1_500
+    m.LR = 0.0003              # v0.2.0 과 동일 (Adam 은 1e-4~1e-3 대)
+    m.EPOCHS = 1_500           # 상한. 실제 종료 지점은 조기 종료가 정해요
     m.BATCH_SIZE = 64
     m.SEED = 1234
-    m.DEVICE = "auto"    # "auto"=애플 실리콘 GPU(MPS) 있으면 사용, 없으면 CPU. "cpu"/"mps" 로 못박기 가능
-    m.WEIGHT_DECAY = 0.0       # 임베딩 병목이 정규화 역할 → 우선 0
-    m.INIT = "default"         # ★ "zeros"(fc2=0)는 Adam 과 궁합이 나빠 미수렴 → 무작위 초기화
-    m.LABEL_SMOOTHING = 0.1    # 과신 완화
+    m.DEVICE = "auto"          # "auto"=MPS 있으면 사용, 없으면 CPU
+    m.WEIGHT_DECAY = 0.0       # v0.2.0 과 동일 (정규화 도구는 v0.2.2 에서 도입)
+    m.INIT = "zeros"           # v0.2.0 과 동일
+    m.LABEL_SMOOTHING = 0.0    # v0.2.0 과 동일
+    # sweep 제안: BLOCK_SIZE ∈ {2, 3, 4} — **용량은 고정한 채** 문맥만 바꿔 보세요
+    # --- 조기 종료 (v0.1.0 부터 공통) ---
     m.EARLY_STOPPING = True    # ★ 학습 손실(Loss) 기준 조기 종료(최저 손실 가중치 복원)
     m.PATIENCE = 20            # 조기 종료 인내 에폭(통일)
     m.MIN_DELTA = 0.0          # 개선으로 인정할 최소 폭(통일)

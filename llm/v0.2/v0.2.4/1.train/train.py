@@ -25,10 +25,10 @@ if __name__ == "__main__":
 
     # ================= 하이퍼파라미터 (여기서 조정) =================
     m.BLOCK_SIZE = 3           # 문맥 길이 N (v0.2.1~2.2 와 같은 조건)
-    m.EMBED = 128              # ★ 임베딩 차원 E — weight tying 을 쓰려면 HIDDEN 과 같아야 해요
-    m.HIDDEN = 128             # ★ 은닉층 크기 H
+    m.EMBED = 256              # ★ 임베딩 차원 E — weight tying 을 쓰려면 HIDDEN 과 같아야 해요
+    m.HIDDEN = 256             # ★ 은닉층 크기 H
     m.OPTIMIZER = "adam"       # "sgd" | "momentum" | "adam"
-    m.LR = 0.01
+    m.LR = 0.0003
     m.EPOCHS = 1_500           # ★ cosine 스케줄의 T_max 이기도 해요 — 상한이자 '감쇠 기간'
     m.BATCH_SIZE = 64
     m.SEED = 1234

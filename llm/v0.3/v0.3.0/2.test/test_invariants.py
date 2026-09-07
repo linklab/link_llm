@@ -94,7 +94,14 @@ class Invariants(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "model.pt"
             self.lm.save(path)
-            restored = m.Model().load(path)
+            # setUp의 원본과 같은 CPU에서 정확히 비교합니다. 기본 auto로
+            # 로드하면 Apple Silicon에서는 MPS 모델에 CPU 입력을 주게 됩니다.
+            restored = m.Model()
+            restored.DEVICE = "cpu"
+            # MPS 사용 가능 환경에서도 명시한 CPU 설정을 지키는지 검증합니다.
+            with patch.object(torch.backends.mps, "is_available", return_value=True):
+                restored.load(path)
+            self.assertEqual(restored.device(), torch.device("cpu"))
             self.assertEqual(restored.BLOCK_SIZE, 3)
             self.assertEqual(restored.EMBED, 16)
             x = torch.tensor([[1, 2, 3]])

@@ -33,6 +33,7 @@ sequence_loss = _network.sequence_loss
 
 
 class NeuralLM(_base.NGramLM):
+    MODEL_VERSION = "v0.3.0"
     PAD = "<PAD>"
     BLOCK_SIZE = 32
     EMBED = 64
@@ -84,8 +85,17 @@ class NeuralLM(_base.NGramLM):
         self.itos = self.build_vocab(sentences)
         self.stoi = {t: i for i, t in enumerate(self.itos)}
         target_device = self.device()
-        self.net = SingleHeadLM(len(self.itos), self.EMBED, self.BLOCK_SIZE).to(target_device)
+        self.net = self.build_net().to(target_device)
         return self
+
+    def build_net(self):
+        return SingleHeadLM(len(self.itos), self.EMBED, self.BLOCK_SIZE)
+
+    def extra_metadata(self):
+        return {}
+
+    def restore_extra_metadata(self, meta):
+        pass
 
     def make_windows(self, sentences):
         return _data.make_windows(self, sentences)
@@ -201,10 +211,10 @@ class NeuralLM(_base.NGramLM):
         """추론용 가중치+설정 저장. optimizer/RNG 재개는 v0.4의 범위입니다."""
         path = Path(model_path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        meta = {"version": "v0.3.0", "tokenizer": self.tokenizer_name(),
+        meta = {"version": self.MODEL_VERSION, "tokenizer": self.tokenizer_name(),
                 "vocab": self.itos, "block_size": self.BLOCK_SIZE, "embed": self.EMBED,
                 "max_length": self.MAX_LENGTH, "floor": self.FLOOR,
-                "best_epoch": self.best_epoch}
+                "best_epoch": self.best_epoch, **self.extra_metadata()}
         torch.save({"format_version": 1, "meta": meta,
                     "state_dict": {k: v.detach().cpu() for k, v in self.net.state_dict().items()}}, path)
         Path(vocab_path or path.with_name("vocab.json")).write_text(
@@ -213,9 +223,9 @@ class NeuralLM(_base.NGramLM):
     def load(self, model_path):
         checkpoint = torch.load(model_path, map_location="cpu", weights_only=True)
         if checkpoint.get("format_version") != 1:
-            raise ValueError("지원하지 않는 v0.3.0 모델 형식입니다.")
+            raise ValueError(f"지원하지 않는 {self.MODEL_VERSION} 모델 형식입니다.")
         meta = checkpoint["meta"]
-        if meta["version"] != "v0.3.0" or meta["tokenizer"] != self.tokenizer_name():
+        if meta["version"] != self.MODEL_VERSION or meta["tokenizer"] != self.tokenizer_name():
             raise ValueError("모델 버전 또는 토크나이저가 일치하지 않습니다.")
         self.itos = meta["vocab"]
         if self.itos[0] != self.PAD or len(set(self.itos)) != len(self.itos):
@@ -224,7 +234,8 @@ class NeuralLM(_base.NGramLM):
         self.BLOCK_SIZE, self.EMBED = meta["block_size"], meta["embed"]
         self.MAX_LENGTH, self.FLOOR = meta["max_length"], meta["floor"]
         self.best_epoch = meta["best_epoch"]
-        self.net = SingleHeadLM(len(self.itos), self.EMBED, self.BLOCK_SIZE).to(self.device())
+        self.restore_extra_metadata(meta)
+        self.net = self.build_net().to(self.device())
         self.net.load_state_dict(checkpoint["state_dict"])
         self.net.eval()
         return self

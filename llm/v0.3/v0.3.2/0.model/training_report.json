@@ -1,0 +1,175 @@
+{
+  "version": "v0.3.2",
+  "config": {
+    "epochs": 60,
+    "heads": 4,
+    "embed": 64,
+    "block_size": 32,
+    "batch_size": 64,
+    "lr": 0.003,
+    "patience": 10,
+    "seed": 1234,
+    "threads": 4,
+    "device": "cpu",
+    "train": "/Users/yhhan/git/link_llm/data/pretrain/train.txt",
+    "valid": "/Users/yhhan/git/link_llm/data/pretrain/valid.txt",
+    "output_dir": "/Users/yhhan/git/link_llm/llm/v0.3/v0.3.2/0.model"
+  },
+  "device": "cpu",
+  "python": "3.12.14",
+  "torch": "2.13.0",
+  "data": {
+    "train": {
+      "sentences": 3600,
+      "sha256": "eae94c794849989af81665a4fb6697a13e68bbf418b21f5986ce39a2ac7c57e8"
+    },
+    "valid": {
+      "sentences": 400,
+      "sha256": "84ba88a95b84de28633772f443f017b6c1d2d767d8e438f7fd3e86b69dc096f5"
+    }
+  },
+  "params": 135177,
+  "vocab_size": 905,
+  "best_epoch": 14,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.957602610360731,
+      "valid_ppl": 5.66205332817296
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.275047527133463,
+      "valid_ppl": 4.132328937117466
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.0131271359240432,
+      "valid_ppl": 3.5837585832990397
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.893434909731327,
+      "valid_ppl": 3.398657825214138
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.8367293518276241,
+      "valid_ppl": 3.36401313535915
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.8043596834465991,
+      "valid_ppl": 3.3165300108973654
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.7835061695131449,
+      "valid_ppl": 3.282766360766868
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.7662000257439571,
+      "valid_ppl": 3.2346607361751523
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.750917045989933,
+      "valid_ppl": 3.2324020017243167
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.7376908410390441,
+      "valid_ppl": 3.225423466886379
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.7266907499008146,
+      "valid_ppl": 3.2251567399977623
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.7195702463180161,
+      "valid_ppl": 3.229709680041759
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.7109988213428893,
+      "valid_ppl": 3.2143155462109143
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.7041491061757926,
+      "valid_ppl": 3.2065626057418473
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.6980708265179726,
+      "valid_ppl": 3.220256670010262
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.6951389445850906,
+      "valid_ppl": 3.228214095190635
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.6903262416329118,
+      "valid_ppl": 3.2346500074402673
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.6870007885159627,
+      "valid_ppl": 3.2379866338562047
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.6821501125784746,
+      "valid_ppl": 3.2446459188896517
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.6764986819342631,
+      "valid_ppl": 3.2828933669287803
+    },
+    {
+      "epoch": 21,
+      "train_loss": 0.6761510186868632,
+      "valid_ppl": 3.270627351232712
+    },
+    {
+      "epoch": 22,
+      "train_loss": 0.6708363497214932,
+      "valid_ppl": 3.2706702705880417
+    },
+    {
+      "epoch": 23,
+      "train_loss": 0.6685867605181854,
+      "valid_ppl": 3.2546991441120623
+    },
+    {
+      "epoch": 24,
+      "train_loss": 0.6634599915805268,
+      "valid_ppl": 3.2973805999508516
+    }
+  ],
+  "train": {
+    "ppl": 1.9683917803792408,
+    "top1": 0.8073868922690784,
+    "topk": 0.8855399528312093,
+    "coverage": 1.0,
+    "n": 92434,
+    "k": 5
+  },
+  "valid": {
+    "ppl": 3.2065626057418473,
+    "top1": 0.7463959988231833,
+    "topk": 0.8203393154849465,
+    "coverage": 0.9552809649897028,
+    "n": 10197,
+    "k": 5
+  },
+  "elapsed_seconds": 53.31891224998981,
+  "evaluation": "FLOOR=1e-4; skip first token; include END; exact sliding context",
+  "checkpoint": "inference weights/config; not a resumable optimizer checkpoint"
+}

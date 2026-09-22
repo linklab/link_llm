@@ -1,4 +1,4 @@
-"""python llm/v0.3/v0.3.0/1.train/train.py --device cpu --epochs 60"""
+"""python llm/v0.3/v0.3.2/1.train/train.py --device cpu --epochs 60"""
 import argparse
 import hashlib
 import importlib.util
@@ -24,14 +24,15 @@ def repo_path(value):
         return str(Path(value).resolve().relative_to(ROOT))
     except ValueError:
         return str(value)
-spec = importlib.util.spec_from_file_location("v030", VERSION / "0.model/lm.py")
+spec = importlib.util.spec_from_file_location("v032", VERSION / "0.model/lm.py")
 model = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(model)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="v0.3.0 단일 헤드 어텐션 학습")
+    parser = argparse.ArgumentParser(description="v0.3.2 학습형 위치 임베딩 학습")
     parser.add_argument("--epochs", type=int, default=60)
+    parser.add_argument("--heads", type=int, default=4)
     parser.add_argument("--embed", type=int, default=64)
     parser.add_argument("--block-size", type=int, default=32)
     parser.add_argument("--batch-size", type=int, default=64)
@@ -46,7 +47,7 @@ def main():
     args = parser.parse_args()
     torch.set_num_threads(args.threads)
     lm = model.Model()
-    for key in ("epochs", "embed", "block_size", "batch_size", "lr", "patience", "seed", "device"):
+    for key in ("heads", "epochs", "embed", "block_size", "batch_size", "lr", "patience", "seed", "device"):
         setattr(lm, key.upper(), getattr(args, key))
     train = lm.read_sentences(args.train)
     valid = lm.read_sentences(args.valid)
@@ -55,7 +56,7 @@ def main():
     start = time.perf_counter()
     lm.train(train, valid)
     lm.save(args.output_dir / "model.pt")
-    report = {"version": "v0.3.0", "config": {k: repo_path(v) if k in ("train", "valid", "output_dir") else v
+    report = {"version": "v0.3.2", "config": {k: repo_path(v) if k in ("train", "valid", "output_dir") else v
               for k, v in vars(args).items()}, "device": str(lm.device()),
               "python": platform.python_version(), "torch": torch.__version__,
               "data": {name: {"sentences": len(sentences),

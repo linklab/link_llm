@@ -215,7 +215,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    host, port = "127.0.0.1", 8000
+    host, port = "127.0.0.1", 9000
     server = ThreadingHTTPServer((host, port), Handler)
     print("=" * 50)
     print("  나만의 작은 언어 모델 웹앱이 켜졌어요!")

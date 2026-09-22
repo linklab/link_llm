@@ -10,9 +10,9 @@
     "seed": 1234,
     "threads": 4,
     "device": "cpu",
-    "train": "/Users/yhhan/git/link_llm/data/pretrain/train.txt",
-    "valid": "/Users/yhhan/git/link_llm/data/pretrain/valid.txt",
-    "output_dir": "/Users/yhhan/git/link_llm/llm/v0.3/v0.3.0/0.model"
+    "train": "data/pretrain/train.txt",
+    "valid": "data/pretrain/valid.txt",
+    "output_dir": "llm/v0.3/v0.3.0/0.model"
   },
   "device": "cpu",
   "python": "3.12.14",

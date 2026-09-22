@@ -10,6 +10,20 @@ from pathlib import Path
 import torch
 
 VERSION = Path(__file__).resolve().parents[1]
+ROOT = VERSION.parents[2]          # 저장소 루트 (llm/v0.3/vX.Y.Z -> 루트)
+
+
+def repo_path(value):
+    """경로를 **저장소 루트 기준 상대 경로**로 바꿔요.
+
+    training_report.json 은 커밋되는 파일이라, 절대 경로가 들어가면
+    다른 사람이 클론했을 때 맞지 않고 홈 디렉터리 구조까지 드러나요.
+    저장소 밖 경로는 그대로 둡니다.
+    """
+    try:
+        return str(Path(value).resolve().relative_to(ROOT))
+    except ValueError:
+        return str(value)
 spec = importlib.util.spec_from_file_location("v031", VERSION / "0.model/lm.py")
 model = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(model)
@@ -42,7 +56,7 @@ def main():
     start = time.perf_counter()
     lm.train(train, valid)
     lm.save(args.output_dir / "model.pt")
-    report = {"version": "v0.3.1", "config": {k: str(v) if isinstance(v, Path) else v
+    report = {"version": "v0.3.1", "config": {k: repo_path(v) if k in ("train", "valid", "output_dir") else v
               for k, v in vars(args).items()}, "device": str(lm.device()),
               "python": platform.python_version(), "torch": torch.__version__,
               "data": {name: {"sentences": len(sentences),

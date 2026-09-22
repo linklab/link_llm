@@ -2,14 +2,14 @@
 
 언어 모델(LLM)을 From Scratch 로, 버전별로 관리하고 웹앱에서 테스트하는 프로젝트입니다.
 
-**최신 구현: [v0.3.3 — Pre-LN Transformer 블록](llm/v0.3/v0.3.3/README.md).**
-[v0.3.2](llm/v0.3/v0.3.2/README.md)의 학습형 위치 임베딩에 잔차 연결·LayerNorm·FFN을 추가했습니다.
-각 버전 학습 모델이 있으면 웹앱에서 선택할 수 있으며, 다층 적층은 v0.3.4 단계입니다.
+**최신 구현: [v0.3.5 — 공정 비교 캡스톤](llm/v0.3/v0.3.5/README.md).**
+[v0.3.4](llm/v0.3/v0.3.4/README.md)의 미니 GPT를 기반으로 공통 채점·신규성별 평가·후보 재학습 보고서를 추가했습니다.
+각 버전 학습 모델이 있으면 웹앱에서 선택할 수 있으며, v0.3.5는 카운트·MLP·GPT의 동일 문맥/후보 내 최선 성능을 비교합니다.
 
 ```bash
-python llm/v0.3/v0.3.3/2.test/test_invariants.py
-python llm/v0.3/v0.3.3/1.train/train.py
-python llm/v0.3/v0.3.3/2.test/test.py
+python llm/v0.3/v0.3.5/2.test/test_invariants.py
+python llm/v0.3/v0.3.5/1.train/train.py
+python llm/v0.3/v0.3.5/2.test/test.py
 ```
 
 ## 폴더 구조
@@ -386,7 +386,7 @@ N 을 늘리면 `fc1` 의 입력 폭(N·E)이 커져 파라미터도 함께 늘�
 
 ## 🗺️ 앞으로의 계획 (로드맵)
 
-**현재 위치: v0.3.3 단일 Transformer 블록 구현 완료 ✅.** 세부 사용법과 검증은 [v0.3.3 README](llm/v0.3/v0.3.3/README.md)에 있습니다.
+**현재 위치: v0.3.5 공정 비교 캡스톤 구현 완료 ✅.** 세부 사용법과 검증은 [v0.3.5 README](llm/v0.3/v0.3.5/README.md)에 있습니다.
 
 > **핵심 원칙 — 외부 사용법은 유지하고 내부 계약은 확장합니다.** v0.3.0은
 > 토크나이저·대화 형식과 `generate`·`perplexity` API를 유지하면서, 신경망 출력과
@@ -398,11 +398,11 @@ N 을 늘리면 `fc1` 의 입력 폭(N·E)이 커져 파라미터도 함께 늘�
 
 ### v0.2.x — 완료 ✅
 
-위치 임베딩(v0.3.2)과 단일 Transformer 블록(v0.3.3)을 구현했습니다. 다음은 **v0.3.4 — 다층 미니 GPT**입니다.
+위치 임베딩(v0.3.2)과 단일 Transformer 블록(v0.3.3)을 구현했습니다. 다층 미니 GPT(v0.3.4)도 구현했습니다. v0.3.5 공정 비교 캡스톤도 구현했습니다. 다음은 **v0.4.0 — BPE·평가 계약**입니다.
 
 | 다음 | 한 걸음 | 왜 |
 |---|---|---|
-| v0.3.4 | 다층 미니 GPT | Transformer 블록을 N층으로 쌓기 |
+| v0.4.0 | BPE·평가 계약 | 서브워드 토크나이저와 새 채점 기준 |
 
 ### 최종 목표 — ChatGPT(InstructGPT/GPT-3.5 계열)급 정렬 어시스턴트
 
@@ -424,8 +424,8 @@ N 을 늘리면 `fc1` 의 입력 폭(N·E)이 커져 파라미터도 함께 늘�
 | [v0.3.1](llm/v0.3/v0.3.1/README.md) ✅ | 멀티헤드 어텐션 | 4헤드·분할/병합·출력 projection·14개 검증 |
 | [v0.3.2](llm/v0.3/v0.3.2/README.md) ✅ | 위치 임베딩 | 학습형 위치·문맥창 경계·순서 표현 검증 |
 | [v0.3.3](llm/v0.3/v0.3.3/README.md) ✅ | Transformer 블록 | Pre-LN·residual·FFN·학습/평가 모드 검증 |
-| v0.3.4 | 블록 N층 = **미니 GPT** | decoder-only · **GPT-2식 scaled 초기화** |
-| v0.3.5 | 캡스톤 | 미니GPT vs MLP vs 카운트 PPL |
+| [v0.3.4](llm/v0.3/v0.3.4/README.md) ✅ | 블록 N층 = **미니 GPT** | decoder-only · **GPT-2식 scaled 초기화** |
+| [v0.3.5](llm/v0.3/v0.3.5/README.md) ✅ | 공정 비교 캡스톤 | 동일 문맥·후보 내 최선 성능·신규성별 PPL·생성·학습 비용 |
 
 #### v0.4.x — 스케일업 & 실전 토크나이저 (사전학습 base)
 

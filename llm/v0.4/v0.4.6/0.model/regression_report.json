@@ -1,0 +1,15 @@
+{
+  "suites": {
+    "v0.3.4": 16,
+    "v0.4.0": 12,
+    "v0.4.1": 16,
+    "v0.4.2": 3,
+    "v0.4.3": 6,
+    "v0.4.4": 7,
+    "v0.4.5": 9,
+    "v0.4.6": 4
+  },
+  "total_passed": 73,
+  "command_template": "python llm/<minor>/<version>/2.test/test_invariants.py",
+  "scope": "Full listed unittest suites; CPU. Does not imply browser or accelerator testing."
+}

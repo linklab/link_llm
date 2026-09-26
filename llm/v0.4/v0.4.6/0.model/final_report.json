@@ -1,0 +1,220 @@
+{
+  "final_test_manifest": {
+    "documents": 12,
+    "file_sha256": "e48887478fbd1a7d0ea55982a3933e37c4f59beced5518fa0ed6a8f0424dab95",
+    "format": 1,
+    "freeze_sha256": "147227da8618cbbb521e861e6393730c7a003ed9c70e6ba30e60b96b0d5d906e",
+    "license": "MIT",
+    "provenance": "12 AI-assisted texts individually authored after the v0.4.6 model freeze; no external corpus. Six declared topics, two distinct texts each. Independence means no fitting/selection exposure, not semantic dissimilarity.",
+    "purpose": "independent final evaluation only; never training/tokenizer/selection",
+    "source": "authored-v046-final",
+    "text_bytes": 3647,
+    "topics": [
+      "paperfolding",
+      "pottery",
+      "printing",
+      "recycling",
+      "shadowplay",
+      "subway"
+    ]
+  },
+  "freeze_sha256": "147227da8618cbbb521e861e6393730c7a003ed9c70e6ba30e60b96b0d5d906e",
+  "generation": [
+    {
+      "continuation": "                                        ",
+      "generated": "                                        ",
+      "only_whitespace_or_empty": true,
+      "prompt": "",
+      "replacement_characters": 0
+    },
+    {
+      "continuation": "                                        ",
+      "generated": "                                         ",
+      "only_whitespace_or_empty": true,
+      "prompt": " ",
+      "replacement_characters": 0
+    },
+    {
+      "continuation": "                                        ",
+      "generated": "오늘은                                        ",
+      "only_whitespace_or_empty": true,
+      "prompt": "오늘은",
+      "replacement_characters": 0
+    },
+    {
+      "continuation": "                                        ",
+      "generated": "처음 보는 글자 🐙                                        ",
+      "only_whitespace_or_empty": true,
+      "prompt": "처음 보는 글자 🐙",
+      "replacement_characters": 0
+    },
+    {
+      "continuation": "                                        ",
+      "generated": "도자기 공방에서는                                        ",
+      "only_whitespace_or_empty": true,
+      "prompt": "도자기 공방에서는",
+      "replacement_characters": 0
+    },
+    {
+      "continuation": "                                        ",
+      "generated": "기록을 다시 읽으니                                        ",
+      "only_whitespace_or_empty": true,
+      "prompt": "기록을 다시 읽으니",
+      "replacement_characters": 0
+    }
+  ],
+  "independent_test": {
+    "bits_per_byte": 3.119007060805128,
+    "coverage": 1.0,
+    "documents": 12,
+    "eos_nll": 54.386760747187736,
+    "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+    "k": 5,
+    "n": 1527,
+    "nll_per_byte": 2.161930950343636,
+    "ppl": 181.10006599588394,
+    "text_bytes": 3647,
+    "text_nll": 7884.562175903241,
+    "token_nll": 5.199049729306109,
+    "top1": 0.2383759004584152,
+    "topk": 0.29404060248853964,
+    "total_nll": 7938.948936650429
+  },
+  "legacy_test": {
+    "metrics": {
+      "bits_per_byte": 3.1045802507194478,
+      "coverage": 1.0,
+      "documents": 80,
+      "eos_nll": 359.6202087383963,
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "k": 5,
+      "n": 16646,
+      "nll_per_byte": 2.151931047608273,
+      "ppl": 166.85969890723663,
+      "text_bytes": 39416,
+      "text_nll": 84820.51417252769,
+      "token_nll": 5.117153333008898,
+      "top1": 0.24426288597861348,
+      "topk": 0.2917217349513397,
+      "total_nll": 85180.1343812661
+    },
+    "note": "Previously exposed v0.4.1 test; diagnostic only, not the new independent test."
+  },
+  "limitations": "12 authored synthetic documents, declared-group and normalized-duplicate isolation only. Not a broad benchmark or a chat/instruction model. No tuning after final evaluation.",
+  "quality": {
+    "blank_continuations": 6,
+    "prompts": 6,
+    "replacement_characters": 0
+  },
+  "topics": {
+    "paperfolding": {
+      "bits_per_byte": 3.254133883116845,
+      "coverage": 1.0,
+      "documents": 2,
+      "eos_nll": 9.12509153457042,
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "k": 5,
+      "n": 257,
+      "nll_per_byte": 2.2555937262470276,
+      "ppl": 190.34229197235408,
+      "text_bytes": 594,
+      "text_nll": 1339.8226733907345,
+      "token_nll": 5.2488239880362055,
+      "top1": 0.23346303501945526,
+      "topk": 0.28793774319066145,
+      "total_nll": 1348.947764925305
+    },
+    "pottery": {
+      "bits_per_byte": 2.8969131833304416,
+      "coverage": 1.0,
+      "documents": 2,
+      "eos_nll": 9.071479526529554,
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "k": 5,
+      "n": 254,
+      "nll_per_byte": 2.0079872053524315,
+      "ppl": 160.67744111587274,
+      "text_bytes": 638,
+      "text_nll": 1281.0958370148512,
+      "token_nll": 5.079398884021185,
+      "top1": 0.25196850393700787,
+      "topk": 0.30708661417322836,
+      "total_nll": 1290.1673165413808
+    },
+    "printing": {
+      "bits_per_byte": 3.6106285278896997,
+      "coverage": 1.0,
+      "documents": 2,
+      "eos_nll": 9.055739591105024,
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "k": 5,
+      "n": 269,
+      "nll_per_byte": 2.502696984156051,
+      "ppl": 228.10683430273568,
+      "text_bytes": 580,
+      "text_nll": 1451.5642508105097,
+      "token_nll": 5.429814090712322,
+      "top1": 0.21561338289962825,
+      "topk": 0.27137546468401486,
+      "total_nll": 1460.6199904016146
+    },
+    "recycling": {
+      "bits_per_byte": 2.9847183206338204,
+      "coverage": 1.0,
+      "documents": 2,
+      "eos_nll": 8.973203213954843,
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "k": 5,
+      "n": 256,
+      "nll_per_byte": 2.0688490887129474,
+      "ppl": 154.07877845530174,
+      "text_bytes": 619,
+      "text_nll": 1280.6175859133143,
+      "token_nll": 5.037464020028395,
+      "top1": 0.25,
+      "topk": 0.30859375,
+      "total_nll": 1289.590789127269
+    },
+    "shadowplay": {
+      "bits_per_byte": 2.8369707558710853,
+      "coverage": 1.0,
+      "documents": 2,
+      "eos_nll": 9.044699123441276,
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "k": 5,
+      "n": 245,
+      "nll_per_byte": 1.9664382807630596,
+      "ppl": 155.29321603039477,
+      "text_bytes": 624,
+      "text_nll": 1227.0574871961492,
+      "token_nll": 5.0453150462024094,
+      "top1": 0.2571428571428571,
+      "topk": 0.32653061224489793,
+      "total_nll": 1236.1021863195904
+    },
+    "subway": {
+      "bits_per_byte": 3.1788136400475584,
+      "coverage": 1.0,
+      "documents": 2,
+      "eos_nll": 9.116547757586613,
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "k": 5,
+      "n": 246,
+      "nll_per_byte": 2.203385712124462,
+      "ppl": 208.41177502157984,
+      "text_bytes": 592,
+      "text_nll": 1304.4043415776814,
+      "token_nll": 5.339515810305969,
+      "top1": 0.22357723577235772,
+      "topk": 0.26422764227642276,
+      "total_nll": 1313.5208893352683
+    }
+  },
+  "uniform_baseline": {
+    "nll_per_byte": 2.7571828673967516,
+    "note": "Equal probability over byte/BPE tokens plus EOS; text-byte NLL excludes EOS.",
+    "ppl": 763
+  },
+  "version": "v0.4.6",
+  "weights_sha256": "07ae988ade6a2e049356d153f27f38db18cedd3b03cd47c95e175e84e150fea7"
+}

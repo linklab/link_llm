@@ -1,0 +1,19 @@
+{
+  "documents": 12,
+  "file_sha256": "e48887478fbd1a7d0ea55982a3933e37c4f59beced5518fa0ed6a8f0424dab95",
+  "format": 1,
+  "freeze_sha256": "147227da8618cbbb521e861e6393730c7a003ed9c70e6ba30e60b96b0d5d906e",
+  "license": "MIT",
+  "provenance": "12 AI-assisted texts individually authored after the v0.4.6 model freeze; no external corpus. Six declared topics, two distinct texts each. Independence means no fitting/selection exposure, not semantic dissimilarity.",
+  "purpose": "independent final evaluation only; never training/tokenizer/selection",
+  "source": "authored-v046-final",
+  "text_bytes": 3647,
+  "topics": [
+    "paperfolding",
+    "pottery",
+    "printing",
+    "recycling",
+    "shadowplay",
+    "subway"
+  ]
+}

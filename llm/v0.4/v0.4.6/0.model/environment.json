@@ -1,0 +1,14 @@
+{
+  "os": "Darwin",
+  "release": "24.5.0",
+  "machine": "arm64",
+  "processor": "arm",
+  "logical_cpus": 16,
+  "python": "3.12.14",
+  "torch": "2.13.0",
+  "measured_device": "cpu",
+  "threads": 4,
+  "cuda_available": false,
+  "mps_available": false,
+  "note": "Availability is not a benchmark; only CPU was trained/reproduced/measured for this release sequence."
+}

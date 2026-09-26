@@ -1,0 +1,35 @@
+{
+  "scope": "Actual server discovery/loader/generate_reply; not browser or remote connectivity testing",
+  "results": [
+    {
+      "version": "v0.4.2",
+      "discovered": true,
+      "loaded": true,
+      "raw_space_empty_generation": true
+    },
+    {
+      "version": "v0.4.3",
+      "discovered": true,
+      "loaded": true,
+      "raw_space_empty_generation": true
+    },
+    {
+      "version": "v0.4.4",
+      "discovered": true,
+      "loaded": true,
+      "raw_space_empty_generation": true
+    },
+    {
+      "version": "v0.4.5",
+      "discovered": true,
+      "loaded": true,
+      "raw_space_empty_generation": true
+    },
+    {
+      "version": "v0.4.6",
+      "discovered": true,
+      "loaded": true,
+      "raw_space_empty_generation": true
+    }
+  ]
+}

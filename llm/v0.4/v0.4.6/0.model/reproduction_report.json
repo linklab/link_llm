@@ -1,0 +1,31 @@
+{
+  "best_epoch": 4,
+  "note": "Independent fresh initialization and full retraining; final test never read or scored here.",
+  "runtime": {
+    "device": "cpu",
+    "python": "3.12.14",
+    "threads": 4,
+    "torch": "2.13.0"
+  },
+  "seconds": 44.77042574994266,
+  "status": "exact semantic weight/architecture/tokenizer match",
+  "training_tokens": 194720,
+  "valid": {
+    "bits_per_byte": 3.0309731548401313,
+    "coverage": 1.0,
+    "documents": 80,
+    "eos_nll": 361.1623671749525,
+    "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+    "k": 5,
+    "n": 16136,
+    "nll_per_byte": 2.1009104966303194,
+    "ppl": 150.85836761049285,
+    "text_bytes": 38356,
+    "text_nll": 80582.52300875253,
+    "token_nll": 5.0163414338080985,
+    "top1": 0.2513634110064452,
+    "topk": 0.3034209221616262,
+    "total_nll": 80943.68537592748
+  },
+  "weights_sha256": "07ae988ade6a2e049356d153f27f38db18cedd3b03cd47c95e175e84e150fea7"
+}

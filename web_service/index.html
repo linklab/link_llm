@@ -265,14 +265,14 @@
 
   // 3) 이어쓰기 보내기: 서버에 첫 부분을 보내 이어쓴 결과를 받아 화면에 표시합니다.
   async function send() {
-    const message = input.value.trim();
+    const message = input.value;
     const version = versionSelect.value;
     const temperature = parseFloat(tempSlider.value);   // 온도 값
     const top_k = parseInt(topkSlider.value, 10);       // 0 = 끄기
     const top_p = parseFloat(toppSlider.value);         // 1.0 = 끄기
-    if (!message) return;
+    if (sendBtn.disabled) return;
 
-    addBubble("user", message);
+    addBubble("user", message || "(빈 입력에서 이어쓰기)");
     input.value = "";
     input.style.height = "auto";
     sendBtn.disabled = true;

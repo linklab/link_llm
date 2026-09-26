@@ -58,7 +58,8 @@ def main():
     valid = lm.documents_from_bytes(source_data["valid"])
     if not train or not valid:
         parser.error("학습/검증 파일에는 각각 최소 한 문장이 필요합니다.")
-    if Path(args.train).resolve() == Path(args.valid).resolve() or source_data["train"] == source_data["valid"]:
+    if (Path(args.train).resolve() == Path(args.valid).resolve()
+            or set(train).intersection(valid)):
         parser.error("학습/검증 원문이 같으면 안 됩니다.")
     data_hashes = {name: hashlib.sha256(raw).hexdigest() for name, raw in source_data.items()}
     start = time.perf_counter()

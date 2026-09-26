@@ -1,0 +1,99 @@
+{
+  "deduplication": {
+    "input_documents": 480,
+    "kept_documents": 480,
+    "policy": "NFC plus whitespace folding for keys only",
+    "removed": []
+  },
+  "format": "document-corpus-v1",
+  "provenance": {
+    "generator_sha256": "3c6cdb12868485263a4027909d82531998ef496f15c6e5d8139760d0f9c25b15",
+    "license_sha256": "51be064ec63deb71a9c90ca922eed7837c4088e4b4cb8f9851c02c15b8902755",
+    "per_topic": 40,
+    "pipeline_sha256": "84a0d8a124c5499e5b67cc588f2144e91f750eada4fe0cb96e963437051de911"
+  },
+  "seed": 1234,
+  "sources": {
+    "authored-v041": {
+      "description": "AI-assisted templates authored for this version; no web scraping or external corpus.",
+      "license": "MIT (repository LICENSE)",
+      "uri": "repo:data/pretrain/v0.4.1/generate.py",
+      "usage": "Synthetic educational examples; retain repository license notice when redistributing."
+    }
+  },
+  "split_policy": {
+    "group_by": [
+      "topic",
+      "template_id"
+    ],
+    "groups": 12,
+    "method": "seeded shuffle of connected components; ratios are groups, not documents",
+    "requested_test_group_fraction": 0.15,
+    "requested_valid_group_fraction": 0.15
+  },
+  "splits": {
+    "test": {
+      "documents": 80,
+      "documents_hash": "71c29ee5dc49251e640fc766835a7a06b19241816e91957965ad104060880713",
+      "file": "test.jsonl",
+      "groups": 2,
+      "multiline_documents": 80,
+      "sha256": "9a3f4750f511cf87bcc0ab5211db031380b1432382820e588df690f522ff8e04",
+      "templates": [
+        "market-journal-v1",
+        "running-journal-v1"
+      ],
+      "text_bytes": 39416,
+      "topics": [
+        "market",
+        "running"
+      ]
+    },
+    "train": {
+      "documents": 320,
+      "documents_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8",
+      "file": "train.jsonl",
+      "groups": 8,
+      "multiline_documents": 320,
+      "sha256": "f6083a5ed03c8bfa889ba27ccf471be1013859a87e834506b4d23a3adf000bc9",
+      "templates": [
+        "astronomy-journal-v1",
+        "cooking-journal-v1",
+        "museum-journal-v1",
+        "music-journal-v1",
+        "river-journal-v1",
+        "sewing-journal-v1",
+        "weather-journal-v1",
+        "woodwork-journal-v1"
+      ],
+      "text_bytes": 157734,
+      "topics": [
+        "astronomy",
+        "cooking",
+        "museum",
+        "music",
+        "river",
+        "sewing",
+        "weather",
+        "woodwork"
+      ]
+    },
+    "valid": {
+      "documents": 80,
+      "documents_hash": "ba476e90cfc3b6fd996d25f9cdb9ddbd703366a7d4ade52a7dfc2b8535435852",
+      "file": "valid.jsonl",
+      "groups": 2,
+      "multiline_documents": 80,
+      "sha256": "b8ffa5bd3068cf3df392cf72e1b77bd3c40e645b9698b343f853de11b3d99f81",
+      "templates": [
+        "garden-journal-v1",
+        "library-journal-v1"
+      ],
+      "text_bytes": 38356,
+      "topics": [
+        "garden",
+        "library"
+      ]
+    }
+  }
+}

@@ -38,6 +38,8 @@ class NeuralLM(previous.NeuralLM):
     EPOCHS = 30
     PATIENCE = 5
     BATCH_SIZE = 128
+    PRESERVE_RAW_PROMPT = True
+    SUPPORTS_EMPTY_PROMPT = True
 
     def __init__(self):
         super().__init__()

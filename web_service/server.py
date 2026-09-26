@@ -158,7 +158,10 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         version = data.get("version", "")
-        message = data.get("message", "").strip()
+        message = data.get("message", "")
+        if not isinstance(message, str):
+            self._send_json({"error": "메시지는 문자열이어야 합니다."}, status=400)
+            return
 
         # 온도(temperature): 없으면 1.0, 이상한 값이 오면 안전한 범위(0~2)로 맞춤
         try:
@@ -182,9 +185,6 @@ class Handler(BaseHTTPRequestHandler):
         if version not in find_versions():
             self._send_json({"error": "그런 버전은 없어요."}, status=400)
             return
-        if not message:
-            self._send_json({"error": "메시지를 입력해 주세요."}, status=400)
-            return
 
         # 이어쓰기 이력: [[입력, 결과], ...] (문자열 짝만 안전하게 걸러냄; 산문 모델은 미사용)
         history = []
@@ -197,6 +197,11 @@ class Handler(BaseHTTPRequestHandler):
         # 브라우저에 깔끔한 메시지를 돌려주도록 감쌉니다.
         try:
             lm = load_lm(version)
+            if not getattr(lm, "PRESERVE_RAW_PROMPT", False):
+                message = message.strip()
+            if not message and not getattr(lm, "SUPPORTS_EMPTY_PROMPT", False):
+                self._send_json({"error": "메시지를 입력해 주세요."}, status=400)
+                return
             # 산문으로 '사전학습'한 모델이라 **이어쓰기(completion)** — 입력한 첫 부분을
             # 씨앗으로 그다음을 생성해요. (대화 형식/멀티턴은 v0.5 SFT 단계에서.
             #  chat() 기계는 v0.0.8~ 에 갖춰져 있지만 산문 모델엔 역할 토큰이 없어 쓰지 않아요.)

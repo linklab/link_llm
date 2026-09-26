@@ -1,0 +1,220 @@
+{
+  "best_epoch": 5,
+  "checkpoint": "inference only; optimizer/scheduler/RNG resume is v0.4.2",
+  "checkpoint_sha256": "65013c95328f3ddeefe97638e1320858423b4f269be4c4193d106bec3e3406a8",
+  "comparison": "New held-out topic/template splits; do not rank against v0.4.0 old validation.",
+  "config": {
+    "batch_size": 128,
+    "block_size": 32,
+    "corpus_dir": "data/pretrain/v0.4.1",
+    "device": "cpu",
+    "dropout": 0.1,
+    "embed": 64,
+    "epochs": 30,
+    "ffn_hidden": 256,
+    "heads": 4,
+    "layers": 4,
+    "lr": 0.003,
+    "output_dir": "llm/v0.4/v0.4.1/0.model",
+    "patience": 5,
+    "seed": 1234,
+    "threads": 4,
+    "vocab_size": 768
+  },
+  "corpus_manifest_sha256": "7b2d71de7bcfd329e6a50b3be0cc6163f76c07ab54706605a942d07066754e72",
+  "data": {
+    "test": {
+      "documents": 80,
+      "documents_hash": "71c29ee5dc49251e640fc766835a7a06b19241816e91957965ad104060880713",
+      "file": "test.jsonl",
+      "groups": 2,
+      "multiline_documents": 80,
+      "sha256": "9a3f4750f511cf87bcc0ab5211db031380b1432382820e588df690f522ff8e04",
+      "templates": [
+        "market-journal-v1",
+        "running-journal-v1"
+      ],
+      "text_bytes": 39416,
+      "topics": [
+        "market",
+        "running"
+      ]
+    },
+    "train": {
+      "documents": 320,
+      "documents_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8",
+      "file": "train.jsonl",
+      "groups": 8,
+      "multiline_documents": 320,
+      "sha256": "f6083a5ed03c8bfa889ba27ccf471be1013859a87e834506b4d23a3adf000bc9",
+      "templates": [
+        "astronomy-journal-v1",
+        "cooking-journal-v1",
+        "museum-journal-v1",
+        "music-journal-v1",
+        "river-journal-v1",
+        "sewing-journal-v1",
+        "weather-journal-v1",
+        "woodwork-journal-v1"
+      ],
+      "text_bytes": 157734,
+      "topics": [
+        "astronomy",
+        "cooking",
+        "museum",
+        "music",
+        "river",
+        "sewing",
+        "weather",
+        "woodwork"
+      ]
+    },
+    "valid": {
+      "documents": 80,
+      "documents_hash": "ba476e90cfc3b6fd996d25f9cdb9ddbd703366a7d4ade52a7dfc2b8535435852",
+      "file": "valid.jsonl",
+      "groups": 2,
+      "multiline_documents": 80,
+      "sha256": "b8ffa5bd3068cf3df392cf72e1b77bd3c40e645b9698b343f853de11b3d99f81",
+      "templates": [
+        "garden-journal-v1",
+        "library-journal-v1"
+      ],
+      "text_bytes": 38356,
+      "topics": [
+        "garden",
+        "library"
+      ]
+    }
+  },
+  "elapsed_seconds": 49.007749749929644,
+  "environment": {
+    "device": "cpu",
+    "python": "3.12.14",
+    "torch": "2.13.0"
+  },
+  "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 5.607618733763009,
+      "valid_ppl": 245.46553983014277
+    },
+    {
+      "epoch": 2,
+      "train_loss": 4.440063236948889,
+      "valid_ppl": 155.28572953851375
+    },
+    {
+      "epoch": 3,
+      "train_loss": 4.045386746361692,
+      "valid_ppl": 156.253865421012
+    },
+    {
+      "epoch": 4,
+      "train_loss": 3.9470511721114985,
+      "valid_ppl": 149.1934140027614
+    },
+    {
+      "epoch": 5,
+      "train_loss": 3.795543872864401,
+      "valid_ppl": 141.2493827436588
+    },
+    {
+      "epoch": 6,
+      "train_loss": 3.566927880474849,
+      "valid_ppl": 165.8517891608409
+    },
+    {
+      "epoch": 7,
+      "train_loss": 3.3627245061644393,
+      "valid_ppl": 189.3064084197553
+    },
+    {
+      "epoch": 8,
+      "train_loss": 3.169457973940214,
+      "valid_ppl": 209.47522688242975
+    },
+    {
+      "epoch": 9,
+      "train_loss": 2.9503121422565464,
+      "valid_ppl": 274.1639246982676
+    },
+    {
+      "epoch": 10,
+      "train_loss": 2.6866612732802246,
+      "valid_ppl": 352.2852348471347
+    }
+  ],
+  "packing": {
+    "capacity_tokens": 54336,
+    "capacity_utilization": 0.8959069493521791,
+    "cross_chunk_attention": false,
+    "cross_document_attention": false,
+    "documents": 320,
+    "evaluation_context": "unchanged v0.4.0 sliding window; training context differs",
+    "long_documents": 320,
+    "packed_input_tokens": 48680,
+    "packs": 1698,
+    "policy": "document-chunks-isolated-attention-reset-positions-v1",
+    "position_policy": "reset to zero at each document chunk",
+    "sliding_input_tokens": 1240320,
+    "sliding_rows": 38760,
+    "targets": 48680
+  },
+  "params": 300160,
+  "split_policy": {
+    "group_by": [
+      "topic",
+      "template_id"
+    ],
+    "groups": 12,
+    "method": "seeded shuffle of connected components; ratios are groups, not documents",
+    "requested_test_group_fraction": 0.15,
+    "requested_valid_group_fraction": 0.15
+  },
+  "test": {
+    "status": "not evaluated; use explicit --split test after model selection"
+  },
+  "tokenizer": {
+    "sha256": "0db5862fd0e9155b588628062c3823fc0f41ec5c2a49ee6717c8213035e3a77b",
+    "training_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8"
+  },
+  "train": {
+    "bits_per_byte": 1.6657961134736317,
+    "coverage": 1.0,
+    "documents": 320,
+    "eos_nll": 1485.945452349918,
+    "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+    "k": 5,
+    "n": 48680,
+    "nll_per_byte": 1.1546418794419624,
+    "ppl": 43.45911528340012,
+    "text_bytes": 157734,
+    "text_nll": 182126.2822118985,
+    "token_nll": 3.771820617589326,
+    "top1": 0.3326417419884963,
+    "topk": 0.40860723089564505,
+    "total_nll": 183612.22766424838
+  },
+  "training_seconds": 37.35505070898216,
+  "valid": {
+    "bits_per_byte": 2.9893457126228165,
+    "coverage": 1.0,
+    "documents": 80,
+    "eos_nll": 405.90254822349215,
+    "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+    "k": 5,
+    "n": 16136,
+    "nll_per_byte": 2.0720565524234655,
+    "ppl": 141.2493827436588,
+    "text_bytes": 38356,
+    "text_nll": 79475.80112475445,
+    "token_nll": 4.950527000060604,
+    "top1": 0.25570153693604364,
+    "topk": 0.31624938026772437,
+    "total_nll": 79881.7036729779
+  },
+  "version": "v0.4.1",
+  "vocab_size": 768
+}

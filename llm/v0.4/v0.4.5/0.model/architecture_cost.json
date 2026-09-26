@@ -1,0 +1,35 @@
+{
+  "protocol": "CPU 4 threads, 5 repeats after warmup, 33 predictions including prefill, 48-token final cache. Random weights, same architecture as training; no quality claim.",
+  "results": [
+    {
+      "kv_bytes": 98304,
+      "median_seconds": 0.015508207958191633,
+      "params": 253056,
+      "variant": "baseline"
+    },
+    {
+      "kv_bytes": 98304,
+      "median_seconds": 0.0206452920101583,
+      "params": 248960,
+      "variant": "rope"
+    },
+    {
+      "kv_bytes": 98304,
+      "median_seconds": 0.01783941697794944,
+      "params": 252480,
+      "variant": "rmsnorm"
+    },
+    {
+      "kv_bytes": 98304,
+      "median_seconds": 0.016083040973171592,
+      "params": 251264,
+      "variant": "swiglu"
+    },
+    {
+      "kv_bytes": 49152,
+      "median_seconds": 0.015913499984890223,
+      "params": 236672,
+      "variant": "gqa"
+    }
+  ]
+}

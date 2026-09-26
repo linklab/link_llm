@@ -1,0 +1,2174 @@
+{
+  "config": {
+    "batch_size": 128,
+    "context": 64,
+    "device": "cpu",
+    "embed": 64,
+    "epochs": 4,
+    "ffn_hidden": 256,
+    "heads": 4,
+    "layers": 4,
+    "lr": 0.003,
+    "seed": 1234,
+    "threads": 4
+  },
+  "controls": "Same train-only tokenizer, data, epochs, optimizer/schedule and seed. Only one architecture component replaced per candidate; parameter counts differ.",
+  "results": [
+    {
+      "best_epoch": 4,
+      "checkpoint": "training_state.pt: full resume; model.pt: best validation inference",
+      "checkpoint_sha256": "d44e172f3549c429030fee2cba22cd2a46ebebb31e8902ee9cdfae8df60c54bf",
+      "comparison": "New held-out topic/template splits; do not rank against v0.4.0 old validation.",
+      "config": {
+        "batch_size": 128,
+        "block_size": 64,
+        "corpus_dir": "data/pretrain/v0.4.1",
+        "device": "cpu",
+        "dropout": 0.1,
+        "embed": 64,
+        "epochs": 4,
+        "ffn_hidden": 256,
+        "grad_clip": 1.0,
+        "heads": 4,
+        "kv_heads": 2,
+        "layers": 4,
+        "lr": 0.003,
+        "max_steps": null,
+        "output_dir": "temporary candidate directory",
+        "patience": 0,
+        "resume": null,
+        "seed": 1234,
+        "threads": 4,
+        "untied": false,
+        "variant": "baseline",
+        "vocab_size": 768,
+        "warmup_steps": 10,
+        "weight_decay": 0.01
+      },
+      "corpus_manifest_sha256": "7b2d71de7bcfd329e6a50b3be0cc6163f76c07ab54706605a942d07066754e72",
+      "data": {
+        "test": {
+          "documents": 80,
+          "documents_hash": "71c29ee5dc49251e640fc766835a7a06b19241816e91957965ad104060880713",
+          "file": "test.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "9a3f4750f511cf87bcc0ab5211db031380b1432382820e588df690f522ff8e04",
+          "templates": [
+            "market-journal-v1",
+            "running-journal-v1"
+          ],
+          "text_bytes": 39416,
+          "topics": [
+            "market",
+            "running"
+          ]
+        },
+        "train": {
+          "documents": 320,
+          "documents_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8",
+          "file": "train.jsonl",
+          "groups": 8,
+          "multiline_documents": 320,
+          "sha256": "f6083a5ed03c8bfa889ba27ccf471be1013859a87e834506b4d23a3adf000bc9",
+          "templates": [
+            "astronomy-journal-v1",
+            "cooking-journal-v1",
+            "museum-journal-v1",
+            "music-journal-v1",
+            "river-journal-v1",
+            "sewing-journal-v1",
+            "weather-journal-v1",
+            "woodwork-journal-v1"
+          ],
+          "text_bytes": 157734,
+          "topics": [
+            "astronomy",
+            "cooking",
+            "museum",
+            "music",
+            "river",
+            "sewing",
+            "weather",
+            "woodwork"
+          ]
+        },
+        "valid": {
+          "documents": 80,
+          "documents_hash": "ba476e90cfc3b6fd996d25f9cdb9ddbd703366a7d4ade52a7dfc2b8535435852",
+          "file": "valid.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "b8ffa5bd3068cf3df392cf72e1b77bd3c40e645b9698b343f853de11b3d99f81",
+          "templates": [
+            "garden-journal-v1",
+            "library-journal-v1"
+          ],
+          "text_bytes": 38356,
+          "topics": [
+            "garden",
+            "library"
+          ]
+        }
+      },
+      "elapsed_seconds": 77.84434237505775,
+      "environment": {
+        "device": "cpu",
+        "python": "3.12.14",
+        "torch": "2.13.0"
+      },
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 6.208084600306772,
+          "valid_ppl": 384.00484078128653
+        },
+        {
+          "epoch": 2,
+          "train_loss": 5.329557433663182,
+          "valid_ppl": 226.50396745791105
+        },
+        {
+          "epoch": 3,
+          "train_loss": 4.716215289412901,
+          "valid_ppl": 191.1128324301274
+        },
+        {
+          "epoch": 4,
+          "train_loss": 4.520374741256482,
+          "valid_ppl": 190.2873535559889
+        }
+      ],
+      "invocation_training_tokens": 194720,
+      "packing": {
+        "capacity_tokens": 62592,
+        "capacity_utilization": 0.7777351738241309,
+        "cross_chunk_attention": false,
+        "cross_document_attention": false,
+        "documents": 320,
+        "evaluation_context": "unchanged v0.4.0 sliding window; training context differs",
+        "long_documents": 320,
+        "packed_input_tokens": 48680,
+        "packs": 978,
+        "policy": "document-chunks-isolated-attention-reset-positions-v1",
+        "position_policy": "reset to zero at each document chunk",
+        "sliding_input_tokens": 1825280,
+        "sliding_rows": 28520,
+        "targets": 48680
+      },
+      "params": 253056,
+      "peak_process_rss_bytes": 1524842496,
+      "split_policy": {
+        "group_by": [
+          "topic",
+          "template_id"
+        ],
+        "groups": 12,
+        "method": "seeded shuffle of connected components; ratios are groups, not documents",
+        "requested_test_group_fraction": 0.15,
+        "requested_valid_group_fraction": 0.15
+      },
+      "steps": [
+        {
+          "grad_norm_before_clip": 3.8781909942626953,
+          "loss": 6.642634391784668,
+          "lr": 0.00030000000000000003,
+          "step": 1,
+          "tokens": 6712
+        },
+        {
+          "grad_norm_before_clip": 3.81477689743042,
+          "loss": 6.501014232635498,
+          "lr": 0.0006000000000000001,
+          "step": 2,
+          "tokens": 6229
+        },
+        {
+          "grad_norm_before_clip": 2.690857410430908,
+          "loss": 6.29720401763916,
+          "lr": 0.0009,
+          "step": 3,
+          "tokens": 6461
+        },
+        {
+          "grad_norm_before_clip": 2.5748653411865234,
+          "loss": 6.185091495513916,
+          "lr": 0.0012000000000000001,
+          "step": 4,
+          "tokens": 6090
+        },
+        {
+          "grad_norm_before_clip": 2.5719985961914062,
+          "loss": 6.112088680267334,
+          "lr": 0.0015,
+          "step": 5,
+          "tokens": 6135
+        },
+        {
+          "grad_norm_before_clip": 2.5923123359680176,
+          "loss": 6.032402038574219,
+          "lr": 0.0018,
+          "step": 6,
+          "tokens": 5997
+        },
+        {
+          "grad_norm_before_clip": 2.6296353340148926,
+          "loss": 5.927025318145752,
+          "lr": 0.0021,
+          "step": 7,
+          "tokens": 6869
+        },
+        {
+          "grad_norm_before_clip": 2.6100738048553467,
+          "loss": 5.824986934661865,
+          "lr": 0.0024000000000000002,
+          "step": 8,
+          "tokens": 4187
+        },
+        {
+          "grad_norm_before_clip": 2.5978899002075195,
+          "loss": 5.7027716636657715,
+          "lr": 0.0027,
+          "step": 9,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 2.6239612102508545,
+          "loss": 5.569916725158691,
+          "lr": 0.003,
+          "step": 10,
+          "tokens": 6237
+        },
+        {
+          "grad_norm_before_clip": 2.5818288326263428,
+          "loss": 5.461357116699219,
+          "lr": 0.003,
+          "step": 11,
+          "tokens": 6861
+        },
+        {
+          "grad_norm_before_clip": 2.560533285140991,
+          "loss": 5.336123943328857,
+          "lr": 0.0029849216154039233,
+          "step": 12,
+          "tokens": 6581
+        },
+        {
+          "grad_norm_before_clip": 2.5689187049865723,
+          "loss": 5.218850612640381,
+          "lr": 0.0029400232878112895,
+          "step": 13,
+          "tokens": 6491
+        },
+        {
+          "grad_norm_before_clip": 2.462596893310547,
+          "loss": 5.1679840087890625,
+          "lr": 0.0028663079716682656,
+          "step": 14,
+          "tokens": 6108
+        },
+        {
+          "grad_norm_before_clip": 2.4199397563934326,
+          "loss": 5.054961204528809,
+          "lr": 0.0027654223453265933,
+          "step": 15,
+          "tokens": 6187
+        },
+        {
+          "grad_norm_before_clip": 2.380601167678833,
+          "loss": 4.977153778076172,
+          "lr": 0.0026396200269702655,
+          "step": 16,
+          "tokens": 3934
+        },
+        {
+          "grad_norm_before_clip": 2.2703471183776855,
+          "loss": 4.898837089538574,
+          "lr": 0.0024917112325092907,
+          "step": 17,
+          "tokens": 6875
+        },
+        {
+          "grad_norm_before_clip": 2.156045436859131,
+          "loss": 4.820744514465332,
+          "lr": 0.0023250000000000002,
+          "step": 18,
+          "tokens": 6499
+        },
+        {
+          "grad_norm_before_clip": 2.037529230117798,
+          "loss": 4.759572982788086,
+          "lr": 0.002143210382894633,
+          "step": 19,
+          "tokens": 6330
+        },
+        {
+          "grad_norm_before_clip": 1.8576874732971191,
+          "loss": 4.712355613708496,
+          "lr": 0.0019504032608410242,
+          "step": 20,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 1.7169677019119263,
+          "loss": 4.65984582901001,
+          "lr": 0.0017508856263416727,
+          "step": 21,
+          "tokens": 6169
+        },
+        {
+          "grad_norm_before_clip": 1.5474942922592163,
+          "loss": 4.612996578216553,
+          "lr": 0.0015491143736583275,
+          "step": 22,
+          "tokens": 6233
+        },
+        {
+          "grad_norm_before_clip": 1.3119547367095947,
+          "loss": 4.6335906982421875,
+          "lr": 0.0013495967391589758,
+          "step": 23,
+          "tokens": 5960
+        },
+        {
+          "grad_norm_before_clip": 1.1963850259780884,
+          "loss": 4.554312705993652,
+          "lr": 0.0011567896171053669,
+          "step": 24,
+          "tokens": 4333
+        },
+        {
+          "grad_norm_before_clip": 0.9901791214942932,
+          "loss": 4.533477783203125,
+          "lr": 0.0009750000000000004,
+          "step": 25,
+          "tokens": 6272
+        },
+        {
+          "grad_norm_before_clip": 0.8104820847511292,
+          "loss": 4.524994373321533,
+          "lr": 0.0008082887674907099,
+          "step": 26,
+          "tokens": 6350
+        },
+        {
+          "grad_norm_before_clip": 0.6571826934814453,
+          "loss": 4.532790660858154,
+          "lr": 0.0006603799730297345,
+          "step": 27,
+          "tokens": 6311
+        },
+        {
+          "grad_norm_before_clip": 0.5467916131019592,
+          "loss": 4.546732425689697,
+          "lr": 0.0005345776546734068,
+          "step": 28,
+          "tokens": 6328
+        },
+        {
+          "grad_norm_before_clip": 0.4906553030014038,
+          "loss": 4.510305404663086,
+          "lr": 0.00043369202833173437,
+          "step": 29,
+          "tokens": 6305
+        },
+        {
+          "grad_norm_before_clip": 0.43901142477989197,
+          "loss": 4.493422508239746,
+          "lr": 0.00035997671218871027,
+          "step": 30,
+          "tokens": 6419
+        },
+        {
+          "grad_norm_before_clip": 0.4000548720359802,
+          "loss": 4.507387638092041,
+          "lr": 0.0003150783845960765,
+          "step": 31,
+          "tokens": 6486
+        },
+        {
+          "grad_norm_before_clip": 0.3574237823486328,
+          "loss": 4.511836528778076,
+          "lr": 0.00030000000000000003,
+          "step": 32,
+          "tokens": 4209
+        }
+      ],
+      "targets_per_second": 4515.24886347104,
+      "test": {
+        "status": "not evaluated; use explicit --split test after model selection"
+      },
+      "tokenizer": {
+        "sha256": "0db5862fd0e9155b588628062c3823fc0f41ec5c2a49ee6717c8213035e3a77b",
+        "training_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8"
+      },
+      "train": {
+        "bits_per_byte": 1.9841485040637095,
+        "coverage": 1.0,
+        "documents": 320,
+        "eos_nll": 1560.1014223207544,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 48680,
+        "nll_per_byte": 1.3753069414039933,
+        "ppl": 88.97431298216922,
+        "text_bytes": 157734,
+        "text_nll": 216932.66509541747,
+        "token_nll": 4.488347709896024,
+        "top1": 0.32629416598192273,
+        "topk": 0.3768282662284306,
+        "total_nll": 218492.76651773843
+      },
+      "training_seconds": 43.12497624999378,
+      "training_tokens": 194720,
+      "valid": {
+        "bits_per_byte": 3.170814628527202,
+        "coverage": 1.0,
+        "documents": 80,
+        "eos_nll": 389.9680434955052,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 16136,
+        "nll_per_byte": 2.19784121984186,
+        "ppl": 190.2873535559889,
+        "text_bytes": 38356,
+        "text_nll": 84300.3978282544,
+        "token_nll": 5.2485353167916395,
+        "top1": 0.2513634110064452,
+        "topk": 0.2904065443728309,
+        "total_nll": 84690.36587174989
+      },
+      "variant": "baseline",
+      "version": "v0.4.5",
+      "vocab_size": 768
+    },
+    {
+      "best_epoch": 4,
+      "checkpoint": "training_state.pt: full resume; model.pt: best validation inference",
+      "checkpoint_sha256": "7a614ac2c4d8bba243b0c54f7afbb9ba3f60a9715135c4f6ce63fea3691bbdb8",
+      "comparison": "New held-out topic/template splits; do not rank against v0.4.0 old validation.",
+      "config": {
+        "batch_size": 128,
+        "block_size": 64,
+        "corpus_dir": "data/pretrain/v0.4.1",
+        "device": "cpu",
+        "dropout": 0.1,
+        "embed": 64,
+        "epochs": 4,
+        "ffn_hidden": 256,
+        "grad_clip": 1.0,
+        "heads": 4,
+        "kv_heads": 2,
+        "layers": 4,
+        "lr": 0.003,
+        "max_steps": null,
+        "output_dir": "temporary candidate directory",
+        "patience": 0,
+        "resume": null,
+        "seed": 1234,
+        "threads": 4,
+        "untied": false,
+        "variant": "rope",
+        "vocab_size": 768,
+        "warmup_steps": 10,
+        "weight_decay": 0.01
+      },
+      "corpus_manifest_sha256": "7b2d71de7bcfd329e6a50b3be0cc6163f76c07ab54706605a942d07066754e72",
+      "data": {
+        "test": {
+          "documents": 80,
+          "documents_hash": "71c29ee5dc49251e640fc766835a7a06b19241816e91957965ad104060880713",
+          "file": "test.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "9a3f4750f511cf87bcc0ab5211db031380b1432382820e588df690f522ff8e04",
+          "templates": [
+            "market-journal-v1",
+            "running-journal-v1"
+          ],
+          "text_bytes": 39416,
+          "topics": [
+            "market",
+            "running"
+          ]
+        },
+        "train": {
+          "documents": 320,
+          "documents_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8",
+          "file": "train.jsonl",
+          "groups": 8,
+          "multiline_documents": 320,
+          "sha256": "f6083a5ed03c8bfa889ba27ccf471be1013859a87e834506b4d23a3adf000bc9",
+          "templates": [
+            "astronomy-journal-v1",
+            "cooking-journal-v1",
+            "museum-journal-v1",
+            "music-journal-v1",
+            "river-journal-v1",
+            "sewing-journal-v1",
+            "weather-journal-v1",
+            "woodwork-journal-v1"
+          ],
+          "text_bytes": 157734,
+          "topics": [
+            "astronomy",
+            "cooking",
+            "museum",
+            "music",
+            "river",
+            "sewing",
+            "weather",
+            "woodwork"
+          ]
+        },
+        "valid": {
+          "documents": 80,
+          "documents_hash": "ba476e90cfc3b6fd996d25f9cdb9ddbd703366a7d4ade52a7dfc2b8535435852",
+          "file": "valid.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "b8ffa5bd3068cf3df392cf72e1b77bd3c40e645b9698b343f853de11b3d99f81",
+          "templates": [
+            "garden-journal-v1",
+            "library-journal-v1"
+          ],
+          "text_bytes": 38356,
+          "topics": [
+            "garden",
+            "library"
+          ]
+        }
+      },
+      "elapsed_seconds": 82.31113037501927,
+      "environment": {
+        "device": "cpu",
+        "python": "3.12.14",
+        "torch": "2.13.0"
+      },
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 6.2117870804513196,
+          "valid_ppl": 388.05379471579914
+        },
+        {
+          "epoch": 2,
+          "train_loss": 5.335020571001848,
+          "valid_ppl": 229.42547196981278
+        },
+        {
+          "epoch": 3,
+          "train_loss": 4.601965072797573,
+          "valid_ppl": 163.06359022274924
+        },
+        {
+          "epoch": 4,
+          "train_loss": 4.275065308040346,
+          "valid_ppl": 150.85836761049285
+        }
+      ],
+      "invocation_training_tokens": 194720,
+      "packing": {
+        "capacity_tokens": 62592,
+        "capacity_utilization": 0.7777351738241309,
+        "cross_chunk_attention": false,
+        "cross_document_attention": false,
+        "documents": 320,
+        "evaluation_context": "unchanged v0.4.0 sliding window; training context differs",
+        "long_documents": 320,
+        "packed_input_tokens": 48680,
+        "packs": 978,
+        "policy": "document-chunks-isolated-attention-reset-positions-v1",
+        "position_policy": "reset to zero at each document chunk",
+        "sliding_input_tokens": 1825280,
+        "sliding_rows": 28520,
+        "targets": 48680
+      },
+      "params": 248960,
+      "peak_process_rss_bytes": 1489256448,
+      "split_policy": {
+        "group_by": [
+          "topic",
+          "template_id"
+        ],
+        "groups": 12,
+        "method": "seeded shuffle of connected components; ratios are groups, not documents",
+        "requested_test_group_fraction": 0.15,
+        "requested_valid_group_fraction": 0.15
+      },
+      "steps": [
+        {
+          "grad_norm_before_clip": 5.268489837646484,
+          "loss": 6.660058498382568,
+          "lr": 0.00030000000000000003,
+          "step": 1,
+          "tokens": 6712
+        },
+        {
+          "grad_norm_before_clip": 4.3726806640625,
+          "loss": 6.478667736053467,
+          "lr": 0.0006000000000000001,
+          "step": 2,
+          "tokens": 6229
+        },
+        {
+          "grad_norm_before_clip": 2.782123327255249,
+          "loss": 6.288211345672607,
+          "lr": 0.0009,
+          "step": 3,
+          "tokens": 6461
+        },
+        {
+          "grad_norm_before_clip": 2.614952325820923,
+          "loss": 6.185937404632568,
+          "lr": 0.0012000000000000001,
+          "step": 4,
+          "tokens": 6090
+        },
+        {
+          "grad_norm_before_clip": 2.572324752807617,
+          "loss": 6.119261264801025,
+          "lr": 0.0015,
+          "step": 5,
+          "tokens": 6135
+        },
+        {
+          "grad_norm_before_clip": 2.593257427215576,
+          "loss": 6.042715549468994,
+          "lr": 0.0018,
+          "step": 6,
+          "tokens": 5997
+        },
+        {
+          "grad_norm_before_clip": 2.6298601627349854,
+          "loss": 5.93997049331665,
+          "lr": 0.0021,
+          "step": 7,
+          "tokens": 6869
+        },
+        {
+          "grad_norm_before_clip": 2.604793071746826,
+          "loss": 5.839474201202393,
+          "lr": 0.0024000000000000002,
+          "step": 8,
+          "tokens": 4187
+        },
+        {
+          "grad_norm_before_clip": 2.5982954502105713,
+          "loss": 5.718157768249512,
+          "lr": 0.0027,
+          "step": 9,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 2.628368616104126,
+          "loss": 5.585539817810059,
+          "lr": 0.003,
+          "step": 10,
+          "tokens": 6237
+        },
+        {
+          "grad_norm_before_clip": 2.5800130367279053,
+          "loss": 5.477637767791748,
+          "lr": 0.003,
+          "step": 11,
+          "tokens": 6861
+        },
+        {
+          "grad_norm_before_clip": 2.5689027309417725,
+          "loss": 5.3470354080200195,
+          "lr": 0.0029849216154039233,
+          "step": 12,
+          "tokens": 6581
+        },
+        {
+          "grad_norm_before_clip": 2.5826408863067627,
+          "loss": 5.224286079406738,
+          "lr": 0.0029400232878112895,
+          "step": 13,
+          "tokens": 6491
+        },
+        {
+          "grad_norm_before_clip": 2.4778101444244385,
+          "loss": 5.168336391448975,
+          "lr": 0.0028663079716682656,
+          "step": 14,
+          "tokens": 6108
+        },
+        {
+          "grad_norm_before_clip": 2.5324010848999023,
+          "loss": 5.044463634490967,
+          "lr": 0.0027654223453265933,
+          "step": 15,
+          "tokens": 6187
+        },
+        {
+          "grad_norm_before_clip": 2.4647626876831055,
+          "loss": 4.95576810836792,
+          "lr": 0.0026396200269702655,
+          "step": 16,
+          "tokens": 3934
+        },
+        {
+          "grad_norm_before_clip": 2.3958590030670166,
+          "loss": 4.855703830718994,
+          "lr": 0.0024917112325092907,
+          "step": 17,
+          "tokens": 6875
+        },
+        {
+          "grad_norm_before_clip": 2.383763551712036,
+          "loss": 4.7549285888671875,
+          "lr": 0.0023250000000000002,
+          "step": 18,
+          "tokens": 6499
+        },
+        {
+          "grad_norm_before_clip": 2.3420004844665527,
+          "loss": 4.676496982574463,
+          "lr": 0.002143210382894633,
+          "step": 19,
+          "tokens": 6330
+        },
+        {
+          "grad_norm_before_clip": 2.211298704147339,
+          "loss": 4.606832504272461,
+          "lr": 0.0019504032608410242,
+          "step": 20,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 2.214015007019043,
+          "loss": 4.529269218444824,
+          "lr": 0.0017508856263416727,
+          "step": 21,
+          "tokens": 6169
+        },
+        {
+          "grad_norm_before_clip": 2.0407612323760986,
+          "loss": 4.4618964195251465,
+          "lr": 0.0015491143736583275,
+          "step": 22,
+          "tokens": 6233
+        },
+        {
+          "grad_norm_before_clip": 1.9225502014160156,
+          "loss": 4.462642192840576,
+          "lr": 0.0013495967391589758,
+          "step": 23,
+          "tokens": 5960
+        },
+        {
+          "grad_norm_before_clip": 1.9101033210754395,
+          "loss": 4.350626468658447,
+          "lr": 0.0011567896171053669,
+          "step": 24,
+          "tokens": 4333
+        },
+        {
+          "grad_norm_before_clip": 1.7988611459732056,
+          "loss": 4.325935363769531,
+          "lr": 0.0009750000000000004,
+          "step": 25,
+          "tokens": 6272
+        },
+        {
+          "grad_norm_before_clip": 2.0957913398742676,
+          "loss": 4.306411266326904,
+          "lr": 0.0008082887674907099,
+          "step": 26,
+          "tokens": 6350
+        },
+        {
+          "grad_norm_before_clip": 1.544929027557373,
+          "loss": 4.298773765563965,
+          "lr": 0.0006603799730297345,
+          "step": 27,
+          "tokens": 6311
+        },
+        {
+          "grad_norm_before_clip": 1.474542260169983,
+          "loss": 4.302722454071045,
+          "lr": 0.0005345776546734068,
+          "step": 28,
+          "tokens": 6328
+        },
+        {
+          "grad_norm_before_clip": 1.4571253061294556,
+          "loss": 4.255027770996094,
+          "lr": 0.00043369202833173437,
+          "step": 29,
+          "tokens": 6305
+        },
+        {
+          "grad_norm_before_clip": 1.4309444427490234,
+          "loss": 4.2290425300598145,
+          "lr": 0.00035997671218871027,
+          "step": 30,
+          "tokens": 6419
+        },
+        {
+          "grad_norm_before_clip": 1.3943153619766235,
+          "loss": 4.234984874725342,
+          "lr": 0.0003150783845960765,
+          "step": 31,
+          "tokens": 6486
+        },
+        {
+          "grad_norm_before_clip": 1.3472309112548828,
+          "loss": 4.2368083000183105,
+          "lr": 0.00030000000000000003,
+          "step": 32,
+          "tokens": 4209
+        }
+      ],
+      "targets_per_second": 4119.774949318539,
+      "test": {
+        "status": "not evaluated; use explicit --split test after model selection"
+      },
+      "tokenizer": {
+        "sha256": "0db5862fd0e9155b588628062c3823fc0f41ec5c2a49ee6717c8213035e3a77b",
+        "training_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8"
+      },
+      "train": {
+        "bits_per_byte": 1.858596335795293,
+        "coverage": 1.0,
+        "documents": 320,
+        "eos_nll": 1429.9666748621296,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 48680,
+        "nll_per_byte": 1.2882808099555527,
+        "ppl": 66.9328894488266,
+        "text_bytes": 157734,
+        "text_nll": 203205.68527752915,
+        "token_nll": 4.203690467386836,
+        "top1": 0.32629416598192273,
+        "topk": 0.3947000821692687,
+        "total_nll": 204635.65195239117
+      },
+      "training_seconds": 47.26471770799253,
+      "training_tokens": 194720,
+      "valid": {
+        "bits_per_byte": 3.0309731548401313,
+        "coverage": 1.0,
+        "documents": 80,
+        "eos_nll": 361.1623671749525,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 16136,
+        "nll_per_byte": 2.1009104966303194,
+        "ppl": 150.85836761049285,
+        "text_bytes": 38356,
+        "text_nll": 80582.52300875253,
+        "token_nll": 5.0163414338080985,
+        "top1": 0.2513634110064452,
+        "topk": 0.3034209221616262,
+        "total_nll": 80943.68537592748
+      },
+      "variant": "rope",
+      "version": "v0.4.5",
+      "vocab_size": 768
+    },
+    {
+      "best_epoch": 4,
+      "checkpoint": "training_state.pt: full resume; model.pt: best validation inference",
+      "checkpoint_sha256": "b129bda5cd2d60c2eef17ef5847ebff17c2f65f5d7f24e3d12f8ad5e85f24273",
+      "comparison": "New held-out topic/template splits; do not rank against v0.4.0 old validation.",
+      "config": {
+        "batch_size": 128,
+        "block_size": 64,
+        "corpus_dir": "data/pretrain/v0.4.1",
+        "device": "cpu",
+        "dropout": 0.1,
+        "embed": 64,
+        "epochs": 4,
+        "ffn_hidden": 256,
+        "grad_clip": 1.0,
+        "heads": 4,
+        "kv_heads": 2,
+        "layers": 4,
+        "lr": 0.003,
+        "max_steps": null,
+        "output_dir": "temporary candidate directory",
+        "patience": 0,
+        "resume": null,
+        "seed": 1234,
+        "threads": 4,
+        "untied": false,
+        "variant": "rmsnorm",
+        "vocab_size": 768,
+        "warmup_steps": 10,
+        "weight_decay": 0.01
+      },
+      "corpus_manifest_sha256": "7b2d71de7bcfd329e6a50b3be0cc6163f76c07ab54706605a942d07066754e72",
+      "data": {
+        "test": {
+          "documents": 80,
+          "documents_hash": "71c29ee5dc49251e640fc766835a7a06b19241816e91957965ad104060880713",
+          "file": "test.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "9a3f4750f511cf87bcc0ab5211db031380b1432382820e588df690f522ff8e04",
+          "templates": [
+            "market-journal-v1",
+            "running-journal-v1"
+          ],
+          "text_bytes": 39416,
+          "topics": [
+            "market",
+            "running"
+          ]
+        },
+        "train": {
+          "documents": 320,
+          "documents_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8",
+          "file": "train.jsonl",
+          "groups": 8,
+          "multiline_documents": 320,
+          "sha256": "f6083a5ed03c8bfa889ba27ccf471be1013859a87e834506b4d23a3adf000bc9",
+          "templates": [
+            "astronomy-journal-v1",
+            "cooking-journal-v1",
+            "museum-journal-v1",
+            "music-journal-v1",
+            "river-journal-v1",
+            "sewing-journal-v1",
+            "weather-journal-v1",
+            "woodwork-journal-v1"
+          ],
+          "text_bytes": 157734,
+          "topics": [
+            "astronomy",
+            "cooking",
+            "museum",
+            "music",
+            "river",
+            "sewing",
+            "weather",
+            "woodwork"
+          ]
+        },
+        "valid": {
+          "documents": 80,
+          "documents_hash": "ba476e90cfc3b6fd996d25f9cdb9ddbd703366a7d4ade52a7dfc2b8535435852",
+          "file": "valid.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "b8ffa5bd3068cf3df392cf72e1b77bd3c40e645b9698b343f853de11b3d99f81",
+          "templates": [
+            "garden-journal-v1",
+            "library-journal-v1"
+          ],
+          "text_bytes": 38356,
+          "topics": [
+            "garden",
+            "library"
+          ]
+        }
+      },
+      "elapsed_seconds": 74.992960167001,
+      "environment": {
+        "device": "cpu",
+        "python": "3.12.14",
+        "torch": "2.13.0"
+      },
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 6.210351672237196,
+          "valid_ppl": 386.7819981488991
+        },
+        {
+          "epoch": 2,
+          "train_loss": 5.34991430786661,
+          "valid_ppl": 230.35951908075754
+        },
+        {
+          "epoch": 3,
+          "train_loss": 4.752799165865977,
+          "valid_ppl": 190.88200912883946
+        },
+        {
+          "epoch": 4,
+          "train_loss": 4.542710490332535,
+          "valid_ppl": 185.81547370851376
+        }
+      ],
+      "invocation_training_tokens": 194720,
+      "packing": {
+        "capacity_tokens": 62592,
+        "capacity_utilization": 0.7777351738241309,
+        "cross_chunk_attention": false,
+        "cross_document_attention": false,
+        "documents": 320,
+        "evaluation_context": "unchanged v0.4.0 sliding window; training context differs",
+        "long_documents": 320,
+        "packed_input_tokens": 48680,
+        "packs": 978,
+        "policy": "document-chunks-isolated-attention-reset-positions-v1",
+        "position_policy": "reset to zero at each document chunk",
+        "sliding_input_tokens": 1825280,
+        "sliding_rows": 28520,
+        "targets": 48680
+      },
+      "params": 252480,
+      "peak_process_rss_bytes": 1700085760,
+      "split_policy": {
+        "group_by": [
+          "topic",
+          "template_id"
+        ],
+        "groups": 12,
+        "method": "seeded shuffle of connected components; ratios are groups, not documents",
+        "requested_test_group_fraction": 0.15,
+        "requested_valid_group_fraction": 0.15
+      },
+      "steps": [
+        {
+          "grad_norm_before_clip": 3.8406691551208496,
+          "loss": 6.642855167388916,
+          "lr": 0.00030000000000000003,
+          "step": 1,
+          "tokens": 6712
+        },
+        {
+          "grad_norm_before_clip": 3.7901718616485596,
+          "loss": 6.50224494934082,
+          "lr": 0.0006000000000000001,
+          "step": 2,
+          "tokens": 6229
+        },
+        {
+          "grad_norm_before_clip": 2.6913669109344482,
+          "loss": 6.298744201660156,
+          "lr": 0.0009,
+          "step": 3,
+          "tokens": 6461
+        },
+        {
+          "grad_norm_before_clip": 2.568979024887085,
+          "loss": 6.185911655426025,
+          "lr": 0.0012000000000000001,
+          "step": 4,
+          "tokens": 6090
+        },
+        {
+          "grad_norm_before_clip": 2.5644264221191406,
+          "loss": 6.113523960113525,
+          "lr": 0.0015,
+          "step": 5,
+          "tokens": 6135
+        },
+        {
+          "grad_norm_before_clip": 2.5817556381225586,
+          "loss": 6.035333633422852,
+          "lr": 0.0018,
+          "step": 6,
+          "tokens": 5997
+        },
+        {
+          "grad_norm_before_clip": 2.6145942211151123,
+          "loss": 5.931492328643799,
+          "lr": 0.0021,
+          "step": 7,
+          "tokens": 6869
+        },
+        {
+          "grad_norm_before_clip": 2.590392827987671,
+          "loss": 5.831960201263428,
+          "lr": 0.0024000000000000002,
+          "step": 8,
+          "tokens": 4187
+        },
+        {
+          "grad_norm_before_clip": 2.572878837585449,
+          "loss": 5.7125444412231445,
+          "lr": 0.0027,
+          "step": 9,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 2.5926694869995117,
+          "loss": 5.5828704833984375,
+          "lr": 0.003,
+          "step": 10,
+          "tokens": 6237
+        },
+        {
+          "grad_norm_before_clip": 2.5451204776763916,
+          "loss": 5.477457523345947,
+          "lr": 0.003,
+          "step": 11,
+          "tokens": 6861
+        },
+        {
+          "grad_norm_before_clip": 2.519270896911621,
+          "loss": 5.355950832366943,
+          "lr": 0.0029849216154039233,
+          "step": 12,
+          "tokens": 6581
+        },
+        {
+          "grad_norm_before_clip": 2.523996353149414,
+          "loss": 5.24226713180542,
+          "lr": 0.0029400232878112895,
+          "step": 13,
+          "tokens": 6491
+        },
+        {
+          "grad_norm_before_clip": 2.4189155101776123,
+          "loss": 5.193337440490723,
+          "lr": 0.0028663079716682656,
+          "step": 14,
+          "tokens": 6108
+        },
+        {
+          "grad_norm_before_clip": 2.3787732124328613,
+          "loss": 5.083664894104004,
+          "lr": 0.0027654223453265933,
+          "step": 15,
+          "tokens": 6187
+        },
+        {
+          "grad_norm_before_clip": 2.345627546310425,
+          "loss": 5.008522987365723,
+          "lr": 0.0026396200269702655,
+          "step": 16,
+          "tokens": 3934
+        },
+        {
+          "grad_norm_before_clip": 2.2431464195251465,
+          "loss": 4.932093143463135,
+          "lr": 0.0024917112325092907,
+          "step": 17,
+          "tokens": 6875
+        },
+        {
+          "grad_norm_before_clip": 2.1520049571990967,
+          "loss": 4.85699462890625,
+          "lr": 0.0023250000000000002,
+          "step": 18,
+          "tokens": 6499
+        },
+        {
+          "grad_norm_before_clip": 2.0768420696258545,
+          "loss": 4.797821521759033,
+          "lr": 0.002143210382894633,
+          "step": 19,
+          "tokens": 6330
+        },
+        {
+          "grad_norm_before_clip": 1.9099115133285522,
+          "loss": 4.750019550323486,
+          "lr": 0.0019504032608410242,
+          "step": 20,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 1.805080533027649,
+          "loss": 4.698832035064697,
+          "lr": 0.0017508856263416727,
+          "step": 21,
+          "tokens": 6169
+        },
+        {
+          "grad_norm_before_clip": 1.675892949104309,
+          "loss": 4.651556491851807,
+          "lr": 0.0015491143736583275,
+          "step": 22,
+          "tokens": 6233
+        },
+        {
+          "grad_norm_before_clip": 1.4849212169647217,
+          "loss": 4.668435573577881,
+          "lr": 0.0013495967391589758,
+          "step": 23,
+          "tokens": 5960
+        },
+        {
+          "grad_norm_before_clip": 1.4085772037506104,
+          "loss": 4.588809013366699,
+          "lr": 0.0011567896171053669,
+          "step": 24,
+          "tokens": 4333
+        },
+        {
+          "grad_norm_before_clip": 1.2444431781768799,
+          "loss": 4.566105842590332,
+          "lr": 0.0009750000000000004,
+          "step": 25,
+          "tokens": 6272
+        },
+        {
+          "grad_norm_before_clip": 1.1010968685150146,
+          "loss": 4.554492950439453,
+          "lr": 0.0008082887674907099,
+          "step": 26,
+          "tokens": 6350
+        },
+        {
+          "grad_norm_before_clip": 0.9761382341384888,
+          "loss": 4.557526588439941,
+          "lr": 0.0006603799730297345,
+          "step": 27,
+          "tokens": 6311
+        },
+        {
+          "grad_norm_before_clip": 0.8852910399436951,
+          "loss": 4.569345474243164,
+          "lr": 0.0005345776546734068,
+          "step": 28,
+          "tokens": 6328
+        },
+        {
+          "grad_norm_before_clip": 0.8411996364593506,
+          "loss": 4.530893325805664,
+          "lr": 0.00043369202833173437,
+          "step": 29,
+          "tokens": 6305
+        },
+        {
+          "grad_norm_before_clip": 0.7979376912117004,
+          "loss": 4.511375427246094,
+          "lr": 0.00035997671218871027,
+          "step": 30,
+          "tokens": 6419
+        },
+        {
+          "grad_norm_before_clip": 0.7598587274551392,
+          "loss": 4.522298336029053,
+          "lr": 0.0003150783845960765,
+          "step": 31,
+          "tokens": 6486
+        },
+        {
+          "grad_norm_before_clip": 0.7164018750190735,
+          "loss": 4.524757385253906,
+          "lr": 0.00030000000000000003,
+          "step": 32,
+          "tokens": 4209
+        }
+      ],
+      "targets_per_second": 4576.133042797069,
+      "test": {
+        "status": "not evaluated; use explicit --split test after model selection"
+      },
+      "tokenizer": {
+        "sha256": "0db5862fd0e9155b588628062c3823fc0f41ec5c2a49ee6717c8213035e3a77b",
+        "training_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8"
+      },
+      "train": {
+        "bits_per_byte": 1.9885237926366603,
+        "coverage": 1.0,
+        "documents": 320,
+        "eos_nll": 1533.0675865339083,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 48680,
+        "nll_per_byte": 1.3783396603424705,
+        "ppl": 89.80306035976261,
+        "text_bytes": 157734,
+        "text_nll": 217411.02798445924,
+        "token_nll": 4.497619054457549,
+        "top1": 0.32629416598192273,
+        "topk": 0.3768282662284306,
+        "total_nll": 218944.09557099346
+      },
+      "training_seconds": 42.55121041694656,
+      "training_tokens": 194720,
+      "valid": {
+        "bits_per_byte": 3.1565909075199325,
+        "coverage": 1.0,
+        "documents": 80,
+        "eos_nll": 384.39127237914545,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 16136,
+        "nll_per_byte": 2.1879820877286003,
+        "ppl": 185.81547370851376,
+        "text_bytes": 38356,
+        "text_nll": 83922.24095691819,
+        "token_nll": 5.224754104443314,
+        "top1": 0.2513634110064452,
+        "topk": 0.2904065443728309,
+        "total_nll": 84306.63222929732
+      },
+      "variant": "rmsnorm",
+      "version": "v0.4.5",
+      "vocab_size": 768
+    },
+    {
+      "best_epoch": 4,
+      "checkpoint": "training_state.pt: full resume; model.pt: best validation inference",
+      "checkpoint_sha256": "ecc49eaf103bfb480f36aa0905cdc69148fc75853f56e3c93655f9f7564ba5b7",
+      "comparison": "New held-out topic/template splits; do not rank against v0.4.0 old validation.",
+      "config": {
+        "batch_size": 128,
+        "block_size": 64,
+        "corpus_dir": "data/pretrain/v0.4.1",
+        "device": "cpu",
+        "dropout": 0.1,
+        "embed": 64,
+        "epochs": 4,
+        "ffn_hidden": 256,
+        "grad_clip": 1.0,
+        "heads": 4,
+        "kv_heads": 2,
+        "layers": 4,
+        "lr": 0.003,
+        "max_steps": null,
+        "output_dir": "temporary candidate directory",
+        "patience": 0,
+        "resume": null,
+        "seed": 1234,
+        "threads": 4,
+        "untied": false,
+        "variant": "swiglu",
+        "vocab_size": 768,
+        "warmup_steps": 10,
+        "weight_decay": 0.01
+      },
+      "corpus_manifest_sha256": "7b2d71de7bcfd329e6a50b3be0cc6163f76c07ab54706605a942d07066754e72",
+      "data": {
+        "test": {
+          "documents": 80,
+          "documents_hash": "71c29ee5dc49251e640fc766835a7a06b19241816e91957965ad104060880713",
+          "file": "test.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "9a3f4750f511cf87bcc0ab5211db031380b1432382820e588df690f522ff8e04",
+          "templates": [
+            "market-journal-v1",
+            "running-journal-v1"
+          ],
+          "text_bytes": 39416,
+          "topics": [
+            "market",
+            "running"
+          ]
+        },
+        "train": {
+          "documents": 320,
+          "documents_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8",
+          "file": "train.jsonl",
+          "groups": 8,
+          "multiline_documents": 320,
+          "sha256": "f6083a5ed03c8bfa889ba27ccf471be1013859a87e834506b4d23a3adf000bc9",
+          "templates": [
+            "astronomy-journal-v1",
+            "cooking-journal-v1",
+            "museum-journal-v1",
+            "music-journal-v1",
+            "river-journal-v1",
+            "sewing-journal-v1",
+            "weather-journal-v1",
+            "woodwork-journal-v1"
+          ],
+          "text_bytes": 157734,
+          "topics": [
+            "astronomy",
+            "cooking",
+            "museum",
+            "music",
+            "river",
+            "sewing",
+            "weather",
+            "woodwork"
+          ]
+        },
+        "valid": {
+          "documents": 80,
+          "documents_hash": "ba476e90cfc3b6fd996d25f9cdb9ddbd703366a7d4ade52a7dfc2b8535435852",
+          "file": "valid.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "b8ffa5bd3068cf3df392cf72e1b77bd3c40e645b9698b343f853de11b3d99f81",
+          "templates": [
+            "garden-journal-v1",
+            "library-journal-v1"
+          ],
+          "text_bytes": 38356,
+          "topics": [
+            "garden",
+            "library"
+          ]
+        }
+      },
+      "elapsed_seconds": 79.8282391250832,
+      "environment": {
+        "device": "cpu",
+        "python": "3.12.14",
+        "torch": "2.13.0"
+      },
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 6.234924299587651,
+          "valid_ppl": 388.5960135312636
+        },
+        {
+          "epoch": 2,
+          "train_loss": 5.342886605650651,
+          "valid_ppl": 234.48793104884967
+        },
+        {
+          "epoch": 3,
+          "train_loss": 4.734395948539724,
+          "valid_ppl": 195.3875268140118
+        },
+        {
+          "epoch": 4,
+          "train_loss": 4.5362521265800995,
+          "valid_ppl": 192.86924083753294
+        }
+      ],
+      "invocation_training_tokens": 194720,
+      "packing": {
+        "capacity_tokens": 62592,
+        "capacity_utilization": 0.7777351738241309,
+        "cross_chunk_attention": false,
+        "cross_document_attention": false,
+        "documents": 320,
+        "evaluation_context": "unchanged v0.4.0 sliding window; training context differs",
+        "long_documents": 320,
+        "packed_input_tokens": 48680,
+        "packs": 978,
+        "policy": "document-chunks-isolated-attention-reset-positions-v1",
+        "position_policy": "reset to zero at each document chunk",
+        "sliding_input_tokens": 1825280,
+        "sliding_rows": 28520,
+        "targets": 48680
+      },
+      "params": 251264,
+      "peak_process_rss_bytes": 1629798400,
+      "split_policy": {
+        "group_by": [
+          "topic",
+          "template_id"
+        ],
+        "groups": 12,
+        "method": "seeded shuffle of connected components; ratios are groups, not documents",
+        "requested_test_group_fraction": 0.15,
+        "requested_valid_group_fraction": 0.15
+      },
+      "steps": [
+        {
+          "grad_norm_before_clip": 1.716573715209961,
+          "loss": 6.6341166496276855,
+          "lr": 0.00030000000000000003,
+          "step": 1,
+          "tokens": 6712
+        },
+        {
+          "grad_norm_before_clip": 2.1046142578125,
+          "loss": 6.555262088775635,
+          "lr": 0.0006000000000000001,
+          "step": 2,
+          "tokens": 6229
+        },
+        {
+          "grad_norm_before_clip": 2.523588180541992,
+          "loss": 6.388768196105957,
+          "lr": 0.0009,
+          "step": 3,
+          "tokens": 6461
+        },
+        {
+          "grad_norm_before_clip": 2.475184440612793,
+          "loss": 6.2249274253845215,
+          "lr": 0.0012000000000000001,
+          "step": 4,
+          "tokens": 6090
+        },
+        {
+          "grad_norm_before_clip": 2.5288612842559814,
+          "loss": 6.12571382522583,
+          "lr": 0.0015,
+          "step": 5,
+          "tokens": 6135
+        },
+        {
+          "grad_norm_before_clip": 2.568338632583618,
+          "loss": 6.038207054138184,
+          "lr": 0.0018,
+          "step": 6,
+          "tokens": 5997
+        },
+        {
+          "grad_norm_before_clip": 2.6136977672576904,
+          "loss": 5.932069301605225,
+          "lr": 0.0021,
+          "step": 7,
+          "tokens": 6869
+        },
+        {
+          "grad_norm_before_clip": 2.6006901264190674,
+          "loss": 5.834198951721191,
+          "lr": 0.0024000000000000002,
+          "step": 8,
+          "tokens": 4187
+        },
+        {
+          "grad_norm_before_clip": 2.592928409576416,
+          "loss": 5.714818477630615,
+          "lr": 0.0027,
+          "step": 9,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 2.622359275817871,
+          "loss": 5.58375883102417,
+          "lr": 0.003,
+          "step": 10,
+          "tokens": 6237
+        },
+        {
+          "grad_norm_before_clip": 2.582691192626953,
+          "loss": 5.474041938781738,
+          "lr": 0.003,
+          "step": 11,
+          "tokens": 6861
+        },
+        {
+          "grad_norm_before_clip": 2.565086603164673,
+          "loss": 5.349362850189209,
+          "lr": 0.0029849216154039233,
+          "step": 12,
+          "tokens": 6581
+        },
+        {
+          "grad_norm_before_clip": 2.5808374881744385,
+          "loss": 5.232163429260254,
+          "lr": 0.0029400232878112895,
+          "step": 13,
+          "tokens": 6491
+        },
+        {
+          "grad_norm_before_clip": 2.4783008098602295,
+          "loss": 5.181425094604492,
+          "lr": 0.0028663079716682656,
+          "step": 14,
+          "tokens": 6108
+        },
+        {
+          "grad_norm_before_clip": 2.44366192817688,
+          "loss": 5.068687915802002,
+          "lr": 0.0027654223453265933,
+          "step": 15,
+          "tokens": 6187
+        },
+        {
+          "grad_norm_before_clip": 2.4141108989715576,
+          "loss": 4.992219924926758,
+          "lr": 0.0026396200269702655,
+          "step": 16,
+          "tokens": 3934
+        },
+        {
+          "grad_norm_before_clip": 2.3144028186798096,
+          "loss": 4.914546966552734,
+          "lr": 0.0024917112325092907,
+          "step": 17,
+          "tokens": 6875
+        },
+        {
+          "grad_norm_before_clip": 2.218745708465576,
+          "loss": 4.8403496742248535,
+          "lr": 0.0023250000000000002,
+          "step": 18,
+          "tokens": 6499
+        },
+        {
+          "grad_norm_before_clip": 2.1237783432006836,
+          "loss": 4.776473045349121,
+          "lr": 0.002143210382894633,
+          "step": 19,
+          "tokens": 6330
+        },
+        {
+          "grad_norm_before_clip": 1.9616961479187012,
+          "loss": 4.7320170402526855,
+          "lr": 0.0019504032608410242,
+          "step": 20,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 1.8440701961517334,
+          "loss": 4.678842067718506,
+          "lr": 0.0017508856263416727,
+          "step": 21,
+          "tokens": 6169
+        },
+        {
+          "grad_norm_before_clip": 1.6979243755340576,
+          "loss": 4.631514549255371,
+          "lr": 0.0015491143736583275,
+          "step": 22,
+          "tokens": 6233
+        },
+        {
+          "grad_norm_before_clip": 1.4845387935638428,
+          "loss": 4.652045726776123,
+          "lr": 0.0013495967391589758,
+          "step": 23,
+          "tokens": 5960
+        },
+        {
+          "grad_norm_before_clip": 1.3880013227462769,
+          "loss": 4.571977615356445,
+          "lr": 0.0011567896171053669,
+          "step": 24,
+          "tokens": 4333
+        },
+        {
+          "grad_norm_before_clip": 1.1973587274551392,
+          "loss": 4.550122261047363,
+          "lr": 0.0009750000000000004,
+          "step": 25,
+          "tokens": 6272
+        },
+        {
+          "grad_norm_before_clip": 1.0265499353408813,
+          "loss": 4.540219783782959,
+          "lr": 0.0008082887674907099,
+          "step": 26,
+          "tokens": 6350
+        },
+        {
+          "grad_norm_before_clip": 0.8732010722160339,
+          "loss": 4.546667575836182,
+          "lr": 0.0006603799730297345,
+          "step": 27,
+          "tokens": 6311
+        },
+        {
+          "grad_norm_before_clip": 0.7562052011489868,
+          "loss": 4.562891483306885,
+          "lr": 0.0005345776546734068,
+          "step": 28,
+          "tokens": 6328
+        },
+        {
+          "grad_norm_before_clip": 0.6890814900398254,
+          "loss": 4.525386810302734,
+          "lr": 0.00043369202833173437,
+          "step": 29,
+          "tokens": 6305
+        },
+        {
+          "grad_norm_before_clip": 0.6223657131195068,
+          "loss": 4.5090765953063965,
+          "lr": 0.00035997671218871027,
+          "step": 30,
+          "tokens": 6419
+        },
+        {
+          "grad_norm_before_clip": 0.5632659792900085,
+          "loss": 4.5249857902526855,
+          "lr": 0.0003150783845960765,
+          "step": 31,
+          "tokens": 6486
+        },
+        {
+          "grad_norm_before_clip": 0.49429556727409363,
+          "loss": 4.5290117263793945,
+          "lr": 0.00030000000000000003,
+          "step": 32,
+          "tokens": 4209
+        }
+      ],
+      "targets_per_second": 4381.003703582329,
+      "test": {
+        "status": "not evaluated; use explicit --split test after model selection"
+      },
+      "tokenizer": {
+        "sha256": "0db5862fd0e9155b588628062c3823fc0f41ec5c2a49ee6717c8213035e3a77b",
+        "training_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8"
+      },
+      "train": {
+        "bits_per_byte": 1.9944812206925457,
+        "coverage": 1.0,
+        "documents": 320,
+        "eos_nll": 1548.2432653096334,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 48680,
+        "nll_per_byte": 1.3824690348027961,
+        "ppl": 91.04108493637575,
+        "text_bytes": 157734,
+        "text_nll": 218062.37073558426,
+        "token_nll": 4.511310887446465,
+        "top1": 0.32629416598192273,
+        "topk": 0.3768282662284306,
+        "total_nll": 219610.6140008939
+      },
+      "training_seconds": 44.446435834048316,
+      "training_tokens": 194720,
+      "valid": {
+        "bits_per_byte": 3.1791035790202313,
+        "coverage": 1.0,
+        "documents": 80,
+        "eos_nll": 387.0621099500054,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 16136,
+        "nll_per_byte": 2.2035866825059047,
+        "ppl": 192.86924083753294,
+        "text_bytes": 38356,
+        "text_nll": 84520.77079419648,
+        "token_nll": 5.26201245067839,
+        "top1": 0.2513634110064452,
+        "topk": 0.2904065443728309,
+        "total_nll": 84907.8329041465
+      },
+      "variant": "swiglu",
+      "version": "v0.4.5",
+      "vocab_size": 768
+    },
+    {
+      "best_epoch": 4,
+      "checkpoint": "training_state.pt: full resume; model.pt: best validation inference",
+      "checkpoint_sha256": "efea1ad44e5183d5aa8bc61af96fbbd5241a6c839e2fe385120b75e44cc78734",
+      "comparison": "New held-out topic/template splits; do not rank against v0.4.0 old validation.",
+      "config": {
+        "batch_size": 128,
+        "block_size": 64,
+        "corpus_dir": "data/pretrain/v0.4.1",
+        "device": "cpu",
+        "dropout": 0.1,
+        "embed": 64,
+        "epochs": 4,
+        "ffn_hidden": 256,
+        "grad_clip": 1.0,
+        "heads": 4,
+        "kv_heads": 2,
+        "layers": 4,
+        "lr": 0.003,
+        "max_steps": null,
+        "output_dir": "temporary candidate directory",
+        "patience": 0,
+        "resume": null,
+        "seed": 1234,
+        "threads": 4,
+        "untied": false,
+        "variant": "gqa",
+        "vocab_size": 768,
+        "warmup_steps": 10,
+        "weight_decay": 0.01
+      },
+      "corpus_manifest_sha256": "7b2d71de7bcfd329e6a50b3be0cc6163f76c07ab54706605a942d07066754e72",
+      "data": {
+        "test": {
+          "documents": 80,
+          "documents_hash": "71c29ee5dc49251e640fc766835a7a06b19241816e91957965ad104060880713",
+          "file": "test.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "9a3f4750f511cf87bcc0ab5211db031380b1432382820e588df690f522ff8e04",
+          "templates": [
+            "market-journal-v1",
+            "running-journal-v1"
+          ],
+          "text_bytes": 39416,
+          "topics": [
+            "market",
+            "running"
+          ]
+        },
+        "train": {
+          "documents": 320,
+          "documents_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8",
+          "file": "train.jsonl",
+          "groups": 8,
+          "multiline_documents": 320,
+          "sha256": "f6083a5ed03c8bfa889ba27ccf471be1013859a87e834506b4d23a3adf000bc9",
+          "templates": [
+            "astronomy-journal-v1",
+            "cooking-journal-v1",
+            "museum-journal-v1",
+            "music-journal-v1",
+            "river-journal-v1",
+            "sewing-journal-v1",
+            "weather-journal-v1",
+            "woodwork-journal-v1"
+          ],
+          "text_bytes": 157734,
+          "topics": [
+            "astronomy",
+            "cooking",
+            "museum",
+            "music",
+            "river",
+            "sewing",
+            "weather",
+            "woodwork"
+          ]
+        },
+        "valid": {
+          "documents": 80,
+          "documents_hash": "ba476e90cfc3b6fd996d25f9cdb9ddbd703366a7d4ade52a7dfc2b8535435852",
+          "file": "valid.jsonl",
+          "groups": 2,
+          "multiline_documents": 80,
+          "sha256": "b8ffa5bd3068cf3df392cf72e1b77bd3c40e645b9698b343f853de11b3d99f81",
+          "templates": [
+            "garden-journal-v1",
+            "library-journal-v1"
+          ],
+          "text_bytes": 38356,
+          "topics": [
+            "garden",
+            "library"
+          ]
+        }
+      },
+      "elapsed_seconds": 69.91299125005025,
+      "environment": {
+        "device": "cpu",
+        "python": "3.12.14",
+        "torch": "2.13.0"
+      },
+      "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 6.221214756293677,
+          "valid_ppl": 388.87822276402653
+        },
+        {
+          "epoch": 2,
+          "train_loss": 5.343201521702643,
+          "valid_ppl": 226.57515253505161
+        },
+        {
+          "epoch": 3,
+          "train_loss": 4.705175956988198,
+          "valid_ppl": 187.19545074082265
+        },
+        {
+          "epoch": 4,
+          "train_loss": 4.389941516085149,
+          "valid_ppl": 168.68675378941026
+        }
+      ],
+      "invocation_training_tokens": 194720,
+      "packing": {
+        "capacity_tokens": 62592,
+        "capacity_utilization": 0.7777351738241309,
+        "cross_chunk_attention": false,
+        "cross_document_attention": false,
+        "documents": 320,
+        "evaluation_context": "unchanged v0.4.0 sliding window; training context differs",
+        "long_documents": 320,
+        "packed_input_tokens": 48680,
+        "packs": 978,
+        "policy": "document-chunks-isolated-attention-reset-positions-v1",
+        "position_policy": "reset to zero at each document chunk",
+        "sliding_input_tokens": 1825280,
+        "sliding_rows": 28520,
+        "targets": 48680
+      },
+      "params": 236672,
+      "peak_process_rss_bytes": 1449607168,
+      "split_policy": {
+        "group_by": [
+          "topic",
+          "template_id"
+        ],
+        "groups": 12,
+        "method": "seeded shuffle of connected components; ratios are groups, not documents",
+        "requested_test_group_fraction": 0.15,
+        "requested_valid_group_fraction": 0.15
+      },
+      "steps": [
+        {
+          "grad_norm_before_clip": 3.73547625541687,
+          "loss": 6.648717880249023,
+          "lr": 0.00030000000000000003,
+          "step": 1,
+          "tokens": 6712
+        },
+        {
+          "grad_norm_before_clip": 3.707258939743042,
+          "loss": 6.523072719573975,
+          "lr": 0.0006000000000000001,
+          "step": 2,
+          "tokens": 6229
+        },
+        {
+          "grad_norm_before_clip": 2.8353495597839355,
+          "loss": 6.320894241333008,
+          "lr": 0.0009,
+          "step": 3,
+          "tokens": 6461
+        },
+        {
+          "grad_norm_before_clip": 2.5796799659729004,
+          "loss": 6.195117473602295,
+          "lr": 0.0012000000000000001,
+          "step": 4,
+          "tokens": 6090
+        },
+        {
+          "grad_norm_before_clip": 2.571348190307617,
+          "loss": 6.120166778564453,
+          "lr": 0.0015,
+          "step": 5,
+          "tokens": 6135
+        },
+        {
+          "grad_norm_before_clip": 2.5913867950439453,
+          "loss": 6.041491985321045,
+          "lr": 0.0018,
+          "step": 6,
+          "tokens": 5997
+        },
+        {
+          "grad_norm_before_clip": 2.627898693084717,
+          "loss": 5.938882350921631,
+          "lr": 0.0021,
+          "step": 7,
+          "tokens": 6869
+        },
+        {
+          "grad_norm_before_clip": 2.6090307235717773,
+          "loss": 5.839628219604492,
+          "lr": 0.0024000000000000002,
+          "step": 8,
+          "tokens": 4187
+        },
+        {
+          "grad_norm_before_clip": 2.598634719848633,
+          "loss": 5.718875408172607,
+          "lr": 0.0027,
+          "step": 9,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 2.6262013912200928,
+          "loss": 5.586177349090576,
+          "lr": 0.003,
+          "step": 10,
+          "tokens": 6237
+        },
+        {
+          "grad_norm_before_clip": 2.5852010250091553,
+          "loss": 5.478239059448242,
+          "lr": 0.003,
+          "step": 11,
+          "tokens": 6861
+        },
+        {
+          "grad_norm_before_clip": 2.5650370121002197,
+          "loss": 5.3513665199279785,
+          "lr": 0.0029849216154039233,
+          "step": 12,
+          "tokens": 6581
+        },
+        {
+          "grad_norm_before_clip": 2.57767653465271,
+          "loss": 5.231472015380859,
+          "lr": 0.0029400232878112895,
+          "step": 13,
+          "tokens": 6491
+        },
+        {
+          "grad_norm_before_clip": 2.471630573272705,
+          "loss": 5.179115295410156,
+          "lr": 0.0028663079716682656,
+          "step": 14,
+          "tokens": 6108
+        },
+        {
+          "grad_norm_before_clip": 2.4326417446136475,
+          "loss": 5.064413547515869,
+          "lr": 0.0027654223453265933,
+          "step": 15,
+          "tokens": 6187
+        },
+        {
+          "grad_norm_before_clip": 2.3983383178710938,
+          "loss": 4.9865827560424805,
+          "lr": 0.0026396200269702655,
+          "step": 16,
+          "tokens": 3934
+        },
+        {
+          "grad_norm_before_clip": 2.290888786315918,
+          "loss": 4.9045257568359375,
+          "lr": 0.0024917112325092907,
+          "step": 17,
+          "tokens": 6875
+        },
+        {
+          "grad_norm_before_clip": 2.1870205402374268,
+          "loss": 4.826561450958252,
+          "lr": 0.0023250000000000002,
+          "step": 18,
+          "tokens": 6499
+        },
+        {
+          "grad_norm_before_clip": 2.083371877670288,
+          "loss": 4.75829553604126,
+          "lr": 0.002143210382894633,
+          "step": 19,
+          "tokens": 6330
+        },
+        {
+          "grad_norm_before_clip": 1.9136494398117065,
+          "loss": 4.70999813079834,
+          "lr": 0.0019504032608410242,
+          "step": 20,
+          "tokens": 6281
+        },
+        {
+          "grad_norm_before_clip": 1.801058292388916,
+          "loss": 4.6506876945495605,
+          "lr": 0.0017508856263416727,
+          "step": 21,
+          "tokens": 6169
+        },
+        {
+          "grad_norm_before_clip": 1.680578589439392,
+          "loss": 4.594856262207031,
+          "lr": 0.0015491143736583275,
+          "step": 22,
+          "tokens": 6233
+        },
+        {
+          "grad_norm_before_clip": 1.5347362756729126,
+          "loss": 4.601742267608643,
+          "lr": 0.0013495967391589758,
+          "step": 23,
+          "tokens": 5960
+        },
+        {
+          "grad_norm_before_clip": 1.7268035411834717,
+          "loss": 4.500762462615967,
+          "lr": 0.0011567896171053669,
+          "step": 24,
+          "tokens": 4333
+        },
+        {
+          "grad_norm_before_clip": 1.4467240571975708,
+          "loss": 4.458127021789551,
+          "lr": 0.0009750000000000004,
+          "step": 25,
+          "tokens": 6272
+        },
+        {
+          "grad_norm_before_clip": 1.3968615531921387,
+          "loss": 4.427676677703857,
+          "lr": 0.0008082887674907099,
+          "step": 26,
+          "tokens": 6350
+        },
+        {
+          "grad_norm_before_clip": 1.3519922494888306,
+          "loss": 4.419246196746826,
+          "lr": 0.0006603799730297345,
+          "step": 27,
+          "tokens": 6311
+        },
+        {
+          "grad_norm_before_clip": 1.3364063501358032,
+          "loss": 4.4115400314331055,
+          "lr": 0.0005345776546734068,
+          "step": 28,
+          "tokens": 6328
+        },
+        {
+          "grad_norm_before_clip": 1.361483097076416,
+          "loss": 4.36403226852417,
+          "lr": 0.00043369202833173437,
+          "step": 29,
+          "tokens": 6305
+        },
+        {
+          "grad_norm_before_clip": 1.3812352418899536,
+          "loss": 4.337467193603516,
+          "lr": 0.00035997671218871027,
+          "step": 30,
+          "tokens": 6419
+        },
+        {
+          "grad_norm_before_clip": 1.2816247940063477,
+          "loss": 4.34389066696167,
+          "lr": 0.0003150783845960765,
+          "step": 31,
+          "tokens": 6486
+        },
+        {
+          "grad_norm_before_clip": 1.2005971670150757,
+          "loss": 4.3447957038879395,
+          "lr": 0.00030000000000000003,
+          "step": 32,
+          "tokens": 4209
+        }
+      ],
+      "targets_per_second": 4851.327770286044,
+      "test": {
+        "status": "not evaluated; use explicit --split test after model selection"
+      },
+      "tokenizer": {
+        "sha256": "0db5862fd0e9155b588628062c3823fc0f41ec5c2a49ee6717c8213035e3a77b",
+        "training_hash": "bdce0a7375d3460f3f4b96c4fb0d8ad72d1b97752beca6656da404e2a74c66d8"
+      },
+      "train": {
+        "bits_per_byte": 1.9010003207038766,
+        "coverage": 1.0,
+        "documents": 320,
+        "eos_nll": 1516.233044940554,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 48680,
+        "nll_per_byte": 1.3176730125394438,
+        "ppl": 73.7513895029809,
+        "text_bytes": 157734,
+        "text_nll": 207841.83495989663,
+        "token_nll": 4.30069983576083,
+        "top1": 0.32629416598192273,
+        "topk": 0.3878594905505341,
+        "total_nll": 209358.0680048372
+      },
+      "training_seconds": 40.1374652920058,
+      "training_tokens": 194720,
+      "valid": {
+        "bits_per_byte": 3.0980721968015072,
+        "coverage": 1.0,
+        "documents": 80,
+        "eos_nll": 379.6675442119032,
+        "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+        "k": 5,
+        "n": 16136,
+        "nll_per_byte": 2.147420008384121,
+        "ppl": 168.68675378941026,
+        "text_bytes": 38356,
+        "text_nll": 82366.44184158134,
+        "token_nll": 5.128043467141379,
+        "top1": 0.2513634110064452,
+        "topk": 0.29846306395637084,
+        "total_nll": 82746.10938579329
+      },
+      "variant": "gqa",
+      "version": "v0.4.5",
+      "vocab_size": 768
+    }
+  ],
+  "selected_checkpoint_sha256": "7a614ac2c4d8bba243b0c54f7afbb9ba3f60a9715135c4f6ce63fea3691bbdb8",
+  "selected_variant": "rope",
+  "selection": "Lowest validation NLL/byte, ties by parameter count then variant name. Never test.",
+  "variants": [
+    "baseline",
+    "rope",
+    "rmsnorm",
+    "swiglu",
+    "gqa"
+  ],
+  "version": "v0.4.5"
+}

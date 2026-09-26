@@ -1,0 +1,55 @@
+{
+  "accuracy": 0.5,
+  "cases": [
+    {
+      "context": 64,
+      "correct": true,
+      "log_probabilities": {
+        "노랑": -41.188081435731576,
+        "파랑": -40.15129036211196
+      },
+      "prediction": "파랑",
+      "prefix_tokens": 51,
+      "prompt": "비밀 색: 파랑. 바람. 바람. 바람. 바람. 바람. 바람. 비밀 색:",
+      "target": "파랑"
+    },
+    {
+      "context": 64,
+      "correct": false,
+      "log_probabilities": {
+        "노랑": -41.2231169875227,
+        "파랑": -40.17746928183726
+      },
+      "prediction": "파랑",
+      "prefix_tokens": 51,
+      "prompt": "비밀 색: 노랑. 바람. 바람. 바람. 바람. 바람. 바람. 비밀 색:",
+      "target": "노랑"
+    },
+    {
+      "context": 64,
+      "correct": true,
+      "log_probabilities": {
+        "노랑": -41.42905412265672,
+        "파랑": -40.05880850430741
+      },
+      "prediction": "파랑",
+      "prefix_tokens": 101,
+      "prompt": "비밀 색: 파랑. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 비밀 색:",
+      "target": "파랑"
+    },
+    {
+      "context": 64,
+      "correct": false,
+      "log_probabilities": {
+        "노랑": -41.42905412265672,
+        "파랑": -40.05880850430741
+      },
+      "prediction": "파랑",
+      "prefix_tokens": 101,
+      "prompt": "비밀 색: 노랑. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 바람. 비밀 색:",
+      "target": "노랑"
+    }
+  ],
+  "checkpoint_sha256": "0f36d59b7e698ec1fe5cbcfc0d6fd7740f7ffcf6cb20bb1dfb7a35567359100b",
+  "protocol": "Frozen-model balanced color recall, full answer conditional log probability; 4 authored synthetic probes, no training or model selection; chance 50%. Long prefixes intentionally put the clue outside the context window."
+}

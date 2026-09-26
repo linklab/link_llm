@@ -262,6 +262,10 @@ def collect(versions, train_sentences, valid_sentences, prompts, quick):
             skipped.append((version, "평가 함수 없음 (퍼플렉서티는 v0.0.9 부터)"))
             continue
 
+        if getattr(lm, "EVALUATION_CONTRACT", None) is not None:
+            skipped.append((version, "별도 토크나이저/평가 계약: 버전별 2.test/test.py의 토큰 PPL·바이트 NLL을 사용하세요"))
+            continue
+
         known = known_vocab(lm, train_sentences)
         ppl_tr, _, _ = perplexities(lm, train_sentences, known)
         ppl_va, ppl_inv, n_oov = perplexities(lm, valid_sentences, known)
@@ -282,7 +286,9 @@ def collect(versions, train_sentences, valid_sentences, prompts, quick):
 
 def report(rows, skipped, train_sentences, valid_sentences, quick):
     if not rows:
-        print("\n비교할 모델이 없어요. 먼저 각 버전의 1.train/train.py 를 실행해 주세요.")
+        print("\n현재 평가 기준으로 비교할 모델이 없어요.")
+        for version, why in skipped:
+            print(f"   - {version}: {why}")
         return
 
     n_scored = rows[0]["acc"]["n"]

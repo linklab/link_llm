@@ -2,14 +2,17 @@
 
 언어 모델(LLM)을 From Scratch 로, 버전별로 관리하고 웹앱에서 테스트하는 프로젝트입니다.
 
-**최신 구현: [v0.3.5 — 공정 비교 캡스톤](llm/v0.3/v0.3.5/README.md).**
-[v0.3.4](llm/v0.3/v0.3.4/README.md)의 미니 GPT를 기반으로 공통 채점·신규성별 평가·후보 재학습 보고서를 추가했습니다.
-각 버전 학습 모델이 있으면 웹앱에서 선택할 수 있으며, v0.3.5는 카운트·MLP·GPT의 동일 문맥/후보 내 최선 성능을 비교합니다.
+**최신 구현: [v0.4.0 — 바이트 BPE·평가 계약](llm/v0.4/v0.4.0/README.md).**
+학습 split으로 바이트 BPE를 만들고 BOS/EOS·특수 토큰·바이트당 NLL 평가를 추가했습니다. 이전 토큰 PPL과 직접 비교하지 않습니다.
+[Notion v0.4 상세 문서](https://app.notion.com/p/3e7860a93eae814e9c9af8976cf54a1e)에서도 구현·평가 계약·검증 결과를 확인할 수 있습니다.
+각 버전 학습 모델이 있으면 웹앱에서 선택할 수 있습니다. v0.3.5의 공정 비교 보고서는 해당 버전 폴더에서 확인할 수 있습니다.
+
+**2026-09-26 검증:** v0.4.0 테스트 12개와 v0.3.4 회귀 테스트 16개 통과, 4,000개 문서 원문 복원 및 BPE 재학습 일치 확인. 저장 모델의 검증 PPL **1.747033**, 원문 NLL/byte **0.167113**, bits/byte **0.241093**을 보고서와 동일하게 재현했습니다. 동일 문서의 마지막 줄바꿈 차이를 놓치는 중복 검사와 웹 입력 공백 제거·빈 입력 거부는 **미해결 P2 2건**입니다. [검증 범위와 보완 사항](llm/v0.4/v0.4.0/README.md#구현-검증-2026-09-26)을 확인하세요.
 
 ```bash
-python llm/v0.3/v0.3.5/2.test/test_invariants.py
-python llm/v0.3/v0.3.5/1.train/train.py
-python llm/v0.3/v0.3.5/2.test/test.py
+python llm/v0.4/v0.4.0/2.test/test_invariants.py
+python llm/v0.4/v0.4.0/1.train/train.py
+python llm/v0.4/v0.4.0/2.test/test.py
 ```
 
 ## 폴더 구조
@@ -17,7 +20,7 @@ python llm/v0.3/v0.3.5/2.test/test.py
 버전들은 **마이너별 그룹 폴더**(`v0.0`, `v0.1` …) 아래에, 그 안에 각 패치 버전이 들어 있어요.
 
 > 🧭 **데이터는 2단계(실제 LLM 파이프라인과 동일).** 언어 능력은 **산문 사전학습**에서, 대화 능력은 **대화 SFT**에서 옵니다.
-> - **사전학습(Pretraining)** — `data/pretrain/{train,valid}.txt` (설명문·이야기·시·상식 **산문**). **현재 v0.0~v0.2가 이걸로 학습**해 '다음 토큰 예측'으로 언어를 익혀요.
+> - **사전학습(Pretraining)** — `data/pretrain/{train,valid}.txt` (설명문·이야기·시·상식 **산문**). **현재 v0.0~v0.4.0이 이걸로 학습**해 '다음 토큰 예측'으로 언어를 익혀요.
 > - **지시학습(SFT)** — `data/sft/{train,valid}.txt` (`<사용자>…<봇>…` **대화**). **v0.5(SFT)** 에서 '어시스턴트 말투'를 입힐 때 사용해요.
 >
 > 두 코퍼스는 **같은 어휘/개체**(사과·강아지·도서관 …)를 공유하도록 `data/lexicon.py` 한 곳에서 정의 —
@@ -29,7 +32,7 @@ link_llm/
 ├── data/                   # ★ 공용 데이터 (아래 구조)
 │   ├── lexicon.py          #   공유 어휘·속성 사전 (두 생성기가 함께 사용)
 │   ├── dataloader.py       #   PyTorch Dataset/DataLoader (신경망 버전 공용)
-│   ├── pretrain/           #   [사전학습] 산문: generate.py + train.txt · valid.txt  ← v0.0~v0.2가 사용
+│   ├── pretrain/           #   [사전학습] 산문: generate.py + train.txt · valid.txt  ← v0.0~v0.4.0이 사용
 │   └── sft/                #   [지시학습] 대화: generate.py + train.txt · valid.txt  ← v0.5(SFT)에서 사용
 ├── llm/                    # 모델 버전들을 모아두는 곳
 │   ├── v0.0/               # [개수 세기 시대] 마이너 그룹
@@ -52,13 +55,25 @@ link_llm/
 │   │   ├── v0.1.3/         #   - 정규화·초기화 (weight decay, init, label smoothing)
 │   │   ├── v0.1.4/         #   - 2토큰 문맥 신경망 (카운트와 같은 문맥으로 공정한 대결)
 │   │   └── v0.1.5/         #   - 기준선 대결(캡스톤): 카운트 vs 신경망 PPL 비교
-│   └── v0.2/               # [임베딩 시대] one-hot → 임베딩 (마이너 그룹)
-│       ├── v0.2.0/         #   - 임베딩 도입 (nn.Embedding, Bengio 입력층)
-│       ├── v0.2.1/         #   - 문맥 확장 (block_size, 앞 N토큰 임베딩 concat)
-│       ├── v0.2.2/         #   - 초기화·정규화 (Kaiming init·BatchNorm 토글·weight decay·조기종료)
-│       ├── v0.2.3/         #   - 일반화·튜닝 (dropout·weight tying·LR 스케줄 + sweep.py)
-│       ├── v0.2.4/         #   - 임베딩 시각화 (PCA·t-SNE·최근접이웃, SVG 직접 생성)
-│       └── v0.2.5/         #   - 3자 비교(캡스톤): 검증 자리를 '처음 보는가'로 나눠서 재기
+│   ├── v0.2/               # [임베딩 시대] one-hot → 임베딩 (마이너 그룹)
+│   │   ├── v0.2.0/         #   - 임베딩 도입 (nn.Embedding, Bengio 입력층)
+│   │   ├── v0.2.1/         #   - 문맥 확장 (block_size, 앞 N토큰 임베딩 concat)
+│   │   ├── v0.2.2/         #   - 초기화·정규화 (Kaiming init·BatchNorm 토글·weight decay·조기종료)
+│   │   ├── v0.2.3/         #   - 일반화·튜닝 (dropout·weight tying·LR 스케줄 + sweep.py)
+│   │   ├── v0.2.4/         #   - 임베딩 시각화 (PCA·t-SNE·최근접이웃, SVG 직접 생성)
+│   │   └── v0.2.5/         #   - 3자 비교(캡스톤): 검증 자리를 '처음 보는가'로 나눠서 재기
+│   ├── v0.3/               # [트랜스포머 시대] 시퀀스 학습 → 다층 GPT → 공정 비교
+│   │   ├── v0.3.0/         #   - 단일 헤드·인과 마스크·시퀀스 학습
+│   │   ├── v0.3.1/         #   - 멀티헤드 어텐션
+│   │   ├── v0.3.2/         #   - 위치 임베딩
+│   │   ├── v0.3.3/         #   - Pre-LN·residual·FFN
+│   │   ├── v0.3.4/         #   - 다층 미니 GPT
+│   │   └── v0.3.5/         #   - 카운트·MLP·GPT 공정 비교 캡스톤
+│   └── v0.4/               # [데이터·BPE·사전학습]
+│       └── v0.4.0/         #   - 바이트 BPE·BOS/EOS·원문 바이트 NLL
+│           ├── 0.model/   #     lm.py·tokenizer.py·설정·학습 보고서·추론 체크포인트
+│           ├── 1.train/   #     train.py (train-only BPE 학습 포함)
+│           └── 2.test/    #     test.py·test_invariants.py
 ├── web_service/            # ChatGPT 스타일 웹앱 (선택한 버전의 lm.py 를 불러와 재사용)
 │   ├── server.py
 │   └── index.html
@@ -69,7 +84,7 @@ link_llm/
 
 > 상속·로딩은 그룹을 자동으로 찾아가요: 각 `lm.py` 의 `_load_prev` 는 이전 버전 이름
 > (예: `v0.0.9`)에서 그룹(`v0.0`)을 계산해 `llm/v0.0/v0.0.9/…` 경로로 불러오고,
-> `web_service` 도 `llm/<그룹>/<버전>/0.model/model.json` 을 훑어 버전을 찾습니다.
+> `web_service` 도 `llm/<그룹>/<버전>/0.model/`의 `model.json` 또는 `model.pt`를 찾아 버전을 표시합니다.
 
 ## 코드 구조 (버전별 0.model/lm.py + 상속 사슬)
 
@@ -99,6 +114,7 @@ v0.0.9/0.model/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 
 - **각 버전 `0.model/lm.py`** — `NGramLM`(그 버전이 새로 추가/변경한 함수) + `Model`(설정 `ORDERS`).
   → "이 버전이 뭘 더했나"가 한눈에.
+- 아래 손실 곡선·조기종료·장치 설명은 초기 MLP 버전 기준입니다. v0.4.0은 검증 PPL만으로 patience 5를 적용하고, `training_report.json`에 이력을 남깁니다. `--device auto`는 CUDA→MPS→CPU 순으로 선택하며, 문서의 실측은 `--device cpu` 기준입니다.
 - **`1.train/train.py`·`2.test/test.py`** — `0.model/lm.py` 를 불러와 실행하는 **얇은 껍데기**.
   → 신경망(v0.1.0~) 은 학습이 끝나면 에폭별 손실 곡선을 `1.train/loss.svg` 에 남겨요
     (matplotlib 없이 SVG 를 직접 그립니다 — 의존성은 torch 하나 그대로).
@@ -118,7 +134,7 @@ v0.0.9/0.model/lm.py  + token_prob()/perplexity()    ← 퍼플렉서티 평가
 > 모델 저장 형식은 개수 세기(v0.0.x) 버전은 `{ "max_order", "tokenizer", "tables" }` 를 담은
 > `model.json` 하나예요. 신경망(v0.1.x~) 버전은 **PyTorch 표준**으로 나눠 저장해요 —
 > 가중치는 `model.pt`(`torch.save(net.state_dict())`), 어휘는 `vocab.json`(`{tokenizer, vocab}`).
-> 불러올 때 저장된 가중치 모양에서 은닉 크기를 복원해 신경망을 다시 만들고 `load_state_dict` 로 채웁니다.
+> 위 신경망 저장 설명은 초기 MLP 버전 기준입니다. v0.3 계열은 `model.pt`에 가중치와 모델 설정·어휘를 함께 저장합니다. v0.4.0은 BPE 병합 규칙과 평가 계약도 포함하므로 `model.pt`만으로 추론 정보를 복원합니다. 사람이 읽는 `tokenizer.json`·`config.json`·`vocab.json`도 저장하지만 optimizer/RNG를 포함한 학습 재개 체크포인트는 아닙니다.
 
 ## 클래스 이름은 왜 `NGramLM` 인가요?
 
@@ -386,7 +402,7 @@ N 을 늘리면 `fc1` 의 입력 폭(N·E)이 커져 파라미터도 함께 늘�
 
 ## 🗺️ 앞으로의 계획 (로드맵)
 
-**현재 위치: v0.3.5 공정 비교 캡스톤 구현 완료 ✅.** 세부 사용법과 검증은 [v0.3.5 README](llm/v0.3/v0.3.5/README.md)에 있습니다.
+**현재 위치: v0.4.0 핵심 구현·지표 재현 확인 ✅, P2 보완 2건 미해결.** 세부 사용법과 검증은 [v0.4.0 README](llm/v0.4/v0.4.0/README.md)에 있습니다.
 
 > **핵심 원칙 — 외부 사용법은 유지하고 내부 계약은 확장합니다.** v0.3.0은
 > 토크나이저·대화 형식과 `generate`·`perplexity` API를 유지하면서, 신경망 출력과
@@ -396,13 +412,13 @@ N 을 늘리면 `fc1` 의 입력 폭(N·E)이 커져 파라미터도 함께 늘�
 > `web_service` 가 수정 없이 로드하고, **학습 → 생성 → PPL 측정**까지 한 버전 안에서 완결돼요.
 > (각 마이너의 마지막은 여러 모델을 나란히 비교하는 **캡스톤**입니다.)
 
-### v0.2.x — 완료 ✅
+### v0.2~v0.4.0 — 현재 구현 범위
 
-위치 임베딩(v0.3.2)과 단일 Transformer 블록(v0.3.3)을 구현했습니다. 다층 미니 GPT(v0.3.4)도 구현했습니다. v0.3.5 공정 비교 캡스톤도 구현했습니다. 다음은 **v0.4.0 — BPE·평가 계약**입니다.
+위치 임베딩(v0.3.2)과 단일 Transformer 블록(v0.3.3)을 구현했습니다. 다층 미니 GPT(v0.3.4)도 구현했습니다. v0.3.5 공정 비교 캡스톤도 구현했습니다. v0.4.0 바이트 BPE·평가 계약도 구현했습니다. 다음은 **v0.4.1 — 코퍼스·문서 패킹**입니다.
 
 | 다음 | 한 걸음 | 왜 |
 |---|---|---|
-| v0.4.0 | BPE·평가 계약 | 서브워드 토크나이저와 새 채점 기준 |
+| v0.4.1 | 코퍼스·문서 패킹 | 출처·중복·문서 경계와 분할 |
 
 ### 최종 목표 — ChatGPT(InstructGPT/GPT-3.5 계열)급 정렬 어시스턴트
 
@@ -431,12 +447,13 @@ N 을 늘리면 `fc1` 의 입력 폭(N·E)이 커져 파라미터도 함께 늘�
 
 | 버전 | 한 걸음 | 핵심 |
 |---|---|---|
-| v0.4.0 | **BPE 서브워드 토크나이저** | 단어→서브워드 · **특수/EOS 토큰**(`<\|endoftext\|>`·역할) |
-| v0.4.1 | 학습 안정화 | AdamW·warmup·cosine LR·grad clip·dropout |
-| v0.4.2 | 문맥 확장 + weight tying | block_size↑, 입출력 임베딩 공유 |
-| v0.4.3 | **문서형 코퍼스·EOS 패킹** + 큰 코퍼스 사전학습 + **KV 캐시** | 짧은 독립 문장 → **문장 간·문단 간 연결된 긴 문서**로. 문서를 이어 붙이고 `<\|endoftext\|>`(EOS)로 경계를 표시해 문맥창 단위로 패킹 → **담화·장거리 의존**을 학습(넓은 문맥창이 생긴 v0.3부터 의미). 데이터↑, 생성 가속 |
-| v0.4.4 | **현대 아키텍처** | RoPE·RMSNorm·SwiGLU·GQA (LLaMA/GPT-3.5+ 계열) |
-| v0.4.5 | 캡스톤: **GPT base 모델** | "다음 토큰 생성기" 완성 |
+| [v0.4.0](llm/v0.4/v0.4.0/README.md) ✅ 핵심 검증 | 바이트 BPE·평가 계약 | train-only BPE · BOS/EOS/PAD/역할 예약 · 원문 바이트 NLL · P2 보완 2건 미해결 |
+| v0.4.1 | 코퍼스·문서 패킹 | 출처·중복 제거·문서/템플릿별 분할·EOS 패킹 정책 |
+| v0.4.2 | 학습 안정화·재개 | AdamW·warmup·cosine·grad clip·optimizer/RNG/config 저장 |
+| v0.4.3 | 문맥·규모 확장 | 문맥·층/폭·학습 토큰 확장·weight tying·장비별 비용 측정 |
+| v0.4.4 | KV 캐시 | 캐시 유무 logits 일치·생성 가속·세션 격리 |
+| v0.4.5 | 현대 구조 비교 (선택 심화) | RoPE·RMSNorm·SwiGLU·GQA를 한 번에 하나씩 대조 |
+| v0.4.6 | GPT base 캡스톤 | 고정 모델·토크나이저·학습량·독립 테스트·재현 자료 |
 
 #### v0.5.x — 지시학습 (SFT) · *정렬 1단계*
 

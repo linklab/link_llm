@@ -1,0 +1,223 @@
+{
+  "version": "v0.4.0",
+  "config": {
+    "epochs": 30,
+    "vocab_size": 768,
+    "layers": 4,
+    "heads": 4,
+    "ffn_hidden": 256,
+    "dropout": 0.1,
+    "embed": 64,
+    "block_size": 32,
+    "batch_size": 128,
+    "lr": 0.003,
+    "patience": 5,
+    "seed": 1234,
+    "threads": 4,
+    "device": "cpu",
+    "train": "data/pretrain/train.txt",
+    "valid": "data/pretrain/valid.txt",
+    "output_dir": "llm/v0.4/v0.4.0/0.model"
+  },
+  "device": "cpu",
+  "python": "3.12.14",
+  "torch": "2.13.0",
+  "data": {
+    "train": {
+      "sentences": 3600,
+      "sha256": "eae94c794849989af81665a4fb6697a13e68bbf418b21f5986ce39a2ac7c57e8"
+    },
+    "valid": {
+      "sentences": 400,
+      "sha256": "84ba88a95b84de28633772f443f017b6c1d2d767d8e438f7fd3e86b69dc096f5"
+    }
+  },
+  "params": 300160,
+  "vocab_size": 768,
+  "best_epoch": 21,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.865821657315613,
+      "valid_ppl": 4.684405272649595
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.0970203543000705,
+      "valid_ppl": 2.3281802475294513
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.7846240570973247,
+      "valid_ppl": 2.0590317768957065
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.6852112411936744,
+      "valid_ppl": 1.9246397101428263
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.6328042659575431,
+      "valid_ppl": 1.8397845086101468
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.605546740983947,
+      "valid_ppl": 1.8347916757101852
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.5831211776962785,
+      "valid_ppl": 1.7817523865004807
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.5687578742474796,
+      "valid_ppl": 1.7850231362432054
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.5601978206829408,
+      "valid_ppl": 1.8030789541148808
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.5477057793327661,
+      "valid_ppl": 1.7833304204359406
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.539749106922504,
+      "valid_ppl": 1.762611002677821
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.5303705209820957,
+      "valid_ppl": 1.7865657530557362
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.5265906293116235,
+      "valid_ppl": 1.765431755958408
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.5220039141367169,
+      "valid_ppl": 1.7528000017983751
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.5154759658969953,
+      "valid_ppl": 1.7559371300748896
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.5076181988628383,
+      "valid_ppl": 1.7480851899325458
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.5048939469945602,
+      "valid_ppl": 1.7618005005276074
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.5019534572677945,
+      "valid_ppl": 1.7615647797549572
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.4990063412018341,
+      "valid_ppl": 1.7600651335388762
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.49315249749357565,
+      "valid_ppl": 1.7589686216991978
+    },
+    {
+      "epoch": 21,
+      "train_loss": 0.49104604095863913,
+      "valid_ppl": 1.7470331711313876
+    },
+    {
+      "epoch": 22,
+      "train_loss": 0.4867619945247778,
+      "valid_ppl": 1.750531107963826
+    },
+    {
+      "epoch": 23,
+      "train_loss": 0.4840705784328963,
+      "valid_ppl": 1.7684613955204607
+    },
+    {
+      "epoch": 24,
+      "train_loss": 0.48420470837839125,
+      "valid_ppl": 1.7733994063848202
+    },
+    {
+      "epoch": 25,
+      "train_loss": 0.4746919432306246,
+      "valid_ppl": 1.7803936686318533
+    },
+    {
+      "epoch": 26,
+      "train_loss": 0.4742263226411806,
+      "valid_ppl": 1.7809233159679632
+    }
+  ],
+  "train": {
+    "ppl": 1.5741872642130041,
+    "token_nll": 0.4537391163701497,
+    "total_nll": 80460.6500276859,
+    "text_nll": 80457.61614665453,
+    "eos_nll": 3.0338810314430407,
+    "n": 177328,
+    "top1": 0.8627007579175313,
+    "topk": 0.9246311919155463,
+    "coverage": 1.0,
+    "k": 5,
+    "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+    "text_bytes": 594904,
+    "documents": 3600,
+    "nll_per_byte": 0.13524470527455612,
+    "bits_per_byte": 0.19511686560609157
+  },
+  "valid": {
+    "ppl": 1.7470331711313876,
+    "token_nll": 0.5579190184538505,
+    "total_nll": 11006.626396057563,
+    "text_nll": 11002.722289316946,
+    "eos_nll": 3.904106740622432,
+    "n": 19728,
+    "top1": 0.8497566909975669,
+    "topk": 0.9129156528791565,
+    "coverage": 1.0,
+    "k": 5,
+    "evaluation_contract": "byte-bpe-bos-eos-raw-nll-v1",
+    "text_bytes": 65840,
+    "documents": 400,
+    "nll_per_byte": 0.16711303598598035,
+    "bits_per_byte": 0.24109314828487274
+  },
+  "elapsed_seconds": 1315.059376875055,
+  "evaluation": {
+    "contract": "byte-bpe-bos-eos-raw-nll-v1",
+    "text": "LF-separated UTF-8 documents; LF separators excluded; no strip/normalization",
+    "token_ppl": "all text tokens plus EOS, conditioned on BOS; no probability floor",
+    "nll_per_byte": "text-token NLL / original UTF-8 bytes; EOS excluded",
+    "comparison": "not directly comparable to punct+josa PPL"
+  },
+  "tokenizer": {
+    "training_hash": "5dac5436e7b93d2a10143cf0ebe68cd257f8248d367980a2d005361c307d81ae",
+    "actual_vocab_size": 768,
+    "requested_vocab_size": 768,
+    "sha256": "2a945084168e66b9c3ad918d4bd1758d019e7e790410c695271effd334c00bf3"
+  },
+  "scored_documents": {
+    "train": "5dac5436e7b93d2a10143cf0ebe68cd257f8248d367980a2d005361c307d81ae",
+    "valid": "a12b8864d3686a52bf836a4c463210b29eea19061dcbbdf88191cdab1dff575a"
+  },
+  "checkpoint": "inference weights/config; not a resumable optimizer checkpoint"
+}

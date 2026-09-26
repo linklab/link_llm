@@ -1,0 +1,32 @@
+{
+  "checkpoint_sha256": "364d36be7a751a2673bb248d56540033026acdc3871523ef6ff6521390885a9b",
+  "device": "cpu",
+  "includes_prefill": true,
+  "protocol": "Fixed token sequence, no sampling/EOS. Medians after one warmup. KV tensor bytes exclude Python objects and transient attention buffers.",
+  "repeats": 5,
+  "results": [
+    {
+      "case": "within_window",
+      "kv_tensor_bytes": 216576,
+      "max_absolute_logit_error": 3.814697265625e-06,
+      "median_seconds": {
+        "cached": 0.022671374958008528,
+        "full": 0.04013350000604987
+      },
+      "predictions": 32,
+      "speedup": 1.7702278790053247
+    },
+    {
+      "case": "window_overflow",
+      "kv_tensor_bytes": 294912,
+      "max_absolute_logit_error": 2.384185791015625e-06,
+      "median_seconds": {
+        "cached": 0.020533833070658147,
+        "full": 0.025041208020411432
+      },
+      "predictions": 16,
+      "speedup": 1.2195096713917533
+    }
+  ],
+  "threads": 4
+}

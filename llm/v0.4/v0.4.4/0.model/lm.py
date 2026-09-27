@@ -89,7 +89,8 @@ class NeuralLM(previous.NeuralLM):
             with torch.no_grad():
                 if use_cache: logits,cache=self.net.cached(window,cache)
                 else: logits=self.net(window)[:,-1]
-            logits=logits[0].double().cpu()
+            # MPS has no float64: transfer first, then normalize sampling on CPU.
+            logits=logits[0].cpu().double()
             if temperature<=.01:
                 token=int(logits.argmax())
             else:

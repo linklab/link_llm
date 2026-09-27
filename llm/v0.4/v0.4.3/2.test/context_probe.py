@@ -14,7 +14,7 @@ def score(lm,prompt,answer):
     for target in lm.bpe.encode(answer):
         with torch.no_grad():
             logits=lm.net(torch.tensor([ids[-lm.BLOCK_SIZE:]],device=lm.device()))[0,-1]
-        result+=float(logits.double().log_softmax(-1)[target])
+        result+=float(logits.cpu().double().log_softmax(-1)[target])
         ids.append(target)
     return result
 

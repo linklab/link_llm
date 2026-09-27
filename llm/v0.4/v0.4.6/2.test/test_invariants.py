@@ -28,6 +28,18 @@ def identity(lm):
 class CapstoneTests(unittest.TestCase):
     def setUp(self): torch.set_num_threads(2)
 
+    def test_only_pinned_inference_patch_is_compatible(self):
+        import json
+        frozen=json.loads((VERSION/'0.model/freeze.json').read_text())['source_hashes']
+        actual=c.source_hashes(frozen)
+        c.validate_sources(frozen,frozen)
+        c.validate_sources(frozen,actual)
+        path='llm/v0.4/v0.4.4/0.model/lm.py'
+        changed={**actual,path:'unreviewed-change'}
+        with self.assertRaises(ValueError): c.validate_sources(frozen,changed)
+        changed=dict(actual); changed.pop(path)
+        with self.assertRaises(ValueError): c.validate_sources(frozen,changed)
+
     def test_semantic_fingerprint_reload_and_mutation(self):
         lm=model(); freeze=identity(lm)
         with tempfile.TemporaryDirectory() as d:

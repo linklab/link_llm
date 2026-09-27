@@ -37,6 +37,17 @@ def source_hashes(paths=None):
     return {str(p.relative_to(ROOT)):m.corpus.sha256(p.read_bytes()) for p in sorted(files)}
 
 
+def validate_sources(frozen,actual=None):
+    """Preserve the original evaluation seal; allow only explicitly pinned fixes."""
+    actual=source_hashes(frozen) if actual is None else actual
+    patches=json.loads((HERE/'source_compatibility.json').read_text())['patches']
+    allowed={(p['path'],p['frozen_sha256'],p['compatible_sha256']) for p in patches}
+    if set(actual)!=set(frozen) or any(
+            actual[path]!=digest and (path,digest,actual[path]) not in allowed
+            for path,digest in frozen.items()):
+        raise ValueError('model implementation changed after freeze')
+
+
 def validate_model(lm,freeze):
     if (lm.MODEL_VERSION!='v0.4.6' or weights_hash(lm.net)!=freeze['weights_sha256']
             or tokenizer_hash(lm)!=freeze['tokenizer_semantic_sha256']
@@ -58,8 +69,7 @@ def validate_sidecars(lm,directory):
 def verify(directory=HERE):
     directory=Path(directory)
     freeze=json.loads((directory/'freeze.json').read_text())
-    if freeze['source_hashes']!=source_hashes(freeze['source_hashes']):
-        raise ValueError('model implementation changed after freeze')
+    validate_sources(freeze['source_hashes'])
     m.corpus.load_bundle(ROOT/'data/pretrain/v0.4.1')
     if m.corpus.sha256((ROOT/'data/pretrain/v0.4.1/manifest.json').read_bytes())!=freeze['corpus_manifest_sha256']:
         raise ValueError('training corpus changed after freeze')

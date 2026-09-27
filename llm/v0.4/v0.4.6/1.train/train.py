@@ -19,8 +19,7 @@ def main():
     parser.add_argument('--output-dir',type=Path,help='Optional reconstructed model destination; default temporary directory')
     args=parser.parse_args()
     freeze=json.loads((VERSION/'0.model/freeze.json').read_text())
-    if c.source_hashes(freeze['source_hashes'])!=freeze['source_hashes']:
-        raise ValueError('source changed after freeze')
+    c.validate_sources(freeze['source_hashes'])
     torch.set_num_threads(freeze['runtime']['threads'])
     if platform.python_version()!=freeze['runtime']['python'] or str(torch.__version__)!=freeze['runtime']['torch']:
         raise ValueError('strict reproduction requires the recorded Python/PyTorch versions')

@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 import torch
 
 VERSION=Path(__file__).resolve().parents[1]
@@ -46,6 +47,46 @@ class CacheTests(unittest.TestCase):
             for temperature in (0.,.8):
                 self.assertEqual(lm.generate(prompt,temperature,top_k=7,top_p=.9,seed=44),
                                  lm.generate(prompt,temperature,top_k=7,top_p=.9,seed=44,use_cache=False))
+
+    def test_sampling_transfers_logits_before_float64(self):
+        # Enforce the MPS restriction even on CPU-only test runners.
+        tensor_cpu,tensor_double=torch.Tensor.cpu,torch.Tensor.double
+        transferred=set()
+        conversions=[]
+
+        def cpu(tensor,*args,**kwargs):
+            result=tensor_cpu(tensor,*args,**kwargs)
+            transferred.add(id(result))
+            return result
+
+        def double(tensor,*args,**kwargs):
+            self.assertIn(id(tensor),transferred,'float64 attempted before CPU transfer')
+            conversions.append(1)
+            return tensor_double(tensor,*args,**kwargs)
+
+        lm=model(); lm.MAX_LENGTH=3
+        with patch.object(torch.Tensor,'cpu',cpu),patch.object(torch.Tensor,'double',double):
+            for cached in (False,True):
+                for temperature in (0.,.8):
+                    lm.generate('아침에',temperature,use_cache=cached,seed=44)
+        self.assertTrue(conversions)
+
+    @unittest.skipUnless(torch.backends.mps.is_available(),'MPS hardware unavailable')
+    def test_mps_generation_all_inheriting_versions(self):
+        for version in ('v0.4.4','v0.4.5','v0.4.6'):
+            implementation=m.module('mps_'+version,VERSION.parent/version/'0.model/lm.py')
+            lm=implementation.Model(); lm.DEVICE='mps'; lm.EMBED=16; lm.HEADS=4
+            lm.LAYERS=2; lm.FFN_HIDDEN=32; lm.BLOCK_SIZE=8; lm.VOCAB_SIZE=270
+            lm.DROPOUT=0; lm.MAX_LENGTH=3
+            if version!='v0.4.4': lm.VARIANT='rope'
+            lm.initialize(['아침에 abc']); lm.net.eval()
+            self.assertEqual(lm.device().type,'mps')
+            for prompt in ('아침에','아','',' '):
+                for cached in (False,True):
+                    for temperature in (0.,.8):
+                        with self.subTest(version=version,prompt=prompt,cached=cached,temperature=temperature):
+                            result=lm.generate(prompt,temperature,use_cache=cached,seed=44)
+                            self.assertTrue(result.startswith(prompt))
 
     def test_reject_training_padding_and_bad_shapes(self):
         lm=model()

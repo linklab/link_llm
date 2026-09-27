@@ -66,3 +66,7 @@ python web_service/server.py
 | v0.4.6 | 모델 고정·새 독립 평가·정확한 재학습 재현 |
 
 [고정 계약](0.model/freeze.json) · [최종 평가](0.model/final_report.json) · [재현 결과](0.model/reproduction_report.json) · [73개 회귀 검증](0.model/regression_report.json) · [웹 로더 확인](0.model/web_smoke_report.json) · [평가 데이터](../../../data/pretrain/v0.4.6/README.md)
+
+## 2026-09-27 MPS 호환 수정
+
+상속한 생성 코드가 logits를 CPU로 옮긴 뒤 float64로 변환하도록 수정했습니다. 가중치·학습·평가 조건은 바뀌지 않습니다. 원래 `freeze.json`과 독립 평가 봉인은 유지하며, `source_compatibility.json`에 기록한 원본→수정본 해시 한 쌍만 허용합니다. 다른 코드 변경은 계속 거부합니다. 실제 MPS 생성 경로를 확인했으며 MPS 학습 재현성은 미검증입니다.

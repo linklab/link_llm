@@ -1,0 +1,10 @@
+{
+  "patches": [
+    {
+      "path": "llm/v0.4/v0.4.4/0.model/lm.py",
+      "frozen_sha256": "bb016a9f7fd10a9689d4a33919f770500406f326b10019816dff4a6e7aa5f76e",
+      "compatible_sha256": "c34f7a75bb6db64423394f0685dec2ec53e4ed0de71416bde2d3b0ebd2a8295d",
+      "reason": "Move generation logits to CPU before float64 conversion. No training, weights, tokenizer or evaluation changes."
+    }
+  ]
+}

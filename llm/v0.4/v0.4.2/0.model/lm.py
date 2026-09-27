@@ -29,11 +29,14 @@ class NeuralLM(previous.NeuralLM):
               checkpoint=None, max_steps=None):
         train, valid = list(sentences), list(valid_sentences or [])
         config = self.training_config()
-        if (not train or self.EPOCHS < 1 or self.BATCH_SIZE < 1 or self.PATIENCE != 0
+        if (not train or self.EPOCHS < 1 or self.BATCH_SIZE < 1
+                or type(self.PATIENCE) is not int or self.PATIENCE < 0
                 or self.WARMUP_STEPS < 0 or self.WEIGHT_DECAY < 0
                 or not all(math.isfinite(v) for v in (self.LR, self.GRAD_CLIP, self.WEIGHT_DECAY))
                 or self.LR <= 0 or self.GRAD_CLIP <= 0 or (max_steps is not None and max_steps < 1)):
-            raise ValueError('invalid training configuration; fixed horizon requires patience=0')
+            raise ValueError('invalid training configuration; patience must be a nonnegative integer')
+        if self.PATIENCE and not valid:
+            raise ValueError('early stopping requires validation documents')
         if {corpus.duplicate_key(t) for t in train} & {corpus.duplicate_key(t) for t in valid}:
             raise ValueError('train/validation duplicate documents')
         identity = {'train': corpus.documents_hash(train), 'valid': corpus.documents_hash(valid),
@@ -79,7 +82,7 @@ class NeuralLM(previous.NeuralLM):
                 torch.mps.set_rng_state(saved['mps_rng'])
         initial_step = state['step']
         valid_rows = self.make_windows(valid) if valid else None
-        while state['epoch'] <= self.EPOCHS:
+        while state['epoch'] <= self.EPOCHS and not state.get('early_stopped', False):
             if not state['order']:
                 state['order'] = torch.randperm(len(packs), generator=generator).tolist()
             self.net.train()
@@ -116,6 +119,8 @@ class NeuralLM(previous.NeuralLM):
                 if score < state['best']:
                     state['best'], state['best_epoch'] = score, state['epoch']
                     state['best_weights'] = {k:v.detach().cpu().clone() for k,v in self.net.state_dict().items()}
+                if self.PATIENCE and state['epoch']-state['best_epoch'] >= self.PATIENCE:
+                    state['early_stopped'] = True
                 print(state['history'][-1], flush=True)
                 state.update(epoch=state['epoch']+1, cursor=0, order=[], tokens=0, loss_sum=0.)
             if checkpoint:
@@ -135,7 +140,8 @@ class NeuralLM(previous.NeuralLM):
             if stop:
                 break
         self.invocation_tokens = sum(s['tokens'] for s in state['steps'][initial_step:])
-        self.completed = state['epoch'] > self.EPOCHS
+        self.early_stopped = state.get('early_stopped', False)
+        self.completed = state['epoch'] > self.EPOCHS or self.early_stopped
         self.history, self.step_history, self.best_epoch = state['history'], state['steps'], state['best_epoch']
         if self.completed:
             self.net.load_state_dict(state['best_weights'])

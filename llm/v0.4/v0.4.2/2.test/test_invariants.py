@@ -67,6 +67,37 @@ class ResumeTests(unittest.TestCase):
         with self.assertRaises(ValueError): lm.train(DOCS,VALID)
         with self.assertRaises(ValueError): model().train(DOCS,[DOCS[0]])
 
+    def test_early_stopping_resume_restores_best_and_stays_completed(self):
+        def plateau():
+            lm=model(); lm.EPOCHS=8; lm.PATIENCE=2
+            lm.evaluate_rows=lambda rows: {'ppl':10.0}
+            return lm
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'state.pt'
+            full=plateau(); full.train(DOCS,VALID,checkpoint=Path(d)/'full.pt')
+            partial=plateau(); partial.train(DOCS,VALID,max_steps=1,checkpoint=path)
+            resumed=plateau(); resumed.train(DOCS,VALID,resume=path,checkpoint=path)
+            self.assertTrue(full.completed and resumed.completed and resumed.early_stopped)
+            self.assertEqual(len(resumed.history),3)
+            self.assertEqual(resumed.best_epoch,1)
+            self.assertEqual(full.history,resumed.history)
+            self.assertEqual(full.step_history,resumed.step_history)
+            saved=torch.load(path,weights_only=True)
+            for key,weight in full.net.state_dict().items():
+                torch.testing.assert_close(weight,resumed.net.state_dict()[key],rtol=0,atol=0)
+                torch.testing.assert_close(weight,saved['state']['best_weights'][key],rtol=0,atol=0)
+            done=plateau(); done.train(DOCS,VALID,resume=path)
+            self.assertTrue(done.completed and done.early_stopped)
+            self.assertEqual(done.invocation_tokens,0)
+            self.assertEqual(done.step_history,resumed.step_history)
+
+    def test_early_stopping_requires_validation_and_nonnegative_integer(self):
+        for patience in [-1,1.5,True]:
+            lm=model(); lm.PATIENCE=patience
+            with self.assertRaises(ValueError): lm.train(DOCS,VALID)
+        lm=model(); lm.PATIENCE=1
+        with self.assertRaisesRegex(ValueError,'validation'): lm.train(DOCS)
+
 
 if __name__ == '__main__':
     unittest.main()

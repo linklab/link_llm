@@ -1,4 +1,4 @@
-"""Train the frozen recipe locally, or explicitly require strict reproduction."""
+"""Run local training experiments, or explicitly require strict reproduction."""
 import argparse
 import importlib.util
 import json
@@ -13,6 +13,29 @@ spec=importlib.util.spec_from_file_location('v046_reproduction',VERSION/'0.model
 c=importlib.util.module_from_spec(spec); spec.loader.exec_module(c)
 m=c.m
 DEFAULT_LOCAL_OUTPUT=VERSION/'1.train/runs/local/0.model'
+# Editable IDE defaults for local experiments; strict mode uses freeze.json.
+PATIENCE=m.Model.PATIENCE
+EPOCHS=m.Model.EPOCHS
+
+
+def check_sources(frozen,strict):
+    actual=c.source_hashes(frozen)
+    if strict:
+        c.validate_sources(frozen,actual)
+    return actual
+
+
+def training_config(freeze,strict,epochs=None,patience=None):
+    config=dict(freeze['training_config'])
+    for key,value,default in [('EPOCHS',epochs,EPOCHS),('PATIENCE',patience,PATIENCE)]:
+        if strict:
+            if value is not None and value!=config[key]:
+                raise ValueError(f'--strict-reproduce requires {key}={config[key]}')
+        else:
+            config[key]=default if value is None else value
+    if type(config['PATIENCE']) is not int or config['PATIENCE']<0 or config['EPOCHS']<1:
+        raise ValueError('epochs must be positive and patience must be a nonnegative integer')
+    return config
 
 
 def runtime_info(threads):
@@ -43,12 +66,15 @@ def main(argv=None):
                         help='Require recorded Python/PyTorch and exact frozen weights (default: local training)')
     parser.add_argument('--output-dir',type=Path,
                         help='Default: 1.train/runs/local/0.model; strict mode without this option uses a temporary directory')
+    parser.add_argument('--epochs',type=int,help='Local maximum epochs (strict mode requires the frozen value)')
+    parser.add_argument('--patience',type=int,help='Stop after this many non-improving validation epochs; 0 disables early stopping')
     args=parser.parse_args(argv)
     freeze=json.loads((VERSION/'0.model/freeze.json').read_text())
-    c.validate_sources(freeze['source_hashes'])
     torch.set_num_threads(freeze['runtime']['threads'])
     actual_runtime=runtime_info(torch.get_num_threads())
     try:
+        sources=check_sources(freeze['source_hashes'],args.strict_reproduce)
+        config=training_config(freeze,args.strict_reproduce,args.epochs,args.patience)
         mismatches=check_runtime(freeze['runtime'],actual_runtime,args.strict_reproduce)
         # Check the output before spending time on training.
         output_directory(args.output_dir,args.strict_reproduce,tempfile.gettempdir())
@@ -56,19 +82,20 @@ def main(argv=None):
         parser.error(str(error))
     print('모드: '+('엄격한 재현 검증' if args.strict_reproduce else '일반 로컬 학습'),flush=True)
     print(f"현재 Python {actual_runtime['python']} / PyTorch {actual_runtime['torch']}",flush=True)
+    print(f"최대 에폭 {config['EPOCHS']} / PATIENCE {config['PATIENCE']} (0: 조기 종료 끄기)",flush=True)
     if mismatches:
         print('기록 환경과 다르므로 동일 가중치를 보장하지 않습니다: '+'; '.join(mismatches),flush=True)
     _,splits=m.corpus.load_bundle(m.ROOT/'data/pretrain/v0.4.1')
     manifest_hash=m.corpus.sha256((m.ROOT/'data/pretrain/v0.4.1/manifest.json').read_bytes())
     if manifest_hash!=freeze['corpus_manifest_sha256']: raise ValueError('corpus changed')
     lm=m.Model(); lm.DEVICE='cpu'; lm.corpus_manifest_sha256=manifest_hash
-    for key,value in freeze['training_config'].items(): setattr(lm,key,value)
+    for key,value in config.items(): setattr(lm,key,value)
     train,valid=([r['text'] for r in splits[k]] for k in ('train','valid'))
     start=time.perf_counter(); lm.train(train,valid); seconds=time.perf_counter()-start
     digest=c.weights_hash(lm.net)
     expected=freeze if args.strict_reproduce else {**freeze,'weights_sha256':digest}
     c.validate_model(lm,expected)
-    if sum(s['tokens'] for s in lm.step_history)!=freeze['training_tokens']:
+    if args.strict_reproduce and sum(s['tokens'] for s in lm.step_history)!=freeze['training_tokens']:
         raise ValueError('training budget changed')
     with tempfile.TemporaryDirectory(prefix='link-v046-reproduce-') as temporary:
         target=output_directory(args.output_dir,args.strict_reproduce,temporary)
@@ -82,11 +109,13 @@ def main(argv=None):
                 'mode':'strict_reproduction' if args.strict_reproduce else 'local_training',
                 'weights_sha256':digest,'matches_frozen_weights':digest==freeze['weights_sha256'],
                 'training_tokens':sum(s['tokens'] for s in lm.step_history),'best_epoch':lm.best_epoch,
-                'training_config':freeze['training_config'],'seconds':seconds,'valid':metrics,
+                'training_config':config,'seconds':seconds,'valid':metrics,
+                'epochs_completed':len(lm.history),'early_stopped':lm.early_stopped,
+                'history':lm.history,'source_hashes':sources,
                 'runtime':actual_runtime,'recorded_runtime':freeze['runtime'],'runtime_differences':mismatches,
                 'corpus_manifest_sha256':manifest_hash,
                 'checkpoint_sha256':m.corpus.sha256((target/'model.pt').read_bytes()),
-                'note':'Same frozen training recipe. No final-test text read or scored. Local mode is not strict reproduction.'}
+                'note':'Frozen architecture and corpus; local epochs/patience may differ. No final-test text read or scored. Local mode is not strict reproduction.'}
         name='reproduction_report.json' if args.strict_reproduce else 'training_report.json'
         (target/name).write_bytes(m.corpus.json_bytes(report))
         print(json.dumps(report,ensure_ascii=False,indent=2))

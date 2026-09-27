@@ -2051,6 +2051,6 @@
   "packing_policy": "document-chunks-isolated-attention-reset-positions-v1",
   "corpus_manifest_sha256": "7b2d71de7bcfd329e6a50b3be0cc6163f76c07ab54706605a942d07066754e72",
   "tie_weights": true,
-  "variant": "rope",
+  "variant": "baseline",
   "kv_heads": 2
 }

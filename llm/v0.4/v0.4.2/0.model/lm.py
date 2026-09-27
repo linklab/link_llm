@@ -17,7 +17,7 @@ ByteBPE, sequence_loss = previous.ByteBPE, previous.sequence_loss
 class NeuralLM(previous.NeuralLM):
     MODEL_VERSION = 'v0.4.2'
     WEIGHT_DECAY, GRAD_CLIP, WARMUP_STEPS = .01, 1., 10
-    EPOCHS, PATIENCE = 6, 0
+    EPOCHS, PATIENCE = 6, 20
 
     def training_config(self):
         keys = ('EPOCHS', 'BATCH_SIZE', 'LR', 'SEED', 'VOCAB_SIZE', 'EMBED',

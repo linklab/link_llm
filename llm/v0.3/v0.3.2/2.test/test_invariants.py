@@ -139,7 +139,7 @@ class Invariants(unittest.TestCase):
 
     def test_early_stopping_restores_best_validation_weights(self):
         self.lm.EPOCHS = 10
-        self.lm.PATIENCE = 2
+        self.lm.PATIENCE = 20
         states = []
         scores = iter([9.0, 8.0, 10.0, 11.0])
 

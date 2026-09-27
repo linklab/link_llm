@@ -36,7 +36,7 @@ class NeuralLM(previous.NeuralLM):
     PAD, END, BOS, USER, BOT, SYSTEM = tokenizer.SPECIALS
     VOCAB_SIZE = 768
     EPOCHS = 30
-    PATIENCE = 5
+    PATIENCE = 20
     BATCH_SIZE = 128
     PRESERVE_RAW_PROMPT = True
     SUPPORTS_EMPTY_PROMPT = True

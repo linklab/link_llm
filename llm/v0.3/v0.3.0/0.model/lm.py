@@ -41,7 +41,7 @@ class NeuralLM(_base.NGramLM):
     BATCH_SIZE = 64
     EVAL_BATCH = 64
     LR = 0.003
-    PATIENCE = 10
+    PATIENCE = 20
     SEED = 1234
     DEVICE = "auto"
     MAX_LENGTH = 40

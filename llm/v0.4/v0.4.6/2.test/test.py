@@ -20,8 +20,10 @@ def main():
     prompts=freeze['generation_prompts']
     generations=[]
     for prompt in prompts:
-        generated=lm.generate(prompt,seed=1234)
-        uncached=lm.generate(prompt,use_cache=False,seed=1234)
+        # Preserve the original frozen raw-sampling diagnostic. The web default
+        # now constrains UTF-8; that display policy is not a retrained base model.
+        generated=lm.generate(prompt,seed=1234,valid_utf8=False)
+        uncached=lm.generate(prompt,use_cache=False,seed=1234,valid_utf8=False)
         if generated!=uncached: raise ValueError('cached generation differs')
         suffix=generated[len(prompt):]
         generations.append({'prompt':prompt,'generated':generated,'continuation':suffix,

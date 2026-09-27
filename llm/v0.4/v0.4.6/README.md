@@ -45,7 +45,7 @@ v0.4.5에서 선택한 가중치를 바꾸지 않고 v0.4.6으로 내보냈습�
 # 저장소 루트, PyTorch가 있는 환경 (이번 실행: conda activate link_llm)
 python llm/v0.4/v0.4.6/2.test/test_invariants.py
 # Git에 없는 가중치를 처음부터 재현·저장 (고정 설정만 사용)
-python llm/v0.4/v0.4.6/1.train/train.py \
+python llm/v0.4/v0.4.6/1.train/train.py --strict-reproduce \
   --output-dir llm/v0.4/v0.4.6/0.model
 # 고정 모델과 독립 평가 자료의 무결성 검사·최종 평가
 python data/pretrain/v0.4.6/seal.py
@@ -53,7 +53,7 @@ python llm/v0.4/v0.4.6/2.test/test.py
 python web_service/server.py
 ```
 
-`train.py`에서 출력 경로를 생략하면 임시 폴더에서 재현해 기존 모델을 보존합니다. 이미 있는 `freeze.json`과 평가 봉인은 덮어쓰지 않습니다. 최초 동결용 `freeze.py`는 v0.4.5 선택 모델을 사용하며, 새 평가 문서 작성 전에만 새 동결을 허용합니다. 가중치 파일은 Git 제외이고 설정·코드·평가 자료·보고서는 추적합니다.
+`train.py --strict-reproduce`에서 출력 경로를 생략하면 임시 폴더에서 재현해 기존 모델을 보존합니다. 일반 실행은 아래 로컬 학습 모드를 사용합니다. 이미 있는 `freeze.json`과 평가 봉인은 덮어쓰지 않습니다. 최초 동결용 `freeze.py`는 v0.4.5 선택 모델을 사용하며, 새 평가 문서 작성 전에만 새 동결을 허용합니다. 가중치 파일은 Git 제외이고 설정·코드·평가 자료·보고서는 추적합니다.
 
 ## v0.4.2~v0.4.6 연결해서 읽기
 
@@ -69,4 +69,25 @@ python web_service/server.py
 
 ## 2026-09-27 MPS 호환 수정
 
-상속한 생성 코드가 logits를 CPU로 옮긴 뒤 float64로 변환하도록 수정했습니다. 가중치·학습·평가 조건은 바뀌지 않습니다. 원래 `freeze.json`과 독립 평가 봉인은 유지하며, `source_compatibility.json`에 기록한 원본→수정본 해시 한 쌍만 허용합니다. 다른 코드 변경은 계속 거부합니다. 실제 MPS 생성 경로를 확인했으며 MPS 학습 재현성은 미검증입니다.
+상속한 생성 코드가 logits를 CPU로 옮긴 뒤 float64로 변환하도록 수정했습니다. 가중치·학습·평가 조건은 바뀌지 않습니다. 원래 `freeze.json`과 독립 평가 봉인은 유지하며, `source_compatibility.json`에 기록한 원본→수정본 허용된 해시 쌍만 인정합니다. 다른 코드 변경은 계속 거부합니다. 실제 MPS 생성 경로를 확인했으며 MPS 학습 재현성은 미검증입니다.
+
+## 현재 환경에서 학습하기
+
+이전 `train.py`는 항상 엄격한 재현 검증을 수행해 Python·PyTorch 버전이 조금만 달라도 시작하지 못했습니다. 이제 **인자 없이 실행하면 일반 로컬 학습**입니다. 기록된 모델과 같은 구조·데이터·학습량을 사용하되, 현재 라이브러리에서 다른 가중치가 나오는 것은 허용하고 보고서에 기록합니다.
+
+```bash
+# IDE에서 인자 없이 실행해도 동일하게 동작
+python llm/v0.4/v0.4.6/1.train/train.py
+# 원하는 별도 저장 위치
+python llm/v0.4/v0.4.6/1.train/train.py --output-dir /tmp/link-local-model
+# 원래 환경·가중치와 정확히 같은 결과인지 검사할 때만 사용
+python llm/v0.4/v0.4.6/1.train/train.py --strict-reproduce
+```
+
+기본 저장 위치는 `1.train/runs/local/0.model/`입니다. 모델·토크나이저·현재 환경·검증 지표를 저장하며, Git과 기존 고정 모델에서 분리합니다. 웹의 기본 v0.4.6은 기존 `0.model/model.pt`를 계속 사용합니다. 로컬 학습 결과를 고정 모델로 자동 교체하지 않습니다. 일반 모드에서 고정 모델 폴더로 저장하려 하면 거부합니다.
+
+## 글자 깨짐과 고정 평가
+
+웹에서 사용하는 기본 생성은 이제 UTF-8에 맞는 바이트 조합만 허용합니다. 한글·이모지를 중간에서 끝내지 않도록 제한하며, 원문과 가중치는 바꾸지 않습니다. 실제 MPS 생성·웹 호출48건을 확인했습니다. [생성 진단](0.model/utf8_generation_report.json)에 예시를 남겼습니다.
+
+`2.test/test.py`의 과거 생성 진단은 `valid_utf8=False`를 명시해 원래 평가 조건을 유지합니다. 새로운 기본 생성 결과와 과거 raw 생성 보고서는 구분해야 합니다. 원래 NLL/PPL·모델/데이터 봉인은 유지합니다. 깨진 문자를 막아도 문장의 자연스러움이나 내용 정확성이 좋아졌다는 뜻은 아닙니다.

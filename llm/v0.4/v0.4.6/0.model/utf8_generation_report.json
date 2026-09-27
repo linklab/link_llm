@@ -1,0 +1,61 @@
+{
+  "device": "mps",
+  "policy": "UTF-8-constrained default vs original raw sampling; same saved weights, no retraining",
+  "results": [
+    {
+      "version": "v0.4.4",
+      "prompt": "아침",
+      "seed": 42,
+      "raw": "아침는 다음 모양을 물 부분 다음 수 들어는 살폈다. 수 마디에는 없었다. 다시 준비을 않니만 들어래고 선",
+      "constrained": "아침는 다음 모양을 물 부분 다음 수 들어는 살폈다. 수 마디에는 없었다. 다시 준비을 않와 다음 마디로 선",
+      "raw_replacement_count": 0,
+      "constrained_replacement_count": 0
+    },
+    {
+      "version": "v0.4.4",
+      "prompt": "아침에",
+      "seed": 42,
+      "raw": "아침에 수 다음 선가 않았다. 다음 수 그와 사하는 준비에 뒤가 수 점을 준비와 연주의 마디로 구름",
+      "constrained": "아침에 수 다음 선기 위  정이 마디리 구름",
+      "raw_replacement_count": 0,
+      "constrained_replacement_count": 0
+    },
+    {
+      "version": "v0.4.5",
+      "prompt": "아침",
+      "seed": 42,
+      "raw": "아침를 다음 보였다.이다시 있었다. 부분  부분이 부분\n\n에는 \n\n도 바에서는 다시 식사를에을 때는 정은\n\n준비\n\n",
+      "constrained": "아침를 다음 보였다.이다시 있었다. 부분  부분이 부분\n\n에는 \n\n도 바에서는 다시 식사를에을 때는 정은\n\n준비\n\n",
+      "raw_replacement_count": 0,
+      "constrained_replacement_count": 0
+    },
+    {
+      "version": "v0.4.5",
+      "prompt": "아침에",
+      "seed": 42,
+      "raw": "아침에\n\n 다음 선이다시 관찰 부분  부분이 뒤\n\n지 \n\n시간 바에서는 다시 식사를에을 때는 정은\n\n그림\n\n",
+      "constrained": "아침에\n\n 다음 선이다시 관찰 부분  부분이 뒤\n\n지 \n\n시간 바에서는 다시 식사를에을 때는 정은\n\n그림\n\n",
+      "raw_replacement_count": 0,
+      "constrained_replacement_count": 0
+    },
+    {
+      "version": "v0.4.6",
+      "prompt": "아침",
+      "seed": 42,
+      "raw": "아침를 다음 보였다.이다시 있었다. 부분  부분이 부분\n\n에는 \n\n도 바에서는 다시 식사를에을 때는 정은\n\n준비\n\n",
+      "constrained": "아침를 다음 보였다.이다시 있었다. 부분  부분이 부분\n\n에는 \n\n도 바에서는 다시 식사를에을 때는 정은\n\n준비\n\n",
+      "raw_replacement_count": 0,
+      "constrained_replacement_count": 0
+    },
+    {
+      "version": "v0.4.6",
+      "prompt": "아침에",
+      "seed": 42,
+      "raw": "아침에\n\n 다음 선이다시 관찰 부분  부분이 뒤\n\n지 \n\n시간 바에서는 다시 식사를에을 때는 정은\n\n그림\n\n",
+      "constrained": "아침에\n\n 다음 선이다시 관찰 부분  부분이 뒤\n\n지 \n\n시간 바에서는 다시 식사를에을 때는 정은\n\n그림\n\n",
+      "raw_replacement_count": 0,
+      "constrained_replacement_count": 0
+    }
+  ],
+  "checks_passed": 48
+}

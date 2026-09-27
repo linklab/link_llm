@@ -233,3 +233,6 @@ llm/**/2.test/*.svg
 # Resumable optimizer/RNG states and temporary atomic writes
 llm/**/training_state.pt
 llm/**/training_state.tmp
+
+# Local v0.4.6 experiments are separate from the frozen reference model.
+llm/**/1.train/runs/

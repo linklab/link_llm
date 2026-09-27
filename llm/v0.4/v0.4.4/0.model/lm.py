@@ -13,6 +13,50 @@ module,corpus,packing=previous.module,previous.corpus,previous.packing
 ByteBPE,sequence_loss=previous.ByteBPE,previous.sequence_loss
 
 
+class UTF8Constraint:
+    """Request-local UTF-8 prefix grammar, including tokens spanning characters.
+
+    A byte token need not be a complete character. Keep incomplete prefixes,
+    reject invalid continuations and reserve enough token slots to finish using
+    the always-available single-byte tokens. EOS requires a complete character.
+    """
+    def __init__(self,bpe):
+        self.pieces=bpe.pieces
+        self.pending=b''
+        self.transitions={}
+
+    def tails(self):
+        if self.pending not in self.transitions:
+            tails=[None]*6
+            tails[1]=b'' if not self.pending else None
+            for piece in self.pieces:
+                raw=self.pending+piece
+                try:
+                    raw.decode('utf-8')
+                    tail=b''
+                except UnicodeDecodeError as error:
+                    tail=(raw[error.start:] if error.reason=='unexpected end of data'
+                          and error.end==len(raw) else None)
+                tails.append(tail)
+            self.transitions[self.pending]=tails
+        return self.transitions[self.pending]
+
+    @staticmethod
+    def needed(tail):
+        if not tail: return 0
+        length=2 if tail[0]<0xe0 else 3 if tail[0]<0xf0 else 4
+        return length-len(tail)
+
+    def allowed(self,remaining):
+        return torch.tensor([tail is not None and self.needed(tail)<=remaining
+                             for tail in self.tails()],dtype=torch.bool)
+
+    def accept(self,token):
+        tail=self.tails()[token]
+        if tail is None: raise ValueError('invalid UTF-8 token transition')
+        self.pending=tail
+
+
 class CachedNetwork(previous.Network):
     def hidden(self,tokens,positions):
         return self.embedding(tokens)+self.position(positions)
@@ -77,20 +121,23 @@ class NeuralLM(previous.NeuralLM):
         if self.TIE_WEIGHTS: net.head.weight=net.embedding.weight
         return net
 
-    def generate(self,start_text,temperature=0.,top_k=0,top_p=1.,use_cache=True,seed=None):
+    def generate(self,start_text,temperature=0.,top_k=0,top_p=1.,use_cache=True,seed=None,valid_utf8=True):
         if not math.isfinite(temperature) or temperature<0 or top_k<0 or not 0<top_p<=1:
             raise ValueError('invalid sampling parameters')
         ids=[2]+self.bpe.encode(start_text)
         cache=None
+        utf8=UTF8Constraint(self.bpe) if valid_utf8 else None
         rng=random.Random(seed)  # Sampling settings and RNG belong to this request.
         self.net.eval()
-        for _ in range(self.MAX_LENGTH):
+        for step in range(self.MAX_LENGTH):
             window=torch.tensor([ids[-self.BLOCK_SIZE:]],device=self.device())
             with torch.no_grad():
                 if use_cache: logits,cache=self.net.cached(window,cache)
                 else: logits=self.net(window)[:,-1]
             # MPS has no float64: transfer first, then normalize sampling on CPU.
             logits=logits[0].cpu().double()
+            if utf8 is not None:
+                logits=logits.masked_fill(~utf8.allowed(self.MAX_LENGTH-step-1),float('-inf'))
             if temperature<=.01:
                 token=int(logits.argmax())
             else:
@@ -104,9 +151,10 @@ class NeuralLM(previous.NeuralLM):
                         if cumulative>=top_p: break
                     order=kept
                 token=rng.choices(order,weights=[float(probs[i]) for i in order],k=1)[0]
+            if utf8 is not None: utf8.accept(token)
             if token==1: break
             ids.append(token)
-        return self.bpe.decode(ids,skip_special=True,errors='replace')
+        return self.bpe.decode(ids,skip_special=True,errors='strict' if valid_utf8 else 'replace')
 
 
 Model=NGramLM=NeuralLM

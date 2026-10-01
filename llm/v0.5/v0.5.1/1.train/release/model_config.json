@@ -1,0 +1,25 @@
+{
+  "base_checkpoint_loaded": false,
+  "block_size": 256,
+  "bos_id": 2,
+  "dropout": 0.1,
+  "embed": 64,
+  "eos_id": 1,
+  "eot_id": 768,
+  "ffn_hidden": 256,
+  "format": "sft-network-setup-v1",
+  "heads": 4,
+  "initialization": "random-smoke-test-only",
+  "kv_heads": 2,
+  "layers": 4,
+  "pad_id": 0,
+  "stop_token_ids": [
+    768,
+    1
+  ],
+  "template_sha256": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
+  "tie_weights": true,
+  "trained": false,
+  "variant": "rope",
+  "vocab_size": 769
+}

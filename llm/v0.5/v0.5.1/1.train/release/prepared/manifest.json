@@ -1,12 +1,11 @@
 {
-  "version": "v0.5.1",
-  "template_sha256": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
-  "training_ready": false,
-  "conversation_roundtrips": 48,
-  "assistant_prefix_and_response_checks": 54,
+  "base_tokenizer_sha256": "cf200cf57ffaea9220fc72c1ec971e3a549b609ef7de28a2b83d95771be245bd",
   "base_vocab_size": 768,
-  "chat_vocab_size": 769,
   "eot_id": 768,
+  "format": "sft-chat-sequences-v1",
+  "max_tokens_limit": 256,
+  "note": "No fitting, truncation, loss masking or model training. Source review/splits preserved. New EOT needs model vocabulary expansion before training.",
+  "source_manifest_sha256": "7d6707bde0a48ec9d16268bbe7639a140877eb196b17ac0712ad59f24c654c44",
   "splits": {
     "test": {
       "sha256": "421c0c2ba12d74d84523ea28f520741ce79d824c8c73bc5512cbdfaa9fc740b1",
@@ -39,5 +38,8 @@
       }
     }
   },
-  "note": "Formatting validation only; no model generation quality or human review claim."
+  "template_sha256": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
+  "training_ready": false,
+  "version": "v0.5.1",
+  "vocab_size": 769
 }

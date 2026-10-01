@@ -5,20 +5,20 @@
   "format": "sft-chat-sequences-v1",
   "max_tokens_limit": null,
   "note": "No fitting, truncation, loss masking or model training. Source review/splits preserved. New EOT needs model vocabulary expansion before training.",
-  "source_manifest_sha256": "1bba83e845ac335b8577b7819e6c175617120843e0448fa5f75b90fa01d674b3",
+  "source_manifest_sha256": "7d6707bde0a48ec9d16268bbe7639a140877eb196b17ac0712ad59f24c654c44",
   "splits": {
     "test": {
-      "sha256": "209af1cfc58c1e84173f556bde5df25791d29b3d5fe98b6603ae01a8ae762e08",
+      "sha256": "421c0c2ba12d74d84523ea28f520741ce79d824c8c73bc5512cbdfaa9fc740b1",
       "statistics": {
         "conversations": 16,
         "exceeds_64_tokens": 16,
         "max_tokens": 184,
         "min_tokens": 117,
-        "tokens": 2387
+        "tokens": 2388
       }
     },
     "train": {
-      "sha256": "a689d4db34e2d734046b5c24cbc6b0e5b91b7cf602f52c3c1e901bd54e3b6948",
+      "sha256": "44e12f0a783085e6be48557a041af295e058dc85243ad7ee887ff5d357dd5485",
       "statistics": {
         "conversations": 16,
         "exceeds_64_tokens": 16,

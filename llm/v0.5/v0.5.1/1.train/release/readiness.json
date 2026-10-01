@@ -1,0 +1,76 @@
+{
+  "ai_reviewed_conversations": 48,
+  "block_size": 256,
+  "files": {
+    "inputs/ai_quality_audit.json": "32241726d8bc168093f0db16ce5f6deb7f45fd2658011c897bbb4a812b991816",
+    "inputs/examples.jsonl": "343be40ad665c56e1b0d6d44f39ffd23e15470ad6941785d420b4713d154a6c9",
+    "inputs/reviews.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "inputs/sources.json": "92fd1409a0ebd24af023f36e72e5565c74d4688e8a789b4c4220f91f78ca9550",
+    "model_config.json": "5fb3ba91e3ff27c2662310695b3465f70484b200351e9d222d9c067dcd992b84",
+    "prepared/manifest.json": "7869f566333a41388deb98a988a6c3d46868b51d1a9c9b828e2cb7b89989f1ed",
+    "prepared/source/manifest.json": "7d6707bde0a48ec9d16268bbe7639a140877eb196b17ac0712ad59f24c654c44",
+    "prepared/source/test.jsonl": "3b9f34e17983f1d37396b625d3bc3cc9b44cfe747bd567f2792eb71e75e091cd",
+    "prepared/source/train.jsonl": "1a5a010f1b3c5f12d8a95617b26cefd26bddff9d519e7301ece713a3a6f2dbac",
+    "prepared/source/valid.jsonl": "0258519f5e5548488a706b51f9e22a943ab099d68dc856b8ebc61ffc524f66f3",
+    "prepared/template.json": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
+    "prepared/test.jsonl": "421c0c2ba12d74d84523ea28f520741ce79d824c8c73bc5512cbdfaa9fc740b1",
+    "prepared/train.jsonl": "44e12f0a783085e6be48557a041af295e058dc85243ad7ee887ff5d357dd5485",
+    "prepared/valid.jsonl": "9b3a100d28501f7aef331a1bbb061d98c48b61ed77fb43cad5f22e80b966787c"
+  },
+  "format": "sft-preparation-release-v1",
+  "human_approval": false,
+  "max_conversation_tokens": 222,
+  "model_configuration_complete": true,
+  "model_weights_trained": false,
+  "preparation_complete": true,
+  "remaining": [
+    "Human review for reviewed-data training gate",
+    "v0.5.2 response loss masking",
+    "v0.5.3 base-weight migration and SFT training"
+  ],
+  "reviewer_kind": "ai",
+  "training_ready": false,
+  "validation": {
+    "assistant_prefix_and_response_checks": 54,
+    "base_vocab_size": 768,
+    "chat_vocab_size": 769,
+    "conversation_roundtrips": 48,
+    "eot_id": 768,
+    "note": "Formatting validation only; no model generation quality or human review claim.",
+    "splits": {
+      "test": {
+        "sha256": "421c0c2ba12d74d84523ea28f520741ce79d824c8c73bc5512cbdfaa9fc740b1",
+        "statistics": {
+          "conversations": 16,
+          "exceeds_64_tokens": 16,
+          "max_tokens": 184,
+          "min_tokens": 117,
+          "tokens": 2388
+        }
+      },
+      "train": {
+        "sha256": "44e12f0a783085e6be48557a041af295e058dc85243ad7ee887ff5d357dd5485",
+        "statistics": {
+          "conversations": 16,
+          "exceeds_64_tokens": 16,
+          "max_tokens": 208,
+          "min_tokens": 118,
+          "tokens": 2441
+        }
+      },
+      "valid": {
+        "sha256": "9b3a100d28501f7aef331a1bbb061d98c48b61ed77fb43cad5f22e80b966787c",
+        "statistics": {
+          "conversations": 16,
+          "exceeds_64_tokens": 16,
+          "max_tokens": 222,
+          "min_tokens": 122,
+          "tokens": 2643
+        }
+      }
+    },
+    "template_sha256": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
+    "training_ready": false,
+    "version": "v0.5.1"
+  }
+}

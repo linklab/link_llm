@@ -1,0 +1,45 @@
+{
+  "base_tokenizer_sha256": "cf200cf57ffaea9220fc72c1ec971e3a549b609ef7de28a2b83d95771be245bd",
+  "base_vocab_size": 768,
+  "eot_id": 768,
+  "format": "sft-chat-sequences-v1",
+  "max_tokens_limit": null,
+  "note": "No fitting, truncation, loss masking or model training. Source review/splits preserved. New EOT needs model vocabulary expansion before training.",
+  "source_manifest_sha256": "1bba83e845ac335b8577b7819e6c175617120843e0448fa5f75b90fa01d674b3",
+  "splits": {
+    "test": {
+      "sha256": "209af1cfc58c1e84173f556bde5df25791d29b3d5fe98b6603ae01a8ae762e08",
+      "statistics": {
+        "conversations": 16,
+        "exceeds_64_tokens": 16,
+        "max_tokens": 184,
+        "min_tokens": 117,
+        "tokens": 2387
+      }
+    },
+    "train": {
+      "sha256": "a689d4db34e2d734046b5c24cbc6b0e5b91b7cf602f52c3c1e901bd54e3b6948",
+      "statistics": {
+        "conversations": 16,
+        "exceeds_64_tokens": 16,
+        "max_tokens": 208,
+        "min_tokens": 118,
+        "tokens": 2441
+      }
+    },
+    "valid": {
+      "sha256": "9b3a100d28501f7aef331a1bbb061d98c48b61ed77fb43cad5f22e80b966787c",
+      "statistics": {
+        "conversations": 16,
+        "exceeds_64_tokens": 16,
+        "max_tokens": 222,
+        "min_tokens": 122,
+        "tokens": 2643
+      }
+    }
+  },
+  "template_sha256": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
+  "training_ready": false,
+  "version": "v0.5.1",
+  "vocab_size": 769
+}

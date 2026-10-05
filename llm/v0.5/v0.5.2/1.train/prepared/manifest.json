@@ -1,0 +1,32 @@
+{
+  "context": 256,
+  "contract": "Already shifted: logits[t] predicts labels[t]. One target assistant per example; body+EOT, final EOS only. Prompt/roles/history/PAD=-100.",
+  "format": "assistant-loss-v1",
+  "overflow": "reject",
+  "source_sha256": "ad9ca48a82d509fe58715df1c345fc777b7c4878f8f85d5883a4a8e22971f3a7",
+  "splits": {
+    "test": {
+      "context_reduced_examples": 0,
+      "examples": 18,
+      "max_input_tokens": 183,
+      "sha256": "cf0bd33b3856df67c934274830b95f2a4ddfad615646f96335cd4632f9b1f153",
+      "supervised_tokens": 364
+    },
+    "train": {
+      "context_reduced_examples": 0,
+      "examples": 18,
+      "max_input_tokens": 207,
+      "sha256": "1732f7960d7a34ceff168eba5ea338aca2331df4feeedbc219af1b2f2893ce1a",
+      "supervised_tokens": 494
+    },
+    "valid": {
+      "context_reduced_examples": 0,
+      "examples": 18,
+      "max_input_tokens": 221,
+      "sha256": "b953665182fc0dc197dd800fa414214192cce1aa81264a4a59b615e753a3f77c",
+      "supervised_tokens": 573
+    }
+  },
+  "training_ready": true,
+  "version": "v0.5.2"
+}

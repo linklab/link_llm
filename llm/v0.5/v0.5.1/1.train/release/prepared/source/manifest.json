@@ -2,12 +2,12 @@
   "excluded_ids": [],
   "format": "sft-conversations-v1",
   "inputs": {
-    "examples": "343be40ad665c56e1b0d6d44f39ffd23e15470ad6941785d420b4713d154a6c9",
-    "reviews": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "examples": "5763dced784e17496b87b75bd2299bfac57350fd1c72d2996272087fbca408b2",
+    "reviews": "f0770b1e3915ac7e38bae71be796e9935c8e53294f0dbbe05be9735672368712",
     "sources": "92fd1409a0ebd24af023f36e72e5565c74d4688e8a789b4c4220f91f78ca9550"
   },
   "limitations": "NFC/whitespace keys only; no semantic near-duplicate detection or independent benchmark claim. Review receipts record declarations, not authenticated identities.",
-  "mode": "draft",
+  "mode": "reviewed",
   "removed_duplicates": [],
   "seed": 1234,
   "sources": {
@@ -26,7 +26,7 @@
       "conversations": 16,
       "groups": 8,
       "multiturn": 2,
-      "sha256": "3b9f34e17983f1d37396b625d3bc3cc9b44cfe747bd567f2792eb71e75e091cd",
+      "sha256": "671120b1ca6cd91c4e0d9f41c579b85a3618986e398ce161397ef93dac1222c2",
       "tasks": {
         "calculate": 2,
         "extract": 2,
@@ -40,11 +40,11 @@
     },
     "train": {
       "assistant_turns": 18,
-      "content_bytes": 4455,
+      "content_bytes": 4443,
       "conversations": 16,
       "groups": 8,
       "multiturn": 2,
-      "sha256": "1a5a010f1b3c5f12d8a95617b26cefd26bddff9d519e7301ece713a3a6f2dbac",
+      "sha256": "73c34a443f33ddfd1ef19f6af0d4004089d693af85f3ee24872621bad1f6ff21",
       "tasks": {
         "calculate": 2,
         "extract": 2,
@@ -58,11 +58,11 @@
     },
     "valid": {
       "assistant_turns": 18,
-      "content_bytes": 4916,
+      "content_bytes": 4904,
       "conversations": 16,
       "groups": 8,
       "multiturn": 2,
-      "sha256": "0258519f5e5548488a706b51f9e22a943ab099d68dc856b8ebc61ffc524f66f3",
+      "sha256": "4303f649fd8be14237345edaff00ea9913f8f058419a6fbe813ff367648492e3",
       "tasks": {
         "calculate": 2,
         "extract": 2,
@@ -85,5 +85,5 @@
     "summarize",
     "uncertainty"
   ],
-  "training_ready": false
+  "training_ready": true
 }

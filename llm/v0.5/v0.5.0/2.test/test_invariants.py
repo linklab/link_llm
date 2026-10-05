@@ -54,16 +54,17 @@ class DatasetTests(unittest.TestCase):
 
     def test_shipped_examples_are_reproducible_and_cover_all_tasks(self):
         rows = d.read_jsonl(d.HERE/'examples.jsonl')
-        manifest = self.build(rows)
+        reviews = d.read_jsonl(d.HERE/'reviews.jsonl')
+        manifest = self.build(rows, reviews=reviews, mode='reviewed')
         self.assertEqual(len(rows), 48)
         self.assertEqual(sum(sum(m['role']=='user' for m in r['messages'])>1 for r in rows), 6)
-        self.assertFalse(manifest['training_ready'])
+        self.assertTrue(manifest['training_ready'])
         for name in d.SPLITS:
             self.assertEqual(manifest['splits'][name]['conversations'], 16)
             self.assertEqual(set(manifest['splits'][name]['tasks']), set(d.TASKS))
-            self.assertEqual((self.output/f'{name}.jsonl').read_bytes(), (d.HERE/'draft'/f'{name}.jsonl').read_bytes())
+            self.assertEqual((self.output/f'{name}.jsonl').read_bytes(), (d.HERE/'reviewed'/f'{name}.jsonl').read_bytes())
         other = self.root/'other'
-        self.build(list(reversed(rows)), output=other)
+        self.build(list(reversed(rows)), reviews=reviews, mode='reviewed', output=other)
         for name in d.SPLITS:
             self.assertEqual((self.output/f'{name}.jsonl').read_bytes(), (other/f'{name}.jsonl').read_bytes())
 

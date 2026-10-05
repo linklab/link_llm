@@ -1,35 +1,34 @@
 {
-  "ai_reviewed_conversations": 48,
   "block_size": 256,
   "files": {
-    "inputs/ai_quality_audit.json": "32241726d8bc168093f0db16ce5f6deb7f45fd2658011c897bbb4a812b991816",
-    "inputs/examples.jsonl": "343be40ad665c56e1b0d6d44f39ffd23e15470ad6941785d420b4713d154a6c9",
-    "inputs/reviews.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "inputs/examples.jsonl": "5763dced784e17496b87b75bd2299bfac57350fd1c72d2996272087fbca408b2",
+    "inputs/reviews.jsonl": "f0770b1e3915ac7e38bae71be796e9935c8e53294f0dbbe05be9735672368712",
     "inputs/sources.json": "92fd1409a0ebd24af023f36e72e5565c74d4688e8a789b4c4220f91f78ca9550",
     "model_config.json": "5fb3ba91e3ff27c2662310695b3465f70484b200351e9d222d9c067dcd992b84",
-    "prepared/manifest.json": "7869f566333a41388deb98a988a6c3d46868b51d1a9c9b828e2cb7b89989f1ed",
-    "prepared/source/manifest.json": "7d6707bde0a48ec9d16268bbe7639a140877eb196b17ac0712ad59f24c654c44",
-    "prepared/source/test.jsonl": "3b9f34e17983f1d37396b625d3bc3cc9b44cfe747bd567f2792eb71e75e091cd",
-    "prepared/source/train.jsonl": "1a5a010f1b3c5f12d8a95617b26cefd26bddff9d519e7301ece713a3a6f2dbac",
-    "prepared/source/valid.jsonl": "0258519f5e5548488a706b51f9e22a943ab099d68dc856b8ebc61ffc524f66f3",
+    "prepared/manifest.json": "ad9ca48a82d509fe58715df1c345fc777b7c4878f8f85d5883a4a8e22971f3a7",
+    "prepared/source/manifest.json": "c09b165d3c32f99ce57b312843b4a3269ce4b9429c05911df376cb3195158293",
+    "prepared/source/test.jsonl": "671120b1ca6cd91c4e0d9f41c579b85a3618986e398ce161397ef93dac1222c2",
+    "prepared/source/train.jsonl": "73c34a443f33ddfd1ef19f6af0d4004089d693af85f3ee24872621bad1f6ff21",
+    "prepared/source/valid.jsonl": "4303f649fd8be14237345edaff00ea9913f8f058419a6fbe813ff367648492e3",
     "prepared/template.json": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
     "prepared/test.jsonl": "421c0c2ba12d74d84523ea28f520741ce79d824c8c73bc5512cbdfaa9fc740b1",
-    "prepared/train.jsonl": "44e12f0a783085e6be48557a041af295e058dc85243ad7ee887ff5d357dd5485",
-    "prepared/valid.jsonl": "9b3a100d28501f7aef331a1bbb061d98c48b61ed77fb43cad5f22e80b966787c"
+    "prepared/train.jsonl": "9b3f5df58455501f0ad2b5d0cc122ec4c06d22306b9d99ab0002982de07e5d50",
+    "prepared/valid.jsonl": "3fb845d5e50b404b43549317364086ff8515660e227bbc29985fcc0a58c9c7d9"
   },
-  "format": "sft-preparation-release-v1",
-  "human_approval": false,
+  "format": "sft-preparation-release-v2",
+  "human_approval": true,
+  "human_approved_conversations": 48,
   "max_conversation_tokens": 222,
   "model_configuration_complete": true,
   "model_weights_trained": false,
-  "preparation_complete": true,
-  "remaining": [
-    "Human review for reviewed-data training gate",
+  "next_versions": [
     "v0.5.2 response loss masking",
     "v0.5.3 base-weight migration and SFT training"
   ],
-  "reviewer_kind": "ai",
-  "training_ready": false,
+  "preparation_complete": true,
+  "remaining_in_v0.5.1": [],
+  "reviewer_kind": "human",
+  "training_ready": true,
   "validation": {
     "assistant_prefix_and_response_checks": 54,
     "base_vocab_size": 768,
@@ -49,28 +48,28 @@
         }
       },
       "train": {
-        "sha256": "44e12f0a783085e6be48557a041af295e058dc85243ad7ee887ff5d357dd5485",
+        "sha256": "9b3f5df58455501f0ad2b5d0cc122ec4c06d22306b9d99ab0002982de07e5d50",
         "statistics": {
           "conversations": 16,
           "exceeds_64_tokens": 16,
           "max_tokens": 208,
           "min_tokens": 118,
-          "tokens": 2441
+          "tokens": 2433
         }
       },
       "valid": {
-        "sha256": "9b3a100d28501f7aef331a1bbb061d98c48b61ed77fb43cad5f22e80b966787c",
+        "sha256": "3fb845d5e50b404b43549317364086ff8515660e227bbc29985fcc0a58c9c7d9",
         "statistics": {
           "conversations": 16,
           "exceeds_64_tokens": 16,
           "max_tokens": 222,
           "min_tokens": 122,
-          "tokens": 2643
+          "tokens": 2634
         }
       }
     },
     "template_sha256": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
-    "training_ready": false,
+    "training_ready": true,
     "version": "v0.5.1"
   }
 }

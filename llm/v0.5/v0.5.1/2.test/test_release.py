@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 VERSION = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(VERSION/'1.train'))
@@ -20,29 +21,28 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(first, r.build(output))
             self.assertEqual(first, r.verify(output))
             self.assertTrue(first['preparation_complete'])
-            self.assertFalse(first['training_ready'])
-            self.assertFalse(first['human_approval'])
-            self.assertEqual(first['ai_reviewed_conversations'], 48)
+            self.assertTrue(first['training_ready'])
+            self.assertTrue(first['human_approval'])
+            self.assertEqual(first['human_approved_conversations'], 48)
             self.assertLessEqual(first['max_conversation_tokens'], 256)
-            with self.assertRaises(ValueError):
-                r.load_prepared(output/'prepared')
+            r.load_prepared(output/'prepared')
             (output/'unexpected.txt').write_text('keep user file')
             with self.assertRaises(FileExistsError):
                 r.build(output)
             self.assertEqual((output/'unexpected.txt').read_text(), 'keep user file')
 
-    def test_quality_requires_current_complete_ai_receipts(self):
+    def test_release_requires_complete_current_human_approvals(self):
         rows = r.data.read_jsonl(r.SOURCE/'examples.jsonl')
-        original = json.loads((r.SOURCE/'ai_quality_audit.json').read_bytes())
-        variants = []
-        for field, value in [('reviewer_kind', 'human'), ('human_approval', True)]:
-            q = copy.deepcopy(original); q[field] = value; variants.append(q)
-        q = copy.deepcopy(original); q['records'].pop(); variants.append(q)
-        q = copy.deepcopy(original); q['records'][0]['content_sha256'] = 'bad'; variants.append(q)
-        q = copy.deepcopy(original); q['records'][0]['assistant_responses_checked'] = 0; variants.append(q)
+        original = r.data.read_jsonl(r.SOURCE/'reviews.jsonl')
+        r.validate_approvals(rows, original)
+        variants = [original[:-1], original + [original[0]]]
+        for field, value in [('reviewer_kind', 'ai'), ('decision', 'rejected'),
+                             ('content_sha256', 'bad')]:
+            q = copy.deepcopy(original); q[0][field] = value; variants.append(q)
+        q = copy.deepcopy(original); q[0]['checks']['correctness'] = False; variants.append(q)
         for q in variants:
             with self.assertRaises(ValueError):
-                r.validate_quality(rows, q)
+                r.validate_approvals(rows, q)
 
     def test_modified_model_config_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -55,10 +55,32 @@ class ReleaseTests(unittest.TestCase):
 
     def test_input_change_cannot_reuse_quality_review(self):
         rows = r.data.read_jsonl(r.SOURCE/'examples.jsonl')
-        original = json.loads((r.SOURCE/'ai_quality_audit.json').read_bytes())
+        original = r.data.read_jsonl(r.SOURCE/'reviews.jsonl')
         rows[0]['messages'][-1]['content'] = 'Changed answer'
         with self.assertRaises(ValueError):
-            r.validate_quality(rows, original)
+            r.validate_approvals(rows, original)
+
+    def test_missing_approval_build_leaves_no_partial_release(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp)/'inputs'; source.mkdir()
+            for name in ('examples.jsonl', 'sources.json', 'reviews.jsonl'):
+                (source/name).write_bytes((r.SOURCE/name).read_bytes())
+            reviews = r.data.read_jsonl(source/'reviews.jsonl')
+            (source/'reviews.jsonl').write_bytes(r.data.jsonl(reviews[:-1]))
+            output = Path(tmp)/'output'
+            with patch.object(r, 'SOURCE', source), self.assertRaises(ValueError):
+                r.build(output)
+            self.assertFalse(output.exists())
+
+    def test_approval_tamper_in_archived_release_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp)/'release'; r.build(output)
+            path = output/'inputs/reviews.jsonl'
+            reviews = r.data.read_jsonl(path)
+            reviews[0]['decision'] = 'rejected'
+            path.write_bytes(r.data.jsonl(reviews))
+            with self.assertRaises(ValueError):
+                r.verify(output)
 
     def test_all_data_forward_eot_gradient_and_causality(self):
         import torch

@@ -13,55 +13,42 @@ SOURCE = ROOT/'data/sft/v0.5.0'
 DEFAULT_OUTPUT = VERSION/'1.train/release'
 
 
-def validate_quality(rows, quality):
-    if (quality.get('format') != 'sft-ai-content-audit-v1'
-            or quality.get('reviewer_kind') != 'ai'
-            or quality.get('human_approval') is not False
-            or quality.get('criteria') != list(data.CRITERIA)):
-        raise ValueError('AI quality audit identity/criteria mismatch')
-    receipts = quality.get('records', [])
-    if len(receipts) != len(rows) or {r['id'] for r in receipts} != {r['id'] for r in rows}:
-        raise ValueError('quality audit must cover every record exactly once')
-    by_id = {r['id']: r for r in rows}
-    for receipt in receipts:
-        row = by_id[receipt['id']]
-        if (receipt.get('content_sha256') != data.content_hash(row)
-                or receipt.get('decision') != 'suitable_for_educational_experiment'
-                or receipt.get('assistant_responses_checked') != sum(
-                    m['role'] == 'assistant' for m in row['messages'])
-                or not isinstance(receipt.get('note'), str) or not receipt['note'].strip()):
-            raise ValueError('stale or incomplete AI quality audit')
+def validate_approvals(rows, reviews):
+    receipts = data.review_index(rows, reviews)
+    if set(receipts) != {row['id'] for row in rows} or any(
+            review['decision'] != 'approved' for review in receipts.values()):
+        raise ValueError('complete human approval required for every release conversation')
+    return receipts
 
 
 def verify(directory):
     directory = Path(directory)
-    manifest, template, splits, _ = load_prepared(directory/'prepared', for_training=False)
+    manifest, template, splits, _ = load_prepared(directory/'prepared', for_training=True)
     rows = data.read_jsonl(directory/'inputs/examples.jsonl')
-    quality = json.loads((directory/'inputs/ai_quality_audit.json').read_bytes())
-    validate_quality(rows, quality)
+    receipts = validate_approvals(rows, data.read_jsonl(directory/'inputs/reviews.jsonl'))
     # Rebuild from the archived inputs; validate split membership and provenance.
     with tempfile.TemporaryDirectory() as tmp:
         data.build(directory/'inputs/examples.jsonl', directory/'inputs/sources.json',
-                   directory/'inputs/reviews.jsonl', tmp)
+                   directory/'inputs/reviews.jsonl', tmp, mode='reviewed')
         for name in ['manifest.json', 'train.jsonl', 'valid.jsonl', 'test.jsonl']:
             if (Path(tmp)/name).read_bytes() != (directory/'prepared/source'/name).read_bytes():
                 raise ValueError('release source differs from archived inputs')
     config = json.loads((directory/'model_config.json').read_bytes())
     if config != setup.configuration(template):
         raise ValueError('release model configuration mismatch')
-    result = audit.verify(directory/'prepared', allow_draft=True)
+    result = audit.verify(directory/'prepared')
     maximum = max(s['statistics']['max_tokens'] for s in manifest['splits'].values())
     if maximum > config['block_size']:
         raise ValueError('release exceeds configured model context; no truncation allowed')
-    return {'format': 'sft-preparation-release-v1', 'preparation_complete': True,
-            'training_ready': manifest['training_ready'], 'reviewer_kind': 'ai',
-            'human_approval': False, 'model_weights_trained': False,
+    return {'format': 'sft-preparation-release-v2', 'preparation_complete': True,
+            'training_ready': manifest['training_ready'], 'reviewer_kind': 'human',
+            'human_approval': True, 'model_weights_trained': False,
             'model_configuration_complete': True, 'block_size': config['block_size'],
             'max_conversation_tokens': maximum,
-            'ai_reviewed_conversations': len(rows),
+            'human_approved_conversations': len(receipts),
             'validation': result,
-            'remaining': ['Human review for reviewed-data training gate',
-                          'v0.5.2 response loss masking',
+            'remaining_in_v0.5.1': [],
+            'next_versions': ['v0.5.2 response loss masking',
                           'v0.5.3 base-weight migration and SFT training'],
             'files': {str(p.relative_to(directory)): data.digest(p.read_bytes())
                       for p in sorted(directory.rglob('*'))
@@ -77,14 +64,14 @@ def build(output=DEFAULT_OUTPUT):
         staged = Path(tmp)/'release'
         inputs = staged/'inputs'
         inputs.mkdir(parents=True)
-        for name in ['examples.jsonl', 'sources.json', 'reviews.jsonl', 'ai_quality_audit.json']:
+        for name in ['examples.jsonl', 'sources.json', 'reviews.jsonl']:
             (inputs/name).write_bytes((SOURCE/name).read_bytes())
         rows = data.read_jsonl(inputs/'examples.jsonl')
-        validate_quality(rows, json.loads((inputs/'ai_quality_audit.json').read_bytes()))
+        validate_approvals(rows, data.read_jsonl(inputs/'reviews.jsonl'))
         source = Path(tmp)/'source'
-        data.build(inputs/'examples.jsonl', inputs/'sources.json', inputs/'reviews.jsonl', source)
-        prepare(source, DEFAULT_TOKENIZER, staged/'prepared', allow_draft=True, max_tokens=256)
-        _, template, _, _ = load_prepared(staged/'prepared', for_training=False)
+        data.build(inputs/'examples.jsonl', inputs/'sources.json', inputs/'reviews.jsonl', source, mode='reviewed')
+        prepare(source, DEFAULT_TOKENIZER, staged/'prepared', max_tokens=256)
+        _, template, _, _ = load_prepared(staged/'prepared', for_training=True)
         (staged/'model_config.json').write_bytes(data.encode(setup.configuration(template)))
         result = verify(staged)
         (staged/'readiness.json').write_bytes(data.encode(result))

@@ -1,0 +1,122 @@
+{
+  "version": "v0.5.0",
+  "mode": "reviewed",
+  "training_ready": true,
+  "splits": {
+    "test": {
+      "assistant_turns": 18,
+      "content_bytes": 4459,
+      "conversations": 16,
+      "groups": 8,
+      "multiturn": 2,
+      "sha256": "671120b1ca6cd91c4e0d9f41c579b85a3618986e398ce161397ef93dac1222c2",
+      "tasks": {
+        "calculate": 2,
+        "extract": 2,
+        "format": 2,
+        "multiturn": 2,
+        "rewrite": 2,
+        "safety": 2,
+        "summarize": 2,
+        "uncertainty": 2
+      }
+    },
+    "train": {
+      "assistant_turns": 18,
+      "content_bytes": 4443,
+      "conversations": 16,
+      "groups": 8,
+      "multiturn": 2,
+      "sha256": "73c34a443f33ddfd1ef19f6af0d4004089d693af85f3ee24872621bad1f6ff21",
+      "tasks": {
+        "calculate": 2,
+        "extract": 2,
+        "format": 2,
+        "multiturn": 2,
+        "rewrite": 2,
+        "safety": 2,
+        "summarize": 2,
+        "uncertainty": 2
+      }
+    },
+    "valid": {
+      "assistant_turns": 18,
+      "content_bytes": 4904,
+      "conversations": 16,
+      "groups": 8,
+      "multiturn": 2,
+      "sha256": "4303f649fd8be14237345edaff00ea9913f8f058419a6fbe813ff367648492e3",
+      "tasks": {
+        "calculate": 2,
+        "extract": 2,
+        "format": 2,
+        "multiturn": 2,
+        "rewrite": 2,
+        "safety": 2,
+        "summarize": 2,
+        "uncertainty": 2
+      }
+    }
+  },
+  "legacy_audit": {
+    "train": {
+      "sha256": "4f2df2f8ff17bce3fbe366dc574c2e962c2d72aa33cc6918b124dee1e503cf1a",
+      "records": 3600,
+      "malformed_lines": [],
+      "duplicate_dialogues": 0,
+      "manual_review_samples": [
+        {
+          "line": 7,
+          "text": "<사용자> 멕시코 어디 있어? <봇> 멕시코, 멀지만 가볼 만해요!"
+        },
+        {
+          "line": 278,
+          "text": "<사용자> 일본 어디 있어? <봇> 일본, 멀지만 가볼 만해요!"
+        },
+        {
+          "line": 311,
+          "text": "<사용자> 수박 어때? <봇> 그렇군요, 수박, 저는 자주 먹어요!"
+        },
+        {
+          "line": 316,
+          "text": "<사용자> 김밥 어때? <봇> 아 김밥, 저는 자주 먹어요!"
+        },
+        {
+          "line": 364,
+          "text": "<사용자> 캐나다 어디 있어? <봇> 이야, 캐나다, 멀지만 가볼 만해요!"
+        }
+      ]
+    },
+    "valid": {
+      "sha256": "0ac63ba1530f226f8a5b4b7bb7312883f3bafc3f8e06bf48bc418aaff6f2f392",
+      "records": 400,
+      "malformed_lines": [],
+      "duplicate_dialogues": 0,
+      "manual_review_samples": [
+        {
+          "line": 225,
+          "text": "<사용자> 러시아 어디 있어? <봇> 우와 러시아, 궁금하면 알아봐요!"
+        },
+        {
+          "line": 245,
+          "text": "<사용자> 러시아 어디 있어? <봇> 그렇군요, 러시아, 지도에서 같이 찾아봐요!"
+        },
+        {
+          "line": 271,
+          "text": "<사용자> 초콜릿 먹고 싶어 <봇> 초콜릿는 기분을 좋게 하는 음식이라 몸에 좋아요!"
+        },
+        {
+          "line": 304,
+          "text": "<사용자> 딸기 어때? <봇> 오 딸기, 저는 자주 먹어요!"
+        },
+        {
+          "line": 355,
+          "text": "<사용자> 치킨 먹고 싶어 <봇> 치킨는 고소한 음식이라 몸에 좋아요!"
+        }
+      ]
+    },
+    "shared_user_turns": 0,
+    "decision": "Legacy data kept unchanged; not imported as gold. No review/provenance receipts, template separation not established. Samples are review flags, not automatic error verdicts."
+  },
+  "note": "Structural audit only; no human review, model training or generation quality claim."
+}

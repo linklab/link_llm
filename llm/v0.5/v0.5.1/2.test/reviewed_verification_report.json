@@ -1,0 +1,43 @@
+{
+  "version": "v0.5.1",
+  "template_sha256": "98da3725a80f24c200046fc265d6abd2503e7525b2e2c08b6dcd3f734dc3c85b",
+  "training_ready": true,
+  "conversation_roundtrips": 48,
+  "assistant_prefix_and_response_checks": 54,
+  "base_vocab_size": 768,
+  "chat_vocab_size": 769,
+  "eot_id": 768,
+  "splits": {
+    "test": {
+      "sha256": "421c0c2ba12d74d84523ea28f520741ce79d824c8c73bc5512cbdfaa9fc740b1",
+      "statistics": {
+        "conversations": 16,
+        "exceeds_64_tokens": 16,
+        "max_tokens": 184,
+        "min_tokens": 117,
+        "tokens": 2388
+      }
+    },
+    "train": {
+      "sha256": "9b3f5df58455501f0ad2b5d0cc122ec4c06d22306b9d99ab0002982de07e5d50",
+      "statistics": {
+        "conversations": 16,
+        "exceeds_64_tokens": 16,
+        "max_tokens": 208,
+        "min_tokens": 118,
+        "tokens": 2433
+      }
+    },
+    "valid": {
+      "sha256": "3fb845d5e50b404b43549317364086ff8515660e227bbc29985fcc0a58c9c7d9",
+      "statistics": {
+        "conversations": 16,
+        "exceeds_64_tokens": 16,
+        "max_tokens": 222,
+        "min_tokens": 122,
+        "tokens": 2634
+      }
+    }
+  },
+  "note": "Formatting validation only; no model generation quality or human review claim."
+}
